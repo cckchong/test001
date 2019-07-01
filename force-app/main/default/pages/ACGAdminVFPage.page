@@ -1,6 +1,7 @@
 <apex:page controller="ACGAdminCtrl" sidebar="false">
     <!--TEST 002-->
     <!---HF 001-->
+    <!---HF 002 Tag 001-->
     <script type="text/javascript">
         function autoResize(id){
             var newheight;
