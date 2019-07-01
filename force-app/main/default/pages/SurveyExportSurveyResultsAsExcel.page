@@ -1,0 +1,45 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" standardController="Survey__c" extensions="viewSurveyResultsReportController" contentType="text/csv#{!surveyResultFilename}">"Survey Name","{!surveyName }"
+"{! $Label.LABS_SF_Survey_Taker }","{! reportResponse.numSurveyTaker }"
+"{! reportResponse.exportDataResp.takerNameColumnName}","Survey Taken Time","Question No.","Question","Response","Response Comment","Total Response Count for this Question","Required"
+<apex:repeat value="{!reportResponse.exportDataResp.exportDataList}" var="row" id="theRepeat1">
+"{!row.takerName}","{!row.surveyTakenTime}","{!row.questionNumber + 1}","{!row.question}","{!row.response}","{!row.otherresponse}","{!row.totalResponse}","{!row.required}"
+</apex:repeat>
+</apex:page>
+<!-- end -->
+<!--
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" standardController="Survey__c" extensions="viewSurveyResultsReportController" contentType="application/vnd.ms-excel#{!surveyResultFilename}">
+-->
+<!--
+    <table id ="theTable1">
+        <tr>
+            <td>{! $Label.LABS_SF_SURVEY_TAKER }</td><td>{! reportResponse.numSurveyTaker }</td>
+        </tr>
+    </table>
+-->
+<!--
+    <table id="theTable2">
+        <thead>
+            <tr><td>Survey Name</td><td>Survey Create Time</td><td>Survey Taken Time</td><td>Question No.</td><td>Question</td><td>Response</td><td>{!$Label.LABS_SF_Total}</td><td>Required</td>
+-->
+            <!-- modify by Connie. Hide  taker name if survey is anonymous -->
+<!--
+            <td>{! reportResponse.exportDataResp.takerNameColumnName}</td>
+            </tr>
+        </thead>
+        <tbody>
+             <apex:repeat value="{!reportResponse.exportDataResp.exportDataList}" var="row" id="theRepeat1">
+                <tr>
+                    <td>{!row.surveyName}</td>
+                    <td>{!row.surveyCreatedTime}</td>
+                    <td>{!row.surveyTakenTime}</td>
+                    <td>{!row.questionNumber + 1}</td>
+                    <td>{!row.question}</td>
+                    <td>{!row.response}</td>
+                    <td>{!row.totalResponse}</td>
+                    <td>{!row.required}</td>
+                    <td>{!row.takerName}</td>
+                </tr>
+            </apex:repeat>
+        </tbody>
+    </table>
+-->

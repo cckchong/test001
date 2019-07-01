@@ -1,0 +1,345 @@
+<apex:component controller="MobileReceiptInboxCtrl">
+    <script type="text/javascript">
+        var Expense;
+        var Expenses;
+        var FeedItem;
+        var FeedItems;
+        var FeedItemView;
+        var ExpenseView;
+        var newId;
+        var count;
+        $(function() {
+            /* Backbone.js Experimentation */
+
+            /* Do the same for our Receipt object, which should just be FeedItems */
+            /* Define the model, this should replicate the SFDC Object */
+            FeedItem = Backbone.Model.extend({
+                defaults: {
+                    CreatedDate: 1436265770000,
+                    Id: '',
+                    ParentId: '',
+                    RelatedRecordId: '',
+                    Title: '',
+                    Body: '',
+                    Type: ''
+                }
+            });
+
+            /* Instantiate a collection */
+            FeedItems = Backbone.Collection.extend({
+                model: FeedItem,
+                comparator: 'ParentId'
+            });
+            
+            // console.log('expense');
+            /* Define the model, this should replicate the SFDC Object */
+            Expense = Backbone.Model.extend({
+                defaults: {
+                    /* Amount__c: '',
+                    Currency__c: '',
+                    Description__c: '',
+                    Exchange_Rate__c: '',
+                    Expense_Rate__c: '',
+                    Local_Amount__c: '',
+                    Id: '',
+                    Name: '',
+                    Reference_No__c: '',
+                    CreatedDate: '',
+                    Output: ''*/
+                }
+            });
+            
+            /* Instantiate a collection */
+            Expenses = Backbone.Collection.extend({
+                model: Expense
+            });
+            
+            // console.log('initExpenses');
+            initExpenses();
+
+            initFeedItems();
+
+        });
+        
+        function feedItemCallback(fi){
+            var feeditems = new FeedItems(fi);
+            feeditems.each(function(ele){
+                // shorten summary of expense detail feed items
+                body = ele.get('Body');
+                if (body !== '' && body.length > 25) {
+                    ele.set('Body', body.substr(0,25) + '...');
+                }
+            });
+            var template2 = _.template($('#receipt-list-template').html(), {receipts: feeditems.models});
+            $(".receipts-content").html(template2);
+
+            var $gallery = $("#gallery");
+            // set inbox items as draggable
+            $( "li", $gallery).draggable({
+                cursor: "move",
+                revert: "invalid"
+            });
+            // define fullscreen onclick function, get img src attribute for bigger thumbnail
+            $("#gallery li .fullscreen").click(function(){
+                var url = $(this).parent().find("img").attr("src");
+                var replacedUrl = url.replace('sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&versionId=', '');
+                window.open(replacedUrl);
+            });
+            // set left column as droppable so that the items can recycle
+            $gallery.droppable({
+                hoverClass: "ui-state-highlight",
+                activeClass: "ui-state-highlight",
+                drop: function (event, ui) {
+                    // show loading UI
+                    loading();
+                    // get currpid from item to recycle
+                    setParentId($(ui.draggable), $(ui.draggable).attr('sfid'), $(ui.draggable).attr('currpid'));
+                    // append to the left column
+                    $(ui.draggable).appendTo($(this)).show();
+                    // remove class existed in the right column, apply css
+                    $(ui.draggable).removeClass("dropped-remove")
+                    .css("left", "0")
+                    .css("top", "0");
+                    // set the dropped item as draggable again
+                    $(ui.draggable).draggable({
+                        cursor: "move",
+                        revert: "invalid"
+                    });
+                    // console.log('droppable finished');
+                }
+            });
+            // console.log('feedItemCallback finished');
+        }
+    
+        function loading(){
+            $.blockUI({ 
+                message: $('div.loading'), 
+                css: { 
+                    border: 'none', 
+                    backgroundColor: '#fff',  
+                    color: '#333' 
+                },
+                overlayCSS: { backgroundColor: '#fff' }
+            });
+        }
+
+        function expenseCallback(exp, fi, currpid){
+            console.log('Enter expenseCallback');
+            //console.log(exp);
+            // instantiate the expenses collection
+            var expenses = new Expenses(exp);
+            var fiarr = [];
+            expenses.each(function(ele, idx){
+                // get receipt currency out of array
+                //ele.set('Receipt_Currency__c', ele.get('Receipt_Currency__r')['Name']);
+                // initialize the expense detail feed item array
+                fiarr[idx] = [];
+            });
+            // instantiate feed items two-level array
+            
+            //var feeditems = new FeedItems(fi);
+            //var pos = 0;
+            //var body = '';
+            /*
+            feeditems.each(function(ele){
+                // shorten summary of expense detail feed items
+                body = ele.get('Body');
+                if (body !== '' && body.length > 25) {
+                    ele.set('Body', body.substr(0,25) + '...');
+                }
+                // collection is sorted by ParentId, so iterate one time only and push them into two-level array
+                while (expenses.at(pos) != null && expenses.at(pos).get('Id') != ele.get('ParentId')) {
+                    ++pos;
+				}
+                if(fiarr[pos] != null) {
+                	(fiarr[pos]).push(ele);
+				}
+            });
+            _.each(fiarr, function(ele, idx){
+                // template the feed items into html in the second level
+                var fis = new FeedItems(ele);
+                var template3 = _.template($('#expensedetail-list-template').html(), {expdetails: fis.models});
+                expenses.at(idx).set('Output', template3);
+            });
+            */
+            
+            expenses.each(function(ele, idx){
+                // template the feed items into html in the second level
+                var fis = new FeedItems();
+                var template3 = _.template($('#expensedetail-list-template').html(), {expdetails: fis.models});
+                ele.set('Output', template3);
+            });
+            
+            /* Render the template */
+            var template = _.template($('#expense-list-template').html(), {expenses: expenses.models});
+            $(".expenses-content").html(template);
+			console.log(expenses);
+            var $exp = $("#expenses");
+            // set currpid as the current mobile inbox
+            $('#expenses > li > ul > li').attr('currpid',currpid);
+            
+            // set expense details as draggable
+            $("#expenses > li > ul > li").draggable({
+                cursor: "move",
+                revert: "invalid"
+            });
+            // set right column as droppable so that the items can assign to expenses
+            $( "li.te-expense-detail-summary", $exp ).droppable({
+              hoverClass: "ui-state-highlight",
+              activeClass: "ui-state-highlight",
+              drop: function( event, ui ) {
+                  // show loading layout
+                  loading();
+                // get currpid from item to recycle
+                setParentId($(ui.draggable), $(ui.draggable).attr('sfid'), $(this).attr('sfid'));
+                // append to the left column
+                $(ui.draggable).appendTo($(this).find("ul.expdetails")).show();
+                // remove class existed in the right column, apply css
+                $(ui.draggable).addClass("dropped-remove")
+                .css("left", "0")
+                .css("top", "0");
+                // set the dropped item as draggable again
+                $(ui.draggable).draggable({
+                    cursor: "move",
+                    revert: "invalid"
+                });
+              }
+            });
+            
+            // define fullscreen onclick function, get img src attribute for bigger thumbnail
+            $("#expenses li .fullscreen").click(function(){
+                var url = $(this).parent().find("img").attr("src");
+                var replacedUrl = url.replace('sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&versionId=', '');
+                window.open(replacedUrl);
+            });
+
+        }
+    
+        /*
+         * URL to thumbnail: /sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&versionId=068O0000000R0pYIAS
+         */
+        function initFeedItems() {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.getFeedItems}',
+                function(result, event){
+                    if(event.status) {
+                        
+                        if(result != null) {
+                            feedItemCallback(result);
+                        }
+                        
+                    } else if (event.type === 'exception') {
+                        console.log(event.message);
+                    }
+                },
+                {escape: true}
+            );
+            return null;
+        }
+    
+        function setParentId(element, uiId, expenseId){
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.setParentId}',
+                uiId,
+                expenseId,
+                function(result, event){
+                    if(event.status) {
+                        
+                        if(result != null) {
+                            // update sfid
+                            var chatter = new FeedItem(result);
+                            newId = chatter.get('Id');
+                            element.attr('sfid',newId);
+                        }
+                        $.unblockUI({});
+                        
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    }
+                },
+                {escape: true}
+            );
+            return null;
+        }
+    
+        function initExpenses() {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.getExpenseDetails}',
+                function(result, event){
+                    if(event.status) {
+                        
+                        if(result != null) {
+                            //console.log(result);
+                            initInbox(result);
+                            // expenseCallback(result);
+                            //getExpenseDetailsFeedItems(result);
+                        }
+                        
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    }
+                },
+                {escape: true}
+            );
+            return null;
+        }
+
+        function getExpenseDetailsFeedItems(r){
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.getExpenseDetailsFeedItems}',
+                function(result, event){
+                    if(event.status) {
+                        
+                        if(result != null) {
+                            initInbox(r, result);
+                        }
+                        
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    }
+                },
+                {escape: true}
+            );
+            return null;
+        }
+    
+		function initInbox(eaVOList) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.getMyMobileReceiptInbox}',
+                function(result, event){
+                    if(event.status) {
+                        
+                        if(result != null) {                            
+                            expenseCallback(eaVOList, null, result);
+                        }
+                        
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    }
+                },
+                {escape: true}
+            );
+            return null;
+        }
+    
+        function initInbox2(r, r2) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.getMyMobileReceiptInbox}',
+                function(result, event){
+                    if(event.status) {
+                        
+                        if(result != null) {                            
+                            expenseCallback(r, r2, result);
+                        }
+                        
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    }
+                },
+                {escape: true}
+            );
+            return null;
+        }
+    
+    </script>
+</apex:component>

@@ -1,0 +1,68 @@
+<apex:component controller="ACGCtrl">
+	<script type="text/javascript">
+		function cFollow() {
+			var r = confirm('Are you sure?');
+			if(r == true) {
+				Visualforce.remoting.Manager.invokeAction(
+					'{!$RemoteAction.ACGCtrl.followPage}',
+					'{!chatterFeedId}',
+					function(result, event){  
+						if (event.status) {
+							if(result != '') {
+								alert('You have followed the page and you will receive updates in your digest!');
+								location.reload(true);
+							} else {
+								alert('Failed to follow the page!');
+							}
+						} else if (event.type === 'exception') {
+							alert(event.message);
+						} else {
+							alert('Fail!');
+						}
+					}, 
+					{escape: true}
+				);
+			} else {
+				//		
+			}
+		}
+		
+		function cUnfollow() {
+			var r = confirm('Are you sure?');
+			if(r == true) {
+				Visualforce.remoting.Manager.invokeAction(
+					'{!$RemoteAction.ACGCtrl.unfollowPage}',
+					'{!chatterFeedId}',
+					function(result, event){  
+						if (event.status) {
+							if(result != '') {
+								alert('Unfollowed!');
+								location.reload(true);
+							} else {
+								alert('Failed to unfollow the page!');
+							}
+						} else if (event.type === 'exception') {
+							alert(event.message);
+						} else {
+							alert('Fail!');
+						}
+					}, 
+					{escape: true}
+				);
+			} else {
+				//		
+			}
+		}
+	</script>
+
+	<apex:outputPanel id="ComponentFollow">
+		<a href="/apex/ACGPreviewVFPage?Id={!strSiteMapId}&size=0&type=html&{!$Label.ConnecTalTab}" target="_self"><Strong>{!$Label.SiteMap}</Strong></a>
+		&nbsp;
+		<apex:outputLink rendered="{!AND(!bFollowing, bShowFollow)}" onclick="cFollow();" value="#">
+			<apex:image value="{!$Resource.ChatterFollow}"/>&nbsp;<Strong>Follow</Strong>
+		</apex:outputLink>
+		<apex:outputLink rendered="{!AND(bFollowing, bShowFollow)}" onclick="cUnfollow();" value="#">
+			<Strong>Following</Strong>&nbsp;<apex:image value="{!$Resource.ChatterUnfollow}"/>
+		</apex:outputLink>
+	</apex:outputPanel>
+</apex:component>

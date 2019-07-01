@@ -1,0 +1,701 @@
+<apex:page controller="IDPBrowseCatalogVFPCtrl" sidebar="false" standardStylesheets="true" showHeader="true" docType="html-5.0" applyHtmlTag="true">
+
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <title>Indirect Procurement Application</title>
+
+
+    <!--
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestsbadmin2,'/bower_components/jquery/dist/jquery.min.js')}"/>
+    -->
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+
+
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/dataTables.bootstrap.min.css')}" />  
+
+    <!-- Custom Fonts
+    <apex:stylesheet value="{!URLFOR($Resource.IDPTestsbadmin2, '/bower_components/font-awesome/css/font-awesome.min.css')}" /> 
+     -->
+    <apex:stylesheet value="{!URLFOR($Resource.font_awesome_4_7_0, '/font-awesome-4.7.0/css/font-awesome.min.css')}" /> 
+
+    <!-- Select 2 CSS -->
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <!--Button CSS-->
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" /> 
+
+    
+ 
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/dataTables.bootstrap.min.js')}" />
+
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap_v3_3_7, '/css/bootstrap.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap_v3_3_7, '/js/bootstrap.min.js')}" />
+       <!--
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap_v3_3_7_namespaced, '/css/bootstrap.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap_v3_3_7_namespaced, '/js/bootstrap.min.js')}" />    
+    -->
+    <!-- MetisMenu CSS Metis Menu Plugin JavaScript 
+    <apex:stylesheet value="{!URLFOR($Resource.IDPTestsbadmin2, '/bower_components/metisMenu/dist/metisMenu.min.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestsbadmin2,'/bower_components/metisMenu/dist/metisMenu.min.js')}"/>
+    -->
+    <!-- MetisMenu CSS -->
+    <apex:stylesheet value="{!URLFOR($Resource.metisMenu, '/metisMenu-master/dist/metisMenu.min.css')}" /> 
+    <!-- Metis Menu Plugin JavaScript -->
+    <apex:includeScript value="{!URLFOR($Resource.metisMenu,'/metisMenu-master/dist/metisMenu.min.js')}"/>    
+
+    <!-- Select 2 Javascript-->
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+ 
+    <!-- the script is at the end of the apex form -->
+         
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->      
+
+
+<c:IDPBrowseCatalogVFPCSS />
+<c:IDPVFPCommonCSS />
+<!--
+<style>
+body {font-size: 121%} 
+</style>
+-->
+</head>
+
+<body>
+
+    <apex:pagemessages />
+    <div id="wrapper">
+        <apex:form id="pageform">    
+        <!--
+        <apex:outputText value="Debug: {!selectedQueryCatalogId & selectedSearchingCatalogId &queryInput}" id="debugText" rendered="true"/>
+        -->
+        <apex:outputPanel id="functionPanel">
+            
+            <apex:actionFunction action="{!massAction}" name="MassActionParaFunction"  oncomplete="alert('{!message}');if({!message <> $Label.IDP_Have_Not_Selected_An_Item_Message}) {removeChecked();}" reRender="navigationOutputPanel,scriptPanel"> <!-- {window.location.reload();}"> -->
+                <apex:param id="checkedCIIdQuantityJSON" name="checkedCatalogItemIdQuantityJSON" value="" />
+                <apex:param id="massMode" name="mMode" value="" />
+           </apex:actionFunction>
+    
+           
+            <apex:actionFunction action="{!singleAddtoCart}" name="singleAddToCartParaFunction" oncomplete="return false;" rerender="navigationOutputPanel">
+                <apex:param id="cartCItemId" name="addToCartCatalogItemId" value="" />
+                <apex:param id="cartCItemQuantity" name="addToCartQuantity" value="" />
+                <apex:param id="cartCItemUOM" name="addToCartUOM" value="" />
+           </apex:actionFunction> 
+           
+            <apex:actionFunction action="{!singleAddRemoveFavouriteItem}" name="singleAddRemoveFavouriteItemParaFunction" oncomplete="return false;" rerender="navigationOutputPanel">
+                <apex:param id="favCIId" name="addToFavouriteCatalogItemId" value="" />
+           </apex:actionFunction> 
+           
+           
+            <apex:actionFunction action="{!singleInactivateCatalogItem}" name="singleInactivateCatalogItemParaFunction" oncomplete="return false;">
+                <apex:param id="inactivateCIId" name="inactivateCatalogItemId" value="" />
+           </apex:actionFunction>        
+             
+             <!-- unknown reason : '{!selectedSortingFieldName}' become empty, so changed to $('.sortingSelectList option:selected').val() -->
+            <apex:actionFunction name="SearchingResetDataTable" 
+                                    oncomplete="isSearch = true;$('.sortingSelectList').val('{!$Label.IDP_Sorting_Field_Name_Asc_Key}');setDataTable('#itemTable', $('.sortingSelectList option:selected').val(),'{!selectedDisplayCurrencyName}','{!selectedSearchingCatalogId}','{!queryInput}', {!ExistingFavouriteItemJSON}, '{!$Label.IDP_Sorting_Field_Name_Asc_Key}','','');" 
+                                    reRender="itemTablePanel, navigationOutputPanel">
+            <!--
+            <apex:param id="isSearchSearchingResetDataTable" name="isSearch" value="" assignTo="{!savedIsSearch}"/>
+            -->
+            </apex:actionFunction>   
+            
+            <apex:actionFunction name="sortingResetDataTable" 
+                                    oncomplete="setDataTable('#itemTable', $('.sortingSelectList option:selected').val(),'{!selectedDisplayCurrencyName}','{!selectedQueryCatalogId}','{!queryInput}', {!ExistingFavouriteItemJSON},'','');" 
+                                    reRender="itemTablePanel, navigationOutputPanel">
+            </apex:actionFunction>  
+            
+            <!-- used in IDPBrowseCatalogFavouriteListJSComponent -->            
+            <apex:actionFunction name="sidebarResetDataTable" 
+                                    oncomplete="isSearch = false;$('.sortingSelectList').val('{!$Label.IDP_Sorting_Field_Name_Asc_Key}');setDataTable('#itemTable', $('.sortingSelectList option:selected').val(),'{!selectedDisplayCurrencyName}','{!selectedQueryCatalogId}','', {!ExistingFavouriteItemJSON},'{!$Label.IDP_Sorting_Field_Name_Asc_Key}','','');" 
+                                    reRender="itemTablePanel, navigationOutputPanel">
+                <apex:param id="sidebarCaId" name="sidebarSelectedCatalogId" value="" assignTo="{!selectedQueryCatalogId}" />
+                <!--
+                <apex:param id="isSearchSidebarResetDataTable" name="isSearch" value="" assignTo="{!savedIsSearch}"/>
+                -->
+            </apex:actionFunction> 
+                 
+                   
+            <apex:actionFunction name="redirectToPageParaFunction" action="{!redirectToPage}" oncomplete="return false;" reRender="navigationOutputPanel">
+                <apex:param id="queryCatalog" name="{!$Label.IDP_Parameter_Name_Catalog}" value="" assignTo="{!selectedQueryCatalogId}"/>
+                <apex:param id="queryInput" name="{!$Label.IDP_Parameter_Name_Input}" value="" assignTo="{!queryInput}"/>
+                <apex:param id="currencyName" name="{!$Label.IDP_Parameter_Name_Display_Currency}"  value="" assignTo="{!selectedDisplayCurrencyName}"/>
+                <apex:param id="sortFieldName" name="{!$Label.IDP_Parameter_Name_Sorting_Field}" value="" assignTo="{!selectedSortingFieldName}"/>
+                <apex:param id="pageNumber" name="{!$Label.IDP_Parameter_Name_DataTable_Page_Number}" value="" assignTo="{!dataTablePageNumber}"/>
+                <apex:param id="pageLength" name="{!$Label.IDP_Parameter_Name_DataTable_Page_Length}" value="" assignTo="{!dataTablePageLength}"/>
+                <apex:param id="isSearch" name="{!$Label.IDP_Parameter_Name_Is_Search}" value="" assignTo="{!savedIsSearch}"/>
+                <apex:param id="breadcrumbs" name="{!$Label.IDP_Parameter_Name_Breadcrumbs}" value="" assignTo="{!breadcrumbs}"/>
+                <apex:param id="redirectPage" name="{!$Label.IDP_Parameter_Name_Redirect_Page}" value="" assignTo="{!redirectPage}"/>
+            </apex:actionFunction>
+            
+            <!--
+            <apex:actionFunction name="redirectToShoppingCartParaFunction" action="{!redirectToShoppingCartfavouriteList}" oncomplete="return false;" reRender="navigationOutputPanel">
+                <apex:param id="queryCatalog" name="{!$Label.IDP_Parameter_Name_Catalog}" value="" assignTo="{!selectedQueryCatalogId}"/>
+                <apex:param id="queryInput" name="{!$Label.IDP_Parameter_Name_Input}" value="" assignTo="{!queryInput}"/>
+                <apex:param id="currencyName" name="{!$Label.IDP_Parameter_Name_Display_Currency}"  value="" assignTo="{!selectedDisplayCurrencyName}"/>
+                <apex:param id="sortFieldName" name="{!$Label.IDP_Parameter_Name_Sorting_Field}" value="" assignTo="{!selectedSortingFieldName}"/>
+                <apex:param id="pageNumber" name="{!$Label.IDP_Parameter_Name_DataTable_Page_Number}" value="" assignTo="{!dataTablePageNumber}"/>
+                <apex:param id="pageLength" name="{!$Label.IDP_Parameter_Name_DataTable_Page_Length}" value="" assignTo="{!dataTablePageLength}"/>
+                <apex:param id="isSearch" name="{!$Label.IDP_Parameter_Name_Is_Search}" value="" assignTo="{!savedIsSearch}"/>
+                <apex:param id="breadcrumbs" name="{!$Label.IDP_Parameter_Name_Breadcrumbs}" value="" assignTo="{!breadcrumbs}"/>
+            </apex:actionFunction>
+            -->
+       </apex:outputPanel>  
+       
+        <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-without-margin-bottom-border-color" style="" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <!-- 
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                -->
+                <div  class="navbar-brand">
+                    <apex:outputPanel style="display:none;">
+                    <a id="menu-toggle" href="#" class="glyphicon glyphicon-align-justify btn-menu toggle" >
+                    </a>
+                    </apex:outputPanel>
+                    <apex:outputText >IDP Application</apex:outputText>
+                    
+                </div>
+            </div>
+            
+
+           <div id="navbar" class="nav nav-pills navbar-top-links">  
+             <div class="container">
+              
+                    <div class="row">
+                <apex:outputPanel id="navigationOutputPanel">
+
+                    <div class="navbar-right">
+                        <ul class="nav navbar-nav">
+
+                          <li><a href="#" onclick="redirectToPageOnClickFunction(isSearch, '{!selectedQueryCatalogId}', '{!$Label.IDP_Path_IDPShoppingCartVFP}');">{!shoppingCartLabelwithQuanity}</a></li>
+                          <li><a href="#" onclick="redirectToPageOnClickFunction(isSearch, '{!selectedQueryCatalogId}', '{!$Label.IDP_Path_IDPFavouriteListVFP}');">{!favouriteListLabelwithQuanity}</a></li>
+
+                          <!--
+                          <a href="{!$Label.IDP_Path_IDPShoppingCartVFP}">{!shoppingCartLabelwithQuanity}</a></li>
+                          
+                          <li><a href="{!$Label.IDP_Path_IDPFavouriteListVFP}">{!favouriteListLabelwithQuanity}</a></li>
+                          -->   
+                      </ul>
+                    </div>
+                </apex:outputPanel>                       
+                <form class="navbar-form navbar-left searchform" role="search">   
+                        <div class="form-group col-sm-3">
+                            <apex:selectList StyleClass="js-basic-single catalogSelectOptionList" style="width:100%" value="{!selectedSearchingCatalogId}"   id="queryCatalogSelectList">
+                                <apex:selectOptions value="{!catalogSelectOptionList}">
+                                </apex:selectOptions>
+                            </apex:selectList>
+                            
+                        </div>
+                        <div class="input-group col-sm-3 col-md-3">
+                            <apex:inputText StyleClass="form-control queryInput" value="{!queryInput}"/>
+                            <span class="input-group-addon" onclick="search(); return false;" style="cursor:pointer;"> 
+                                <span class="glyphicon glyphicon-search"></span>
+                            </span>
+                         </div>
+                    </form>
+                </div>
+            </div>
+        </div><!--/.nav-collapse -->
+    
+          </div>
+        </nav>
+    <!-- Sidebar -->
+    <div class="inner-container" >
+        <div id="sidebar-wrapper" class="navbar-default">
+            <nav id="spy">
+                <ul class="nav"  id="side-menu"></ul>
+            </nav>
+                <div class="slds" style="text-align: center;">
+                    <apex:outputPanel rendered="{!isCatalogOwner}"> 
+                        <apex:commandButton action="{!redirectToCreateCatalogItem}" styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Create_Catalog_Item_Button}" oncomplete="return false;"/>
+                        <br/>
+                        <!--
+                        <a href="{!companyCatalogPolicy}" style="margin-top:8px"><u><i>Company Catalog Policy</i></u></a>
+                        -->  
+                    </apex:outputPanel> 
+                </div>                                
+        </div>               
+        <div id="page-content-wrapper">
+            <div class="page-content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">     
+                                    <apex:outputText id="breadcrumbText" styleClass="breadcrumbText" value=""/>
+                                </div>
+    
+                                <div class="panel-body">
+                                
+                                    <div class="dataTables_wrapper" style=" min-height: 600px;">
+                                        
+                                        <div class="dataTables_length">
+                                        
+                                            <div class="row">
+                                                <div class="slds">
+                                                    <div class="col-sm-12 col-md-12 button-text-align">
+                                                        <apex:commandButton styleClass="slds-button slds-button--neutral button-sortby-margin-top"  value="{!$Label.IDP_Add_To_Cart_Button}" onclick="MassActionParaFunction(JSON.stringify(window.editedCatalogItem),'{!$Label.IDP_Mass_Add_Mode_Add_To_Cart}');" reRender="functionPanel"/>
+                                                        <div class="divider"/>
+                                                        <apex:commandButton styleClass="slds-button slds-button--neutral button-sortby-margin-top"  value="{!$Label.IDP_Add_To_Favourite_List_Button}" onclick="updateFavouriteButtonImage();MassActionParaFunction(JSON.stringify(window.editedCatalogItem),'{!$Label.IDP_Mass_Add_Mode_Add_To_Favourite_List}');" reRender="functionPanel"/>
+                                                        <div class="divider"/>
+                                                        <apex:commandButton action="{!redirectToCreateNonCatalogItem}" styleClass="slds-button slds-button--neutral sortby-margin-top"  value="{!$Label.IDP_Create_Non_Catalog_Item_Button}" oncomplete="return false;" rendered="{!isCatalogOwner}"/>
+    
+      
+                                                        <span class="sortby-float">
+                                                        <apex:outputLabel value="Sort by " for="sortingSelectList" styleClass="button-sortby-margin-top">
+                                                        <apex:selectList id="sortingSelectList" value="{!selectedSortingFieldName}" size="1" styleClass="form-control input-sm sortingSelectList" style="width:80%" onchange="sortingResetDataTable();" >                                                
+                                                            <apex:selectOptions id="sortingSelectOption" value="{!SortingSelectOptionList}">
+                                                            </apex:selectOptions>
+                                                        </apex:selectList>  
+                                                        </apex:outputLabel> 
+                                                        </span>
+                                                    </div>     
+                                                </div>
+                                            </div>
+                                        
+                                        </div>
+                                        
+                                        <apex:outputPanel id="itemTablePanel">
+                                            <table width="100%" class="table table-striped table-bordered table-hover"  id="itemTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="checkbox-align-center"><input type="checkbox" Id="ciCheckboxAll" name="ciCheckboxCheckedAll" onclick="checkAll(this,'ciCheckbox')"/></th>
+                                                        <th>Photo</th>
+                                                        <th>Catalog</th>
+                                                        <th>Details</th>
+                                                        <th>
+                                                            Ref. Price&nbsp;
+                                                            <apex:selectList id="currencySelectList" value="{!selectedDisplayCurrencyName}" size="1" styleClass="form-control input-sm currencySelectList" onchange="setDisplayReferencePrice(this.value);">                                                
+                                                                <apex:selectOptions id="currencySelectOption" value="{!displayCurrencySelectOptionList}">
+                                                                </apex:selectOptions>
+                                                            </apex:selectList>
+                                                            
+                                                        </th>
+                                                        <th>UOM</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                
+                                                
+                                            </table>
+                                        </apex:outputPanel>
+                                        <div class="slds">
+                                            <apex:commandButton styleClass="slds-button slds-button--neutral button-sortby-margin-top"  value="{!$Label.IDP_Add_To_Cart_Button}" onclick="MassActionParaFunction(JSON.stringify(window.editedCatalogItem),'{!$Label.IDP_Mass_Add_Mode_Add_To_Cart}');" reRender="functionPanel"/>
+                                            <div class="divider"/>
+                                            <apex:commandButton styleClass="slds-button slds-button--neutral button-sortby-margin-top"  value="{!$Label.IDP_Add_To_Favourite_List_Button}" onclick="updateFavouriteButtonImage();MassActionParaFunction(JSON.stringify(window.editedCatalogItem),'{!$Label.IDP_Mass_Add_Mode_Add_To_Favourite_List}');" reRender="functionPanel"/>
+                                            <div class="divider"/>
+                                            <apex:commandButton action="{!redirectToCreateNonCatalogItem}" styleClass="slds-button slds-button--neutral sortby-margin-top"  value="{!$Label.IDP_Create_Non_Catalog_Item_Button}" oncomplete="return false;" rendered="{!isCatalogOwner}"/>
+                            
+                                            <a href="{!companyCatalogPolicy}" style="float:right;margin-top:15px"><u><i>Company Catalog Policy</i></u></a> 
+                                        </div>
+                                    </div> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div style="clear:both;"> </div>
+    </div>
+                <!-- the script location is at the end of the apex:form because the setBreadcrumbsVariables requires the comepleted page load -->
+                <c:IDPBrowseCatalogFavouriteListJSComponent />
+                <script>
+                    var isSearch = {!savedIsSearch};
+                    
+                </script>
+                
+                <!--
+                <apex:outputPanel id="scriptPanel">
+                <script>
+                    var favouriteJSON = {!ExistingFavouriteItemJSON};
+                </script>
+                </apex:outputPanel>
+                -->
+                <script>
+                    $(document).ready(function() {
+        
+                       setSearchPicklist();
+                       setSidebarCatalogList({!catalogJSON});
+                       var dTable = setDataTable("#itemTable", "{!selectedSortingFieldName}", "{!selectedDisplayCurrencyName}", "{!selectedQueryCatalogId}", "{!queryInput}", {!ExistingFavouriteItemJSON},{!dataTablePageNumber}, {!dataTablePageLength});
+                           
+                       var breadcrumbsText = '{!breadcrumbs}';
+                       
+                       if(breadcrumbsText == null || breadcrumbsText == '') {
+                           breadcrumbsText = '/ ' + document.getElementsByClassName("sidebarParentLevel")[0].innerText; 
+                           /*breadcrumbsText = '/ ' + document.getElementsByClassName("sidebarParentLevel")[0].innerText + '/ ' + document.getElementsByClassName("sidebarSubLevel")[0].innerText;*/
+                       
+                       }                       
+
+                       //setBreadcrumbsVariables(parentCatalogName,subCatalogName);
+                       setBreadcrumbsVariables(breadcrumbsText);
+
+                       if(isSearch == true) {
+                       //  setBreadcrumbsVariables(document.getElementsByClassName('select2-selection__rendered')[0].innerHTML, null);
+                         setBreadcrumbsVariables( '/ ' + document.getElementsByClassName('select2-selection__rendered')[0].innerHTML);
+                       }
+
+                        $("#wrapper").keydown(function(event){
+                            if(event.keyCode == 13) {
+                            event.preventDefault();
+                            return false;
+                            }
+                       });
+
+
+
+                });
+                </script>
+            
+                <!--DataTable Setup Script-->     
+                <script>  
+    
+                    function setDataTable(pTableId, pSelectedSortingField, pSelectedDisplayCurrency , pSelectedQueryCatalogId, pQueryInput, pExistingFavouriteItemJSON, pPageNumber, pPageLength) {
+                        //alert("Sorting Field: " + selectedSortingField +"\n" + "Display Currency: " + selectedDisplayCurrency);
+                        //var pageContentWrapperHeight = $("#page-content-wrapper").outerHeight();
+                       // $("#sidebar-wrapper").outerHeight('285px');
+        
+                        if(isSearch == false) {
+                            pQueryInput = '';
+                        }
+                        else {
+                            //for sorting after search
+                            pSelectedQueryCatalogId = $('.catalogSelectOptionList').val();
+                        }
+
+
+                        $.fn.dataTableExt.sErrMode = 'console';                                       
+                        oTable = $(pTableId).dataTable( {
+                            "autoWidth": false,
+                            "responsive": false, // The table will not be collapsed
+                            "searching": false, //Disable searching box
+                            "dom": '<"page-length-right"l>rt<"row"<"col-sm-5"i><"col-sm-7"p>>',
+                            //"dom": "lfrti", // Remove the pagination p in DOM
+                            //"lengthChange": false, //Include/Remove the Picklist that used to change the page length
+                            "ordering": false, // Remove sorting
+                            //"pageLength": 5, // Set the PageLength
+                            //"displayStart": pPageLength*pPageNumber,
+                            "processing": true,
+                            "serverSide": true,
+                            "ajax": {
+                
+                                    "url": "/apex/IDPAjaxDataTable",
+                                    "data": {
+                                        "sortingFieldName": pSelectedSortingField,
+                                        "displayCurrency": pSelectedDisplayCurrency,
+                                        "queryCatalogId": pSelectedQueryCatalogId,
+                                        "queryInput": pQueryInput
+
+                                    }
+                                    
+                                },         
+                             "initComplete" : function(settings, json) {
+                                window.editedCatalogItem.editedCatalogItemList = [];
+                                if(pPageLength != null && pPageLength != '') {
+                                    $("#itemTable").DataTable().page.len(pPageLength).draw(false);
+                                }     
+                                if(pPageNumber != null && pPageNumber != '') {
+                                    $("#itemTable").DataTable().page(pPageNumber).draw(false);
+                                }
+                               
+                                
+
+                            },
+                             "drawCallback": function( settings ) {
+                                loadEditedCatalogItemIdQuantity();
+                                var checkedAllCheckbox = document.getElementsByName("ciCheckboxCheckedAll"); 
+                                updateCheckAllCheckbox(checkedAllCheckbox, true);
+                                //console.log(editedfavouriteItem);
+                                loadEditedFavouriteItemImageStatus();
+
+
+                                $(".currencySelectList").change();
+                                //$('html, body').animate({ scrollTop: 0 }, 'fast');                                
+                                var pageContentWrapperHeight = $("#page-content-wrapper").outerHeight();
+                                $("#sidebar-wrapper").outerHeight(pageContentWrapperHeight);
+                                
+                            },      
+                            "createdRow": function( row, data, dataIndex ) {
+                                var itemRowId = "ciRow" + data.itemData.Id;
+                                $(row).attr( "id", itemRowId);
+                            },                             
+                            "columnDefs": [
+                                {
+                                    "targets": 0,
+                                    "className": "checkbox-align-center",
+                                    "width": "5%", 
+                                    "data": "null",
+                                    "render": function ( data, type, full, meta ){
+                                        return '<input type="checkbox" Id="ciCheckbox' + full.itemData.Id + '" onchange="saveEditedCatalogItemIdQuantity (\'' + full.itemData.Id + '\');updateCheckAllCheckbox(this,false);" name="ciCheckbox"/>';
+                                    }                         
+                                    
+                                },
+                                {
+                                    "targets": 1,
+                                    "width": "12%", 
+                                    "data": "photoUrl",
+                                    "render": function ( data, type, full, meta ){
+                                        return '<img src="' + data + '" width="100" height="100"/>';
+                                        
+                                    } 
+                                },
+                                {
+                                    "targets": 2,
+                                    "width": "15%", 
+                                    "data": "null",
+                                    "render": function ( data, type, full, meta ){
+                                        return full.itemData.Catalog__r.Display_Name__c;
+                                        
+                                    } 
+                                },                                
+                                {
+                                    "targets": 3,
+                                    "width": "37%", 
+                                    "data": null,
+                                    "render": function ( data, type, full, meta ){
+                                    
+                                        //concatenate the catalog item name, description and last supplier name
+                                        var details = '<a href="' + location.protocol + '//' + location.host + '//' + full.itemData.Id + '" target="_blank">';
+                                        details += 'Item Name: ' + full.itemData.Item_Name__c + '<br/><br/>' ;
+                                         details += '</a>';
+                                        
+                                        details += 'Description: ';
+                                        //check if the catalog item's Description__c field is filled in or not
+                                        if(full.itemData.hasOwnProperty('Description__c')) {
+                                            details += full.itemData.Description__c + '<br/><br/>';
+                                        }
+                                        else {
+                                            details += '{!$Label.IDP_Field_Empty_Label}' + '<br/><br/>';;
+                                        }                                          
+                                        
+                                        details += 'Supplier: ';
+                                        //check if the catalog item's Last_Supplier__c field is filled in or not
+                                        if(full.itemData.hasOwnProperty('Last_Supplier__c')){
+                                             str = full.itemData.Last_Supplier__r.Supplier_Name__c;
+                                             details += str.replace('<', '&lt;');
+                                        }
+                                        else {
+                                            details += '{!$Label.IDP_Field_Empty_Label}';
+                                        }                
+                                        return details;
+                                                
+                                    }
+                                },
+                                {
+                                    "targets": 4, 
+                                    "width": "10%",
+                                    "data": null,
+                                    "render": function ( data, type, full, meta ){     
+                                    
+                                         
+                                         var output = '<div ';
+                                         if(full.isExpired == true) {
+                                         output += 'style="color:red;"';
+                                         }
+                                         output += '>';
+    
+                                         output += '<span class="originalReference">';
+                                         if(full.itemData.hasOwnProperty('Currency__c')){
+                                             output += full.itemData.Currency__r.Name + ' ';
+                                         }
+                                         output += '</span>'; 
+                                         output += '<span class="originalReference">';
+                                         if(full.itemData.hasOwnProperty('Reference_Price__c')){
+                                             output += full.itemData.Reference_Price__c.toFixed(2);
+                                         }
+                                         else {
+                                             output += "{!$Label.IDP_Not_Available_Reference_Price_Message}";
+                                         }
+                                         output += '</span>';
+                                         output += '<span class="localReference">' + full.localReferencePrice + '</span>';
+                                         output += '<div>';
+                                               
+                                         return output;
+                                     }
+                                },                       
+                                {
+                                    "targets": 5, 
+                                    "width": "6%",
+                                    "data": null,
+                                     //"data": null, //"itemData.Unit_of_Measure__c"
+                                      
+                                     "render": function ( data, type, full, meta ){
+                                          return '<div id="ciUOMSelectList' + full.itemData.Id + '">' + full.itemData.uom + '</div>';
+                                      /*          
+                                                var output = '<select id="ciUOMSelectList' + full.itemData.Id + '" class="form-control input-sm" onchange="saveEditedCatalogItemIdQuantity(\'' + full.itemData.Id + '\');">';
+                                                for(key in full.uomSelectOptionList) {
+                                                    output += '<option value="' + full.uomSelectOptionList[key] + '">' + full.uomSelectOptionList[key] + '</option>';
+                                                }
+                                                output += '</select>';
+                                                
+                                                return output;
+                                    */
+                                     }
+                                     
+                                },
+                                
+                                /*
+                                {
+                                    "targets": 6, 
+                                    "width": "10%",
+                                     "data": null,
+                                     "render": function ( data, type, full, meta ){
+                                         output = '<input type="checkbox" id="ciIsCatalog' + full.itemData.Id +'" value="' + full.itemData.Is_Catalog__c +'" disabled ';
+                                         if(full.itemData.Is_Catalog__c == true) {
+                                             output += 'checked >';
+                                         }
+                                         else {
+                                         output += '>';
+                                         }
+                                         return output;
+                                     }
+                                         
+                                }, 
+                                */                               
+                                {
+                                    "targets": 6,
+                                    "width": "15%",
+                                    "data": null,
+                                    "render": function ( data, type, full, meta ){
+                                        
+                                        var favouriteJSON = pExistingFavouriteItemJSON;
+                                        
+                                        /*
+                                        var json_obj = pExistingFavouriteItemJSON;
+                                        */
+                                        var output = 'Qty.: <input id="ciQuantity' + full.itemData.Id + '" type="number" min="1" step="1" value="1" style="width:50%" onchange="preventEmptyQuantity(\'' + full.itemData.Id + '\'); saveEditedCatalogItemIdQuantity(\'' + full.itemData.Id + '\');"/><br/><br/>';
+                                        output += '<button class="btn btn-default" type="button" onclick="singleAddToCartOnePara(\'' + full.itemData.Id + '\');"><img src="{!$Resource.IDPCartButtonIcon}" width="20" height="20"/></button>';
+                                        output += '<button class="btn btn-default" type="button" onclick="singleAddToFavouriteItemOnePara(\'' + full.itemData.Id + '\');saveEditedFavouriteItemImageStatus(\'' + full.itemData.Id + '\', false); ">';
+    
+                                        //Using the existingFavouriteItemJSON to set the image initially, depending on the catalog item is added to favourite list or not
+                                        if( favouriteJSON.hasOwnProperty(full.itemData.Id) == true) {
+                                            output += '<img id="ciFavouriteButtonImage' + full.itemData.Id + '" src="{!$Resource.IDP_Remove_From_Favourite_Button_Icon}" width="20" height="20"/></button>';
+                                        } 
+                                        else {
+                                            output += '<img id="ciFavouriteButtonImage' + full.itemData.Id + '" src="{!$Resource.IDP_Add_To_Favourite_Button_Icon}" width="20" height="20"/></button>';
+                                        }
+                                        
+                                        /*
+                                        if(full.isAllowedToDelete == true) {
+                                            output += '<button class="btn btn-default" type="button" onclick="singleInactivateCatalogItemOnePara(\'' + full.itemData.Id + '\'); removeSingleItemRow (\'' + full.itemData.Id + '\');">';
+                                            output += '<img src="{!$Resource.IDP_Remove_From_Cart_Button_Icon}" width="20" height="20"/></button>';
+                                        }
+                                        */
+                                        return  output;                                    
+                                         
+                                    }
+                                }]
+                        } );
+                        
+                        
+            
+                        return oTable;
+                    }
+                </script>        
+                
+                <script>
+                function singleInactivateCatalogItemOnePara(pCatalogItemId){
+                    singleInactivateCatalogItemParaFunction(pCatalogItemId);
+                    alert("{!$Label.IDP_Add_To_Cart_Message}");      
+                }
+                
+                function search() {
+                    isSearch = false;
+                    //console.log(document.getElementsByClassName('queryInput')[0].value);
+                    if(document.getElementsByClassName('queryInput')[0].value.length > 0 &&
+                     document.getElementsByClassName('select2-selection__rendered')[0].innerText != '{!$Label.IDP_Search_Catalog_Placeholder}') {
+                         SearchingResetDataTable();
+                         //setBreadcrumbsVariables(document.getElementsByClassName('select2-selection__rendered')[0].innerHTML, null);
+                         setBreadcrumbsVariables('/ ' + document.getElementsByClassName('select2-selection__rendered')[0].innerHTML);
+
+                    }
+                }
+
+                </script>
+        <script>
+                $("#menu-toggle").click(function(e) {
+                    e.preventDefault();
+                    $("#wrapper").toggleClass("active");
+                })
+        </script>
+        <script>
+                function removeChecked() {
+                    
+                    var checkboxId = '';
+                    for(var i=0; i < window.editedCatalogItem.editedCatalogItemList.length; i++) {
+                        checkboxId = "#ciCheckbox" + window.editedCatalogItem.editedCatalogItemList[i].catalogItemId;
+                        
+
+                        //if($(checkboxId).length) {
+                            
+                        window.editedCatalogItem.editedCatalogItemList[i].checked = false;
+                        //}
+                    }
+                    loadEditedFavouriteItemImageStatus();      
+                    loadEditedCatalogItemIdQuantity();
+                    var checkedAllCheckbox = document.getElementsByName("ciCheckboxCheckedAll"); 
+                    updateCheckAllCheckbox(checkedAllCheckbox, true);
+                    //console.log(editedCatalogItem);
+                }
+                
+                function updateFavouriteButtonImage() {
+                    var favouriteButtonId = '';
+                    for(var i=0; i < window.editedCatalogItem.editedCatalogItemList.length; i++) {
+                        if(window.editedCatalogItem.editedCatalogItemList[i].checked) {
+                            favouriteButtonId = "#ciFavouriteButtonImage" + window.editedCatalogItem.editedCatalogItemList[i].catalogItemId;
+                            $(favouriteButtonId).prop("src","{!$Resource.IDP_Remove_From_Favourite_Button_Icon}");
+                            saveEditedFavouriteItemImageStatus(window.editedCatalogItem.editedCatalogItemList[i].catalogItemId, true);
+                        }                        
+                    }
+                }
+        </script>
+            <script>
+                    function redirectToPageOnClickFunction(pIsSearch, pQueryCatalog, pPage) {
+                   // $('.catalogSelectOptionList').val();
+                    
+                    var queryCatalog = pQueryCatalog;
+                    var queryInput = $('.queryInput').val();
+                    var displayCurrency = $('.currencySelectList option:selected').val();
+                    var sortFieldName = $('.sortingSelectList option:selected').val();
+                    var pageNumber = $('#itemTable').DataTable().page.info().page;
+                    var pageLength = $('#itemTable').DataTable().page.info().length;
+                    var breadcrumbs = $('.breadcrumbText').text();
+
+                    if(pIsSearch == false) {
+                        queryInput = '';
+                    }
+                    else {
+                        //for sorting after search
+                        queryCatalog = $('.catalogSelectOptionList').val();
+                    }                    
+                    redirectToPageParaFunction(queryCatalog, queryInput, displayCurrency, sortFieldName, pageNumber, pageLength, pIsSearch, breadcrumbs, pPage);
+                }
+            </script>
+        </apex:form>
+    </div>
+    <!-- /#wrapper -->
+
+
+</body>
+
+</apex:page>

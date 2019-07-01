@@ -1,0 +1,2 @@
+<apex:page StandardController="Catalog_Item__c" extensions="IDPCatalogItemOverwriteNewCtrl" action="{!redirect}">   
+</apex:page>

@@ -1,0 +1,2 @@
+<apex:page StandardController="Purchase_Cost__c" extensions="IDPPurchaseCostOverwriteViewCtrl" action="{!redirect}">
+</apex:page>

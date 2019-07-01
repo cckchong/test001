@@ -1,0 +1,18 @@
+<apex:page standardController="Travel_Application__c" sidebar="false" showHeader="false" extensions="TETravelApplicationViewBudgetCtrl">
+
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <c:JavascriptUtilsComponent />
+
+    <script>
+        $(document).ready(function() {
+
+            alert("{!budgetMsg}");
+            clearAction();
+    
+        });
+    </script>
+    <apex:form >
+        <apex:actionfunction name="clearAction" action="{!clear}" />
+    </apex:form> 
+
+</apex:page>

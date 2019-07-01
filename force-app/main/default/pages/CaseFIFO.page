@@ -1,0 +1,2 @@
+<apex:page standardController="Case" extensions="CaseFIFOController" action="{!execute}">
+</apex:page>

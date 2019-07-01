@@ -1,0 +1,412 @@
+<apex:component controller="LibraryQrCodeScanUtil">
+    <script type="text/javascript">
+    var LIBRARY_NS = {
+        jsGlobalBarcode: '',
+        mode: 'QUERY',
+        locationId: '',
+        scannedItems: new Array(),
+        scannedMasters: new Array(),
+        isMemoryMode: false,
+        timeoutId: '',
+        memoryScannedCount: 0
+    };
+    
+    $(document).ready(function() {
+        $(document).keypress(function(e) {
+            
+            var code = (e.keyCode ? e.keyCode : e.which);
+            
+            if(!LIBRARY_NS.isMemoryMode) {
+            
+                if(code == 13) { //Enter
+                    processScan();
+                } else if(code == 9) { // Tab key hit
+                    processScan();
+                } else {
+                    LIBRARY_NS.jsGlobalBarcode = LIBRARY_NS.jsGlobalBarcode+String.fromCharCode(code);
+                    $('#TalInputText').val(LIBRARY_NS.jsGlobalBarcode);
+                    //$('#TalInputtedValue').text(LIBRARY_NS.jsGlobalBarcode);
+                }
+			} else {
+                if(LIBRARY_NS.jsGlobalBarcode == '') {
+                	$('#TalInputText').attr('rows', 1);
+                }
+                
+                if(LIBRARY_NS.timeoutId != '') {
+					clearTimeout(LIBRARY_NS.timeoutId);
+				}
+                
+               	if(code == 13) { //Enter
+                    
+                    
+                    LIBRARY_NS.jsGlobalBarcode = LIBRARY_NS.jsGlobalBarcode+String.fromCharCode(code);
+                    //$('#TalInputtedValue').text(LIBRARY_NS.jsGlobalBarcode);
+                    $('#TalInputText').val(LIBRARY_NS.jsGlobalBarcode); //debug
+                    
+                    var rowCount = $('#TalInputText').attr('rows');
+                    rowCount = parseInt(rowCount) + 1;
+                    $('#TalInputText').attr('rows', rowCount);
+                    
+                    LIBRARY_NS.timeoutId = setTimeout(function() {
+                        processMemoryScan();
+                    }, 1500);
+                    
+                } else {
+                    LIBRARY_NS.jsGlobalBarcode = LIBRARY_NS.jsGlobalBarcode+String.fromCharCode(code);
+                    //$('#TalInputtedValue').text(LIBRARY_NS.jsGlobalBarcode);
+                    
+                    $('#TalInputText').val(LIBRARY_NS.jsGlobalBarcode); //debug
+                }
+			}
+        });
+        
+        $('#TalNormalMode').click(function() {
+            LIBRARY_NS.isMemoryMode = false;
+        });
+        $('#TalMemoryMode').click(function() {
+            LIBRARY_NS.isMemoryMode = true;
+        });
+        
+        $('#TalModeQueryId').click(function() {
+            LIBRARY_NS.mode = 'QUERY';
+            locationToggle(false);
+        });
+        $('#TalModeReturnId').click(function() {
+            LIBRARY_NS.mode = 'RETURN';
+            locationToggle(true);
+        });
+        $('#TalModeCheckoutId').click(function() {
+            LIBRARY_NS.mode = 'CHECK_OUT';
+            locationToggle(false);
+        });
+        $('#TalModeMailRoomOId').click(function() {
+            LIBRARY_NS.mode = 'MAIL_OUT';
+            locationToggle(false);
+        });
+        $('#TalModeConfirmId').click(function() {
+            LIBRARY_NS.mode = 'RECEIVED';
+            locationToggle(false);
+        });
+        $('#TalModeMailRoomIId').click(function() {
+            LIBRARY_NS.mode = 'MAIL_IN';
+            locationToggle(false);
+        });
+        $('#TalModeCheckInId').click(function() {
+            LIBRARY_NS.mode = 'CHECK_IN';
+            locationToggle(true);
+        });
+        //BBA
+        $('#TalModeBBACheckoutId').click(function() {
+            LIBRARY_NS.mode = 'CHECK_OUT';
+            locationToggle(false);
+        });
+
+        if (!Array.prototype.indexOf) {
+            Array.prototype.indexOf = function(val) {
+                return jQuery.inArray(val, this);
+            };      
+        }
+        
+    });
+    
+    function deleteScannedQrCodeChar() {
+        var value = LIBRARY_NS.jsGlobalBarcode;
+        if(value != null && value.length > 0) {
+            value = value.substring(0, value.length - 1);
+            LIBRARY_NS.jsGlobalBarcode = value;
+            //$('#TalInputtedValue').text(LIBRARY_NS.jsGlobalBarcode);
+            $('#TalInputText').val(LIBRARY_NS.jsGlobalBarcode);
+        }
+	}
+    
+    function globalReset() {
+        $('#TalResultTableBodyId').html('');
+        LIBRARY_NS.scannedItems = new Array();
+        LIBRARY_NS.scannedMasters = new Array();
+        locationToggle(false);
+        
+        //if(LIBRARY_NS.mode == 'RETURN') {               
+        if(LIBRARY_NS.mode == 'RETURN' || LIBRARY_NS.mode == 'CHECK_IN') {
+            locationToggle(true);
+        }
+    }
+    
+    function processScan() {
+        //$('#TalInputtedValue').text('');
+        $('#TalInputText').val('');
+        
+        if((LIBRARY_NS.mode == 'RETURN' || LIBRARY_NS.mode == 'CHECK_IN') && LIBRARY_NS.locationId == '') {
+            $('#TalScanMsgId').text('{!$Label.Library_Getting_Location}: "' + LIBRARY_NS.jsGlobalBarcode + '"');
+            $('.TalLoaderImg').show();
+            getLocation(trim(LIBRARY_NS.jsGlobalBarcode));   
+        } else {
+            $('#TalScanMsgId').text('{!$Label.Library_Processing}: "' + LIBRARY_NS.jsGlobalBarcode + '"');
+            $('.TalLoaderImg').show();
+            getLibraryItemDetail(trim(LIBRARY_NS.jsGlobalBarcode));
+        }
+    }
+    
+    function processMemoryScan() {
+        $('.TalLoaderImg').show();
+        var splitQrCode = trim(LIBRARY_NS.jsGlobalBarcode).split('\r');
+        
+        if(LIBRARY_NS.jsGlobalBarcode == '' || splitQrCode == null || splitQrCode.length == 0) {
+        	resetMessage();
+            return;
+        }
+           
+        if((LIBRARY_NS.mode == 'RETURN' || LIBRARY_NS.mode == 'CHECK_IN') && LIBRARY_NS.locationId == '') {
+            $('#TalScanMsgId').text('{!$Label.Library_Getting_Location}');
+            getLocation(splitQrCode[0]);
+            splitQrCode.shift();
+            
+            if(splitQrCode == null || splitQrCode.length == 0) {
+            	processComplete();
+            } else {
+                getLibraryItemDetailList(splitQrCode);
+			}
+            
+            // We assume the first barcode is the location, and the rest are library items
+            
+        } else {
+            $('#TalScanMsgId').text('{!$Label.Library_Processing}');
+            getLibraryItemDetailList(trim(LIBRARY_NS.jsGlobalBarcode).split('\r'));
+        }
+	}
+    
+    function waitForBarcode() {
+        $('#TalScanMsgId').text('{!$Label.Library_Waiting_QR_Scan}');
+        $('.TalLoaderImg').hide();
+        LIBRARY_NS.jsGlobalBarcode = "";
+    }
+    
+    function locationToggle(enable) {
+        LIBRARY_NS.locationId = '';
+        LIBRARY_NS.jsGlobalBarcode = "";
+        
+        if(enable) {
+            $('#TalScanMsgId').text('{!$Label.Library_Scan_Location}');
+        } else {
+            waitForBarcode();
+            $('#TalLocationInfoId').empty();
+            $('#TalLocationPanelId').fadeOut('fast');
+        }
+    }
+    function locationError() {
+        alert('{!$Label.Library_Location_Not_Found}');
+        $('.TalLoaderImg').hide();
+        locationToggle(true);
+    }
+    function locationErrorParent() {
+        alert('Please scan detail location');
+        $('.TalLoaderImg').hide();
+        locationToggle(true);
+    }
+    
+    function resetMessage() {
+        waitForBarcode();
+        alert('{!$Label.Library_Item_Not_Found}');
+    }
+    function processComplete() {
+        waitForBarcode();
+    } 
+    
+    function getLibraryItemDetail(barcodeNum) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.LibraryQrCodeScanUtil.getLibraryItemDetail}',
+            barcodeNum,
+            LIBRARY_NS.mode,
+            function(result, event){
+                if (event.status) {
+                    
+                    if(result == null) {
+                        resetMessage();
+                    } else {
+                        
+                        
+                        if(LIBRARY_NS.scannedItems.indexOf(result.Id) < 0) {
+                            var tableData = '<tr><td><a target="_blank" href="/'+ result.Library_Item_Master__c + '">' + result.Library_Item_Master__r.Item_Name__c +'</a> ('+ result.Library_Item_Master__r.Item_Description__c + ')</td><td>'+ 
+                                result.QR_Code_Number__c +'</td><td>'+ 
+                                result.Original_Address__r.Name +'</td><td>'+ 
+                                result.Lending_Status__c +'</td>';
+                            if(result.Library_Item_Requests__r != null && result.Library_Item_Requests__r.length > 0) {
+                                tableData = tableData + '<td>'+ result.Library_Item_Requests__r[0].Requester__c + ' (' + result.Library_Item_Requests__r[0].Status__c +')<br/> {!$Label.Library_Target_Location}: '+ result.Library_Item_Requests__r[0].Target_Location__r.Name +'</td>';
+                            } else {
+                                tableData = tableData + '<td>{!$Label.Library_No_Active_Request}</td>'; 
+                            }
+                            
+                            tableData = tableData + '</tr>';
+                            $('#TalResultTableBodyId').append(tableData);
+                            LIBRARY_NS.scannedItems.push(result.Id);
+                            LIBRARY_NS.scannedMasters.push(result.Library_Item_Master__c);
+                            
+                        }
+                        processComplete();
+                    }
+                } else if (event.type === 'exception') {
+                    resetMessage();
+                } else {
+                    resetMessage();
+                }
+            }, 
+            {escape: true}
+        );
+    }
+
+	function getLibraryItemDetailList(qrCodeString) {
+        LIBRARY_NS.memoryScannedCount = qrCodeString.length;
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.LibraryQrCodeScanUtil.getLibraryItemDetailList}',
+            qrCodeString,
+            function(result, event){
+                if (event.status) {
+                    if(result == null) {
+                        resetMessage();
+                    } else {
+                        console.log(result);
+                        
+                        for (i = 0; i < result.length; i++) { 
+                            var inv = result[i];
+                            if(LIBRARY_NS.scannedItems.indexOf(inv.Id) < 0) {
+                                var tableData = '<tr><td><a target="_blank" href="/'+ inv.Library_Item_Master__c + '">' + inv.Library_Item_Master__r.Item_Name__c +'</a> ('+ inv.Library_Item_Master__r.Item_Description__c + ')</td><td>'+ 
+                                    inv.QR_Code_Number__c +'</td><td>'+ 
+                                    inv.Original_Address__r.Name +'</td><td>'+ 
+                                    inv.Lending_Status__c +'</td>';
+                                
+                                if(inv.Library_Item_Requests__r != null && inv.Library_Item_Requests__r.length > 0) {
+                                    tableData = tableData + '<td>'+ inv.Library_Item_Requests__r[0].Requester__c + ' (' + inv.Library_Item_Requests__r[0].Status__c +')<br/> {!$Label.Library_Target_Location}: '+ inv.Library_Item_Requests__r[0].Target_Location__r.Name +'</td>';
+                                } else {
+                                    tableData = tableData + '<td>{!$Label.Library_No_Active_Request}</td>'; 
+                                }
+                                
+                                tableData = tableData + '</tr>';
+                                $('#TalResultTableBodyId').append(tableData);
+                                LIBRARY_NS.scannedItems.push(inv.Id);
+                                LIBRARY_NS.scannedMasters.push(inv.Library_Item_Master__c);
+                                
+                            }
+                        }
+
+                        processComplete();
+                        if(LIBRARY_NS.memoryScannedCount != result.length && result.length > 0) {
+                        	alert('{!$Label.Library_Memory_Scan_Not_Reconciled}');    
+						}
+                    }
+                } else if (event.type === 'exception') {
+                    resetMessage();
+                } else {
+                    resetMessage();
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    
+    function getLocation(barcodeNum) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.LibraryQrCodeScanUtil.getLocation}',
+            barcodeNum,
+            function(result, event){
+                //console.log(event);
+                if (event.status) {
+                    
+                    if(result == null) {
+                        locationError();
+                    } else {
+                        //console.log(result);
+                        if(result.Parent_Location__c!=null &&result.Parent_Location__c!=''){
+                            LIBRARY_NS.locationId = result.Id;
+                            var locationData = ' <a target="_blank" href="/' + result.Id + '">' + result.Name + '</a> (' + result.Site__c + ', ' + result.Country__c + ')';
+                            
+                            $('#TalLocationInfoId').append(locationData);
+                            $('#TalLocationPanelId').fadeIn('fast');
+                            waitForBarcode();
+                        }else
+                        {
+                            locationErrorParent();
+                        }
+                    }
+                } else if (event.type === 'exception') {
+                    locationError();
+                    
+                } else {
+                    locationError();
+                    
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    
+    function gogogo() {
+        if(LIBRARY_NS.scannedItems.length > 0) {
+            if(LIBRARY_NS.mode == 'QUERY') {
+                var multiLibItemId = LIBRARY_NS.scannedMasters.join(';');
+                window.location.href = '/apex/LibraryItemRequestAddVFPage?multiLibItemId=' + multiLibItemId + '&barcode='+LIBRARY_NS.scannedItems;
+            } else if(LIBRARY_NS.mode == 'CHECK_OUT') {
+                var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=checkout&redirect=apex/LibraryQrCodeScanVFP&multiLibItemId=' + multiLibItemId;
+            } else if(LIBRARY_NS.mode == 'MAIL_OUT') {
+                var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=mail_out&redirect=apex/LibraryQrCodeScanVFP&multiLibItemId=' + multiLibItemId;
+            } else if(LIBRARY_NS.mode == 'RECEIVED') {
+                var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=received&redirect=apex/LibraryQrCodeScanVFP&multiLibItemId=' + multiLibItemId;
+            } else if(LIBRARY_NS.mode == 'MAIL_IN') {
+                var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=mail_in&redirect=apex/LibraryQrCodeScanVFP&multiLibItemId=' + multiLibItemId;
+            } else if(LIBRARY_NS.mode == 'RETURN') {
+                var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                if(LIBRARY_NS.locationId != '') {
+                    window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=return&redirect=apex/LibraryQrCodeScanVFP&multiLibItemId=' + multiLibItemId + '&locationId=' + LIBRARY_NS.locationId;
+                } else {
+                    alert('{!$Label.Library_Must_Scan_Location}');        
+                }
+            } else if(LIBRARY_NS.mode == 'CHECK_IN') {
+                var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                if(LIBRARY_NS.locationId != '') {
+                    window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=checkin&redirect=apex/LibraryQrCodeScanVFP&multiLibItemId=' + multiLibItemId + '&locationId=' + LIBRARY_NS.locationId;
+                } else {
+                    alert('{!$Label.Library_Must_Scan_Location}');        
+                }
+            }
+            
+        } else {
+            alert('{!$Label.Library_Must_Select_Items}');
+        }
+    }
+    
+    function getIsSalesforceOne() {
+        var result = false;
+        
+        if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+            result = true;
+        }
+        
+        return result;
+    }
+
+    function addToLibraryCartAndRedirect(inventoryId) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.LibraryQrCodeScanUtil.bookBorrowAction}',
+            inventoryId,
+            function(result, event){
+                if (event.status) {
+                    if(result != '') {
+                        alert('Book has been added to your Library Cart.');
+                        sforce.one.navigateToSObject(result);
+                    } else {
+                        alert('Invalid QR Code. Try again.');
+                    }
+                } else if (event.type === 'exception') {
+                    alert(event.message);
+                } else {
+                    alert('Invalid QR Code. Try again.');
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    </script>
+</apex:component>

@@ -1,0 +1,5 @@
+<apex:page controller="LibraryItemRequestViewCtrl" action="{!submitCart}">
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+<apex:messages />
+<a href="javascript:window.history.back();" class="bs btn-primary btn-default">&laquo; Back</a>
+</apex:page>

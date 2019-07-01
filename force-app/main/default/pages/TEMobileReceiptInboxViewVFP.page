@@ -1,0 +1,3 @@
+<apex:page standardController="Mobile_Receipt_Inbox__c" sidebar="false" showHeader="false" extensions="TEMobileReceiptInboxViewCtrl" action="{!SendAction}" tabStyle="Mobile_Receipt_Inbox__tab">
+
+</apex:page>

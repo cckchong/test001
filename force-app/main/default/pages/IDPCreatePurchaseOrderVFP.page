@@ -1,0 +1,590 @@
+<apex:page controller="IDPCreatePurchaseOrderCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <!--
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />   
+    -->
+     
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    <!--
+    <apex:stylesheet value="{!URLFOR($Resource.datetimepicker, 'jquery.datetimepicker.css')}" />  
+    -->
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+    <apex:includeScript value="{!URLFOR($Resource.FixedColumns, 'js/dataTables.fixedColumns.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <c:IDPCreatePurchaseOrderComponent />
+    
+    <style type="text/css" class="init">
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        /*
+        .select2-dropdown {
+           //margin-left: 0px;
+           width: 999px;
+        }
+        .select2-selection__rendered{
+            margin-top: 99px;
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .select2-search--inline{
+            margin-left: 0px;
+            margin-top: 2px;
+        }
+        */
+        table.dataTable thead th, table.dataTable thead td{
+          padding-bottom: 0px;
+          //padding-left: 10px;
+          //padding-right: 10px;
+          padding-left: 10px;
+          padding-right: 0px;
+          border-bottom: 1px solid #111;
+        }
+        
+        table.dataTable tfoot th{
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        
+        table.dataTable tbody td{
+          padding-left: 10px;
+          padding-right: 0px;
+          padding-top: 10px;
+          padding-bottom: 5px;
+        }    
+        .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td {
+            vertical-align: middle;
+           padding-top:5px; 
+        }
+        .dataTables_wrapper{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        } 
+        table.dataTable input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        label{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .accordion table tr td {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        
+        .verticalLine{
+             border-left: medium solid #c00;             
+        }
+        .inputClass{
+            //margin-top:4px;
+            margin-top:0px;
+        }
+        .errorAlert{
+            border:1px solid red;
+            outline: 2px solid #F00;
+        }
+        .ui-autocomplete {
+            max-height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .ui-tabs-anchor{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+         }
+       
+        .ui-state-focus:focus { outline:none }
+         
+        .ui-state-default{
+          background-color: #dfeffc;
+          background-image: none;
+         }
+         
+         .searchheaderlabel{
+             text-align: right !important;
+             width:175px;
+             padding-bottom: 10px !important;;
+         }
+         .searchheaderval{             
+            padding-left: 10px !important;
+            width:350px;
+            padding-bottom: 10px !important;       
+         }
+         .actionIcon{
+            float:left;
+            margin-left:5px;
+         }         
+        .select2-results__option{
+            padding-left: 5px;
+            margin-left: 5px;
+         }
+         table.dataTable input {
+            //height: 20px;
+         }
+         table.dataTable textarea {
+            height: 23px;
+         }
+         
+         .alertlabel {
+          background-color: #f0ad4e;
+          color: black;   
+          padding: 4px;
+          border-radius:10px;
+          -moz-border-radius:10px;
+          font-family: Verdana, Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+          color : #FFFFFF;
+        }
+         
+        .divider{
+            width:5px;
+            height:auto;
+            display:inline-block;
+        }         
+         
+        /*.ui-accordion .ui-accordion-content {padding: 1em 0;}*/
+    </style>
+
+    <apex:pageMessages rendered="{!!isAvaliablePRIExisted}"/>
+
+    <apex:form rendered="{!isAvaliablePRIExisted}">
+    <!--
+        <apex:commandButton value="debug" styleClass="slds-button slds-button--neutral" reRender="debug"/>        
+        <apex:outputPanel id="debug">
+            {!isDraftPOExisted}
+            {!selectedDeliverySite} {!selectedSupplier} {!selectedPurchaseOrder} <br/>
+            {!draftPurchaseOrderSelectOptionList}
+        </apex:outputPanel>
+    -->
+        <apex:actionFunction name="updateSupplier" action="{!updateSupplierSelectOptionListAction}" reRender="supplierPanel" oncomplete="updateCostcenter();updateDraftPO();"/>
+        <apex:actionFunction name="updateDraftPO" action="{!updateDraftPurchaseOrderSelectOptionListAction}" reRender="draftPOPanel, newPOButtonGroupPanel, buttonPanel"/>
+        
+        <apex:actionFunction name="cancelPRI" action="{!cancelPurchaseRequestItemAction}" rerender="PRIDetail">
+             <apex:param name="priId" value=""/>
+        </apex:actionFunction>
+       
+        <apex:actionFunction name="updateCostcenter" action="{!searchPurchaseCostcenterAction}" rerender="CostcenterPanel">
+            <apex:param id="priId" name="priId" value=""/>
+        </apex:actionFunction>
+        
+        
+        <div class="slds">
+            <div class="slds-page-header" role="banner" >
+                <div class="slds-grid">
+                    <div class="slds-media__body">              
+                        <h1 class="slds-text-heading--medium">Create Purchase Order</h1>                
+                    </div>
+                    
+                    <span id="newPOButtonGroup">
+                        <apex:outputPanel id="newPOButtonGroupPanel">                                   
+                            <apex:commandButton value="{!$Label.IDP_Create_PO_New_PO_Button_Label}" styleClass="slds-button slds-button--neutral" action="{!createDraftPurchaseOrderAction}" reRender="showmsg" />
+                            <div class="divider"/>
+                            <apex:commandButton value="{!$Label.IDP_Create_PO_Add_To_Existing_PO_Button_Label}" disabled="{!!isDraftPOExisted}" styleClass="slds-button slds-button--neutral" onclick="addToExistingPOOnClick();" oncomplete="return false;"/>
+                        </apex:outputPanel>
+                    </span>
+                    <span id="existingPOButtonGroup" style="display:none;">
+                        
+                        <apex:outputPanel id="draftPOPanel">
+                            <apex:outputLabel value="Existing PO " for="existingPOList" >
+                                <apex:selectList id="existingPOList" value="{!selectedPurchaseOrder}" disabled="{!!isDraftPOExisted}" styleClass="js-basic-single" size="1" style="width:350px">
+                                    <apex:selectOptions value="{!draftPurchaseOrderSelectOptionList}"></apex:selectOptions>
+                                    <apex:actionSupport event="onchange" reRender="buttonPanel"/>
+                                </apex:selectList>
+                            </apex:outputLabel>
+                            <script>
+                                $(".js-basic-single").select2({placeholder: "Select Option", allowClear: true});
+                                $(".js-basic-single-costcenter").select2({placeholder: "Select Option", allowClear: true}); 
+                                if({!!isDraftPOExisted}) {
+                                    cancelAddToExistingPOOnClick();
+                                }
+                            </script>                                                       
+                        </apex:outputPanel>
+                        <div class="divider"/>
+                        <apex:outputPanel id="buttonPanel">
+                            
+                            <apex:commandLink target="_blank" action="{!viewExistingPurchaseOrder}">
+                                <apex:commandButton disabled="{!!isDraftPOExisted}" value="{!$Label.IDP_Create_PO_Preview_PO_Button_Label}" styleClass="slds-button slds-button--neutral">
+                                </apex:commandButton>
+                            </apex:commandLink>
+                            <div class="divider"/>
+                            <apex:commandButton value="{!$Label.IDP_Create_PO_Confirm_Button_Label}" disabled="{!!isDraftPOExisted}" styleClass="slds-button slds-button--neutral" action="{!addToExistingPurchaseOrderAction}"/>
+                            <div class="divider"/>
+                            <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Shopping_Cart_Cancel_Button}" onclick="cancelAddToExistingPOOnClick();" onComplete="return false;"/>                                                
+                           
+                        </apex:outputPanel>     
+                    </span>
+                    <!--
+                    <div class="slds-col slds-no-flex slds-align-middle">
+                        <div class="slds-button-group" role="group">
+                        
+                            <apex:commandButton value="{!$Label.IDP_Create_PO_New_PO_Button_Label}" styleClass="slds-button slds-button--neutral" action="{!createDraftPurchaseOrderAction}"/>
+                        </div>
+                    </div>
+                    &nbsp;                   
+                    <apex:outputPanel id="draftPOPanel">
+                        <apex:selectList value="{!selectedPurchaseOrder}" disabled="{!!isDraftPOExisted}" styleClass="js-basic-single" size="1" style="width:200px">
+                            <apex:selectOptions value="{!draftPurchaseOrderSelectOptionList}"></apex:selectOptions>
+                            <apex:actionSupport event="onchange" reRender="buttonPanel"/>
+                        </apex:selectList>
+                        <script>
+                            $(".js-basic-single").select2({placeholder: "Select Option", allowClear: flase}); 
+                        </script>                                                       
+                    </apex:outputPanel>
+                    &nbsp;
+                    <apex:outputPanel id="buttonPanel">
+                        <div class="slds-col slds-no-flex slds-align-middle">
+    
+                            <div class="slds-button-group" role="group">
+                                <apex:commandButton value="View" disabled="{!!isDraftPOExisted}" styleClass="slds-button slds-button--neutral" onClick="window.open('/{!selectedPurchaseOrder}','_blank');"/>
+                                <apex:commandButton value="Add to existing PO" disabled="{!!isDraftPOExisted}" styleClass="slds-button slds-button--neutral" action="{!addToExistingPurchaseOrderAction}"/>
+                            ===--   
+                                &nbsp;
+                                <apex:commandButton value="Edit" styleClass="slds-button slds-button--neutral" action="{!editAction}" rendered="{!isView}" reRender="PRIDetail,buttonPanel"/>
+                                &nbsp;
+                                <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!saveAction}" rendered="{!isSave}" reRender="PRIDetail,buttonPanel"/>
+                                &nbsp;
+                                <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" action="{!cancelAction}" rendered="{!isSave}" reRender="PRIDetail,buttonPanel"/>
+                                --===
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    
+                    -->
+                </div>
+            </div>
+        </div>
+        <BR/>
+        
+        <div style = "" id = "searchPanel">
+            <fieldset>  
+                <legend>Search Criteria</legend>    
+                <div style = "background-color:#eee;padding-bottom: 1px" class="slds"  >
+                
+                    <apex:pageBlock mode="maindetail" id="headerBlock">
+                        <br/>
+                        <table border = "0" style="width:98%" id="prheader" class = "result" >
+                        <!--
+                        <table border = "0" style = "border: 0px solid black;" width ="100%" class = "result">
+                        -->
+                            <tbody>
+                                                              
+                                <tr>
+                                    <!--
+                                    <td style="text-align:right; width:150px" valign="top">
+                                    
+                                    <td style="width:300px" valign="top">
+                                    
+                                    <td style="text-align:right; width:150px" valign="top">
+                                    
+                                    <td style="width:300px" valign="top">
+                                    -->
+                                    
+                                    <td class="searchheaderlabel">
+                                        Requester Site:&nbsp;&nbsp;
+                                    </td>
+                                    <td class="searchheaderval" style="width:20%">
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:selectList value="{!selectedDeliverySite}" styleClass="js-basic-single" size="1" style="width:500px" onchange="updateSupplier();" multiselect="true" >
+                                                <apex:selectOptions value="{!deliverySiteSelectOptionList}"></apex:selectOptions>                       
+                                            </apex:selectList>
+                                        </div>
+                                    </td>
+                                       <td class="searchheaderlabel">
+                                        Cost Center:&nbsp;&nbsp;
+                                    </td>
+                                    <td class="searchheaderval" >
+                                        <div class="!requiredInput">
+                                            <div class="requiredBlock"></div> 
+                                           <apex:outputPanel id="CostcenterPanel">    
+                                               <apex:selectList value="{!selectedCostcenter}" styleClass="js-basic-single-costCenter" size="2" style="width:100%">
+                                               
+                                               <apex:selectOptions value="{!CostcenterSelectOptionList}"></apex:selectOptions>
+                                               </apex:selectList>
+                                                                                                  
+                                               <script>
+                                                   $(".js-basic-single-costCenter").select2({placeholder: "Select Option", allowClear :true});
+                                               </script>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+
+                                </tr>
+                                <tr>
+                                    <td class="searchheaderlabel">
+                                        Supplier:&nbsp;&nbsp;
+                                    </td>                                     
+                                    <td class="searchheaderval">                          
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:outputPanel id="supplierPanel">      
+                                               
+                                               <apex:selectList value="{!selectedSupplier}" styleClass="js-basic-single" size="1" style="width:500px" onchange="updateCostcenter();">
+                                                    <apex:selectOptions value="{!supplierSelectOptionList}"></apex:selectOptions>
+                                               </apex:selectList>
+                                                                                                  
+                                               <script>
+                                                   $(".js-basic-single").select2({placeholder: "Select Option", allowClear: false});
+                                               </script>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+
+<!--                                     <td class="searchheaderlabel">
+                                        Catalog:&nbsp;&nbsp;
+                                    </td>
+                                    <td class="searchheaderval" style="width:20%">
+                                        <div class="requiredInput">
+                                            <div class="requiredBlock"></div>
+                                            <apex:selectList value="{!selectedCatalog}" styleClass="js-basic-single" size="1" style="width:400px" multiselect="true">
+                                                <apex:selectOptions value="{!catalogSelectOptionList}"></apex:selectOptions>
+                                            </apex:selectList>
+                                        </div>
+                                    </td> -->
+
+                                </tr>
+                                <tr>
+                                    <td class="searchheaderlabel">
+                                        Need By Date From:&nbsp;&nbsp;
+                                    </td>                                     
+                                    <td class="searchheaderval">                          
+<!--                                         <div class="requiredInput">
+                                            <div class="requiredBlock"></div> -->
+
+                                            <apex:inputField styleClass="fromDate" value="{!dummyPRSearchFromDate.Need_by_Date__c}" style="width:150px"/>  
+                                            &nbsp;to&nbsp;
+                                            <apex:inputField styleClass="toDate" value="{!dummyPRSearchToDate.Need_by_Date__c}" style="width:150px"/>  
+
+    
+<!--                                          </div> -->
+                                    </td>
+                                    <td> </td>
+                                    <td align="right">
+                                  <div style="float:right">
+                                  
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <apex:commandButton value="Search" styleClass="slds-button slds-button--neutral" action="{!searchNotOrderedPurchaseRequestItemMap}" reRender="PRIDetail, showmsg" oncomplete="updateDraftPO();"/>
+                                            &nbsp;&nbsp;&nbsp;
+                                            <apex:commandButton value="Clear" styleClass="slds-button slds-button--neutral" action="{!clearSearchCriteria}" oncomplete="clearOnComplete();" reRender="headerBlock"/>
+
+                                        <div class= "slds"></div>
+                                        <!--
+                                        <apex:commandButton value="Search" styleClass="slds-button slds-button--neutral" action="{!result}" reRender="result , msg " onclick="searchOnClick();"  oncomplete="searchOnComplete();"/>
+                                        -->
+                                       
+                                        
+                                          
+                                 </div>
+                                </td>
+                               </tr>
+                            </tbody>
+                        </table>              
+                    </apex:pageBlock>
+                </div>
+            </fieldset>
+        </div>
+        <br/>        
+        <apex:outputPanel id="msg">
+            <apex:pageMessages id="showmsg" escape="false"></apex:pageMessages>
+        </apex:outputPanel>        
+        <div id ="loading" style="display:none;width:100%" align="center">
+            <apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" />
+        </div>        
+        <div id="resultTable" class="slds">    
+            <div id="tabs">
+                
+                <ul>
+                    <li><a href="#tabs-1">Approved Purchase Request Item List</a></li>
+                </ul>
+                
+                <div id="tabs-1">
+                 <apex:outputPanel id="PRIDetail">
+                     <apex:pageBlock mode="maindetail"> 
+                     
+                         <!-- id="headerBlock"> -->
+                         <table id="priTable" class="display dataTable no-footer" cellspacing="0" width="100%">
+                            <thead>
+                               <tr>
+                                  <th style="width:30px" class='no-sort'>
+                                      <input type="checkbox" onclick="selectAllCheckboxes(this,'inputId')"/>
+                                  </th>
+                                  <th style="width:30px">PR #</th>
+                                  <th style="width:10px">Site</th>
+                                  <!--    
+                                  <th style="width:1px">PR Item #</th>
+                                  -->
+                                  <th style="width:40px">Catalog</th>
+                                  <th style="width:40px">Item Name</th>
+                                  <th style="width:10px">Currency</th>
+                                  <th style="width:20px">Price/Unit</th>
+                                  <th style="width:10px">Qty</th>
+                                  <th style="width:10px">UOM</th>
+                                  <th style="width:20px">Amount</th>
+                                  <th style="width:50px">Need By Date</th>
+                                  <!--
+                                  <th style="width:20px">Delivery Site</th>
+                                  <th style="width:20px">Delivery To</th>
+                                  -->
+                                  <th style="width:50px">Buyer Remark</th>
+                                  <th style="width:40px">Requester</th>
+                              </tr>
+                            </thead>
+                            <tfoot>
+                            </tfoot>
+                            <tbody>
+                            
+                                <apex:repeat value="{!cpoLineList}" var="cpol">
+                                    <tr>
+                                        <td>
+                                            <apex:inputCheckbox id="inputId" value="{!cpol.isChecked}" immediate="true" style="float:right;"/>    
+                                            &nbsp;
+                                            <a href="javascript:;" title="Delete this line">
+                                                <apex:outputPanel styleClass="ui-icon  ui-icon-circle-minus actionIcon" style="margin-left:1px;" onclick="showConfirmDialog('{!cpol.pri.Id}');"/>
+                                            </a>                         
+                                            <!--
+                                            <a href="javascript:;" title="Cancel Purchase Request Item">      
+                                                
+                                                <apex:outputPanel >
+                                                <apex:image value="/img/func_icons/remove12.gif"/>  
+                                                <apex:actionSupport event="onclick" action="{!cpol.cancelPurchaseRequestItemAction}"  rerender="PRIDetail"/>
+                                                </apex:outputPanel>
+                                            </a> 
+                                            -->
+                                        </td>
+                                        <td>
+                                             <a href="/{!cpol.pri.Purchase_Request__r.Id}" >{!cpol.pri.Purchase_Request__r.Name}</a>
+                                                    
+                                        </td>
+                                        <!--
+                                        <td>
+                                             {!cpol.pri.Name}
+                                        </td>
+                                        -->
+                                        <td>
+                                            {!cpol.pri.Purchase_Request__r.Tech_Applicant_Site_Name__c}
+                                        </td>
+                                        <td>
+                                            {!cpol.pri.Catalog_Item__r.Catalog__r.Display_Name__c}
+                                        </td> 
+                                        <td>
+                                            <a href="/{!cpol.pri.Catalog_Item__r.Id}">{!cpol.pri.Catalog_Item_Name__c}</a>
+                                        </td>
+                                        <td>
+                                             {!cpol.pri.Currency__r.Name}       
+                                        </td>
+                                        <td>
+                                             {!cpol.pri.Price__c}       
+                                        </td>   
+                                        <td>
+                                             {!cpol.pri.Quantity__c}       
+                                        </td>
+                                        <td>
+                                             <apex:OutputField value="{!cpol.pri.Unit_of_Measure__c}"/>       
+                                        </td>
+                                        <td>
+                                             {!cpol.pri.Amount__c}       
+                                        </td>
+                                         
+                                        <td>
+                                            <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                                                <apex:param value="{!cpol.pri.Purchase_Request__r.Need_by_Date__c}" />
+                                            </apex:outputText> 
+                                        </td>
+                                        <!--
+                                        <td>
+                                            
+                                            <apex:outputText value="{!cpol.pri.Purchase_Request__r.Delivery_Site__r.Name}" rendered="{!isView}"/>
+                                            <apex:inputField value="{!cpol.pri.Purchase_Request__r.Delivery_Site__c}" rendered="{!isSave}"/>
+                                        </td>
+                                        <td>
+                                            <apex:outputText value="{!cpol.pri.Purchase_Request__r.Delivery_To__c}" rendered="{!isView}"/>
+                                            <apex:inputField value="{!cpol.pri.Purchase_Request__r.Delivery_To__c}" style="height: 50px" rendered="{!isSave}"/>
+                                        </td> 
+                                        -->                                       
+                                        <td>
+                                             {!cpol.pri.Remark__c}                                                
+                                        </td>             
+                                        <td>
+                                             {!cpol.pri.Purchase_Request__r.On_Behalf_Of__r.Name}
+                                        </td>                                                                                         
+                                    </tr>
+                                </apex:repeat>
+                            </tbody>
+                         </table>
+                         
+                         <script>
+                             tableInit = dataTableInitSetting();
+                             $("#priTable").DataTable(tableInit); 
+                         </script>
+                        
+                     </apex:pageBlock>
+                  </apex:outputPanel>
+              </div>            
+            </div>
+        </div>
+        
+        <div id="dialog-confirm" title="Cancel Item" class="slds">      
+            <p>
+                Are you sure?
+            </p>
+            <div style="padding-top:10px">
+                <apex:commandButton value="Confirm" styleClass="slds-button slds-button--neutral" onclick="callCancelPRI();" oncomplete="hideConfirmDialog()"/>
+                &nbsp;
+                <apex:commandButton value="Back" styleClass="slds-button slds-button--neutral" onclick="hideConfirmDialog();"/>
+            </div>
+        </div>
+    </apex:form>   
+    
+    <script>
+        $(function(){
+             $("#dialog-confirm").dialog({
+                autoOpen: false,
+                height: 130,
+                width: 200
+            });            
+        });
+    
+        function showConfirmDialog(priId){
+            $("#dialog-confirm").data('priId',priId);
+            $("#dialog-confirm").dialog("open");
+        }
+        
+        function hideConfirmDialog(){
+            $("#dialog-confirm").data('priId','');
+            $("#dialog-confirm").dialog("close");
+        }
+        
+        function callCancelPRI(){
+            var priId = $("#dialog-confirm").data("priId");
+            cancelPRI(priId);
+        }
+    </script>  
+</apex:page>

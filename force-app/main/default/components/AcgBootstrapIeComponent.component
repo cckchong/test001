@@ -1,0 +1,42 @@
+<apex:component >
+<!--[if lte IE 8]>
+<span id="IE_CHECK"></span>
+<![endif]-->
+<script type="text/javascript">
+    $(document).ready(function(){
+        if($("#IE_CHECK").length !== 0) {
+            $(".bs.col-xs-12.col-sm-12.col-md-8").attr("class", "bs col-xs-8");
+            $(".bs.col-xs-12.col-sm-12.col-md-4").attr("class", "bs col-xs-4");
+            $(".bs.col-xs-12.col-sm-12.col-md-3").attr("class", "bs col-xs-3");
+            $(".bs.col-xs-12.col-sm-12.col-md-6").attr("class", "bs col-xs-6");
+        }
+        //Handle IOS Native App chatter component
+		if ( (typeof sforce != 'undefined') && (sforce != null) ) {
+            $("#publishersharebutton").val('Share');
+            $(".feeditemActionMenuButton").hide();
+            //$(".cxcommentplaceholderaction").height("30");
+            //javascript:sforce.one.navigateToURL('');
+		}
+    });
+</script>
+<style>
+	.bs .panel-title {
+		font-size: 1.1em;
+	}
+    .bs .panel-heading {
+    	border-radius: 2px;
+    	border: none;
+    	padding: 5px 10px;
+    }
+    .bs .panel {
+    	box-shadow: none;
+    	-webkit-box-shadow: none;
+    }
+    .bs .TabText {
+    	margin-left: 5px;
+    	text-align: center;
+    }
+
+</style>
+    <link href="/sCSS/33.0/sprites/1423784394000/Theme3/default/gc/chatterExtended.css" rel="stylesheet" type="text/css"  />
+</apex:component>

@@ -1,0 +1,42 @@
+<apex:page standardController="Library_Inventory__c" extensions="LibraryPrintQRCodeCtrl" showHeader="false">
+    
+    <apex:form id="theformid">
+        <apex:outputPanel >        
+            <div style="border:1px solid #EAEAEA;width:155px;text-align:center;">
+            <apex:outputField Label="QR Code" value="{!inv.QR_Code__c}"/>
+            <apex:outputText Label="QR Number" value="{!inv.QR_Code_Number__c}" style="font-weight:bold;font-size:16px;" rendered="{!inv.Library_Item_Master__r.RecordType.DeveloperName != 'Fabric'}"/>
+            <apex:outputText Label="QR Number" value="{!inv.FLS_QR_Code_Suffix__c}" style="font-weight:bold;font-size:16px;" rendered="{!inv.Library_Item_Master__r.RecordType.DeveloperName = 'Fabric'}"/>
+            <br/>
+            <!-- <apex:outputText value="{!inv.Library_Item_Master__r.RecordType.Name}" style="font-weight:bold;font-size:10px;"/> -->
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+
+
+<script>
+    //Add by DTT 
+     
+     var theform=document.getElementsByTagName('form')[0];
+     var st=theform.getElementsByTagName('span')[0];
+     
+     var nd=st.getElementsByTagName('span')[1];
+     nd.style.marginTop='-20px';
+     nd.style.display='block';
+     
+     console.log(nd.innerHTML);
+
+     var value=nd.innerHTML.toString().split('/');
+
+     //console.log(value);
+     var str=value[0]+'<br/>';
+     str+=value[1];
+     str+='/';
+     str+=value[2];
+     nd.innerHTML=str;
+//Add by DTT 
+    
+
+
+</script>
+
+</apex:page>

@@ -1,0 +1,505 @@
+<apex:page controller="IDPCreateCatalogItemVFPCtrl" sidebar="false" standardStylesheets="true" showHeader="true" docType="html-5.0">
+<head>
+    
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    
+    <title>Indirect Procurement Application</title>
+    
+    <!--
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestsbadmin2,'/bower_components/jquery/dist/jquery.min.js')}"/>
+    -->
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap_v3_3_7, '/css/bootstrap.min.css')}"/>
+    
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/dataTables.bootstrap.min.css')}" />  
+
+    <!--Button CSS-->
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" /> 
+     
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/dataTables.bootstrap.min.js')}" />
+    
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap_v3_3_7, '/js/bootstrap.min.js')}" />
+    
+<style>
+.divider{
+    width:5px;
+    height:auto;
+    display:inline-block;
+}
+
+.top-button-margin {
+
+    margin-bottom: 20px;
+}
+
+.input-select-width {
+    //width:inherit;
+}
+
+.select2-results__option {
+  //  font-size: 75%;   
+}
+
+.input-input {
+    height:8px;
+
+}
+.select2.narrow {
+    width: 200px;
+}<!--
+-->
+.wrap.select2-selection--single {
+    height: 100%;
+}
+.select2-container .wrap.select2-selection--single .select2-selection__rendered {
+    word-wrap: break-word;
+    text-overflow: inherit;
+    white-space: normal;
+}
+
+.select2-selection__placeholder {
+ font-size: 12px
+
+}
+
+#wrapper {
+    min-width: 1300px;
+}
+
+.progressbar {
+    position: relative; 
+    left: 50%;
+    margin-top : 50px;
+    margin-bottom : 50px;
+}       
+</style>
+
+
+</head>
+<!--
+<body style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:130%;', '')}">
+-->
+<body>
+    <div id="wrapper" style="display:none" >
+        <apex:form >
+            <apex:actionFunction name="copyRowParaFunction" action="{!copyRow}" reRender="itemTablePanel" oncomplete="setPicklists();$('.dateFormat').remove();restrictNumInputformat();deleteLineAction('CP');">
+                <apex:param id="rowNumber" name="rowNumber" value=""/>
+            </apex:actionFunction>
+            
+            <apex:actionFunction name="clearRowDataFunction" action="{!clearRow}" reRender="itemTablePanel" oncomplete="setPicklists();$('.dateFormat').remove();restrictNumInputformat();deleteLineAction('CP');">
+                <apex:param id="rowNumber2" name="rowNumber" value=""/>
+            </apex:actionFunction>            
+
+
+            <apex:actionFunction name="supplierOnChangeFunction" action="{!supplierOnChnageAction}" reRender="currencyPanel"   oncomplete="setPicklists();$('.dateFormat').remove();">
+                <apex:param name="supplierKey" value=""/>
+            </apex:actionFunction>    
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'Create Catalog Item', 'Create Non Catalog Item')}
+                    
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">                    
+                    <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                    <div id="tab1">
+                    <div class="dataTables_wrapper">
+                        <div class="dataTables_length">
+                            <div class="row">
+                                <div class="col-md-12 slds top-button-margin">
+                                    <apex:commandButton rerender="itemTablePanel" 
+                                                        styleClass="slds-button slds-button--neutral"  
+                                                        value="{!$Label.IDP_Create_Catalog_Item_Button}" 
+                                                        action="{!createCatalogItem}" 
+                                                        reRender="errorPanelCatalog, errorPanelItemDetails, errorPanelUOM, errorPanelQuantity, errorPanelSupplier, errorPanelReferencePrice, errorPanelMOQ, errorPanelLeadTime" 
+                                                        oncomplete="alert('{!message}');if( {!insertedCatalogItemSize} > 0) {window.location.href = '{!$Label.IDP_Path_IDPBrowseCatalogVFP}';}" 
+                                                        rendered="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, true, false)}"/>
+                                    
+                                    <div class="divider"/>
+                                    <apex:commandButton rerender="itemTablePanel" 
+                                                        styleClass="slds-button slds-button--neutral"  
+                                                        value="{!$Label.IDP_Add_Non_Catalog_Item_To_Cart_Button}" 
+                                                        action="{!createCatalogItem}" reRender="errorPanelCatalog, errorPanelItemDetails, errorPanelUOM, errorPanelQuantity, errorPanelSupplier, errorPanelReferencePrice, errorPanelMOQ, errorPanelLeadTime" 
+                                                        oncomplete="alert('{!message}');if( {!insertedShoppingCartItemSize} > 0) {window.location.href = '{!$Label.IDP_Path_IDPBrowseCatalogVFP}';}" 
+                                                        rendered="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Non_Catalog_Item, true, false)}"/>
+                                    <div class="divider"/>
+                                    <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Back_Button}" onclick="window.location.href = '{!$Label.IDP_Path_IDPBrowseCatalogVFP}';return false;"/>
+                                </div>
+                            </div>
+                        </div>
+                        <apex:pageBlock mode="maindetail" id="headerBlock">
+                            
+                            
+                            <apex:outputPanel id="itemTablePanel">
+                                    <table class="table table-striped table-bordered table-hover" id="itemTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:5%;">Action</th>
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:30%;', 'width:30%;')}">
+                                                    <div class="requiredInput">
+                                                        <div class="requiredBlock"></div>
+                                                            Item Catalog  
+                                                            
+                                                    </div>
+                                                </th>
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:40%;', 'width:40%;')}">
+                                                    <div class="requiredInput">
+                                                        <div class="requiredBlock"></div>
+                                                            Item Details
+                                                    </div>
+                                                </th>                                            
+                                                
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:15%;', 'width:15%;')}">
+                                                    <div class="requiredInput">
+                                                        <div class="requiredBlock"></div>
+                                                            UOM
+                                                    </div>
+                                                </th>
+                                                
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'display:none;', 'width:15%;')}">
+                                                    <div class="requiredInput">
+                                                        <div class="requiredBlock"></div>
+                                                            Qty.
+                                                    </div>
+                                                </th>
+                                                <!--
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:13%;', 'display:none;')}">Supplier</th>                                                
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:16%;', 'display:none;')}">
+                                                    Reference Price
+                                                </th>
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:6%', 'display:none;')}">
+                                                    MOQ
+                                                </th>
+                                                <th style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'width:11%', 'display:none;')}">
+                                                    Lead Time
+                                                </th>
+                                                -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <apex:repeat value="{!keyCatalogItemListMap}" var="key">
+                                                <tr>
+                                                    <td>
+                                                        <div class="slds">
+                                                            <apex:commandButton value="copy" styleClass="slds-button slds-button--neutral" onclick="deleteLineAction('CL');copyRowParaFunction({!key});" oncomplete="return false;"/>
+                                                            <apex:commandButton value="clear" styleClass="slds-button slds-button--neutral" onclick="deleteLineAction('CL');clearRowDataFunction({!key});"  oncomplete="return false;" />
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <apex:outputPanel rendered="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, true, false)}">                                                                             
+                                                                <apex:selectList id="standardCatalogSelectList" value="{!keyCatalogItemListMap[key].Catalog__c}" styleClass="js-basic-single-catalog" style="width:100%">                                         
+                                                                    <apex:selectOptions id="standardCatalogSelectOption" value="{!createStandardCatalogSelectOptionList}">
+                                                                    </apex:selectOptions>
+                                                                </apex:selectList>
+                                                        </apex:outputPanel>
+                                                        
+                                                                
+                                                        <apex:outputPanel rendered="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Non_Catalog_Item, true, false)}"> 
+                                                                <apex:selectList id="nonCatalogSelectList" value="{!keyCatalogItemListMap[key].Catalog__c}" styleClass="js-basic-single-catalog" style="width:100%">                                         
+                                                                    <apex:selectOptions id="nonCatalogSelectOption" value="{!createNonCatalogSelectOptionList}">
+                                                                    </apex:selectOptions>
+                                                                </apex:selectList>
+                                                        </apex:outputPanel>
+                                                        
+                                                        <apex:outputPanel id="errorPanelCatalog">
+                                                            <div>
+                                                                <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_Catalog]}" style="color:red;"></apex:outputText>
+                                                            </div>
+                                                        </apex:outputPanel>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputfield Id="itemName" value="{!keyCatalogItemListMap[key].Item_Name__c}" styleClass="form-control input-sm" html-placeholder="{!$Label.IDP_Create_Catalog_Item_Placeholder_Item_Name}"/>
+                                                        <div class="input-input"/>
+                                                        <apex:inputField Id="description"  value="{!keyCatalogItemListMap[key].Description__c}" styleClass="form-control input-sm" html-placeholder="{!$Label.IDP_Create_Catalog_Item_Placeholder_Description}" /> 
+                                                        <apex:outputPanel id="errorPanelItemDetails">
+                                                            <div>
+                                                                <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_Item_Details]}" style="color:red;"></apex:outputText>
+                                                            </div>
+                                                        </apex:outputPanel>
+                                                    </td>
+                                                    <td>
+                                                        <apex:selectList id="uomSelectOptionList" value="{!keyCatalogItemListMap[key].Unit_of_Measure__c}" styleClass="js-basic-single-UOM" multiselect="false" style="width:100%">                                         
+                                                            <apex:selectOptions id="uomSelectOption" value="{!catalogItemAvailableUOMSelectOptionList}">
+                                                            </apex:selectOptions>
+                                                        </apex:selectList>                     
+                                                        <apex:outputPanel id="errorPanelUOM">
+                                                            <div>
+                                                                <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_UOM]}" style="color:red;"> </apex:outputText>
+                                                            </div>
+                                                        </apex:outputPanel>
+                                                    </td>                                      
+                                                    <td style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, 'display:none;', '')}">
+                                                         <apex:inputField Id="quantity" value="{!keyShoppingCartItemMap[key].Quantity__c}" type="text" html-pattern="[0-9]{0,18}" html-title="At most 18 digits Integer" styleClass="quantity form-control input-sm numberField"/>
+                                                        <apex:outputPanel id="errorPanelQuantity">
+                                                            <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_Quantity]}" style="color:red;"> </apex:outputText>
+                                                        </apex:outputPanel>
+                                                    </td>
+                                                    <!--
+                                                    <td style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, '', 'display:none;')}">
+                                                       <apex:inputText style="display:none"   value="{!keySupplierItemMap[key].Supplier__c}" styleClass="sOriginSite{!key}"  />
+                                                       <input type="hidden"   class="js-basic-single-supplier"    style="width : 200px"  onChange="changeSupplier(this, '{!key}')" />
+                                                        <apex:outputPanel id="errorPanelSupplier">
+                                                            <br/>
+                                                            <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_Supplier]}" style="color:red;"> </apex:outputText>
+                                                        </apex:outputPanel>  
+                                                    </td>
+                                                    <td style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, '', 'display:none;')}">
+                                                        <apex:outputPanel id="currencyPanel" style="">
+                                                                    <span class="select2 select2-container select2-container--default select2-container--disabled select2-container--focus" dir="ltr" style="width: 45%;display:inline-block;">
+                                                                        <span class="selection">
+                                                                            <span class="select2-selection select2-selection--single wrap" role="combobox">
+                                                                                <span class="select2-selection__rendered">
+                                                                                    <apex:variable var="currencyName" value="NA"/>
+                                                                                    <apex:outputText rendered="{!keySupplierItemMap[key].Supplier__c != null}">
+                                                                                        <apex:variable var="supplierId" value="{!keySupplierItemMap[key].Supplier__c}"/>
+                                                                                        <apex:repeat value="{!supplierMap}" var="mapKey">                                                                                
+                                                                                            <apex:outputText rendered="{!mapKey == supplierId}">
+                                                                                                <apex:variable var="currencyName" value="{!supplierMap[mapKey].Currency__r.Name}"/>  
+                                                                                                {!currencyName}    
+                                                                                            </apex:outputText>          
+                                                                                        </apex:repeat> 
+                                                                                    </apex:outputText>
+                                                                                    <apex:outputText rendered="{!currencyName = 'NA'}" value="Currency" styleClass="select2-selection__placeholder"/>
+                                                                                </span>
+                                                                                <span class="select2-selection__arrow" role="presentation">
+                                                                                        <b role="presentation"></b>
+                                                                                </span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </span>
+                                                        <span style="width:5%"> &nbsp;</span>
+                                                        </apex:outputPanel>
+                                                        <apex:inputField Id="referencePrice" type="text"  html-pattern="[0-9]{0,16}([.][0-9][0-9]?)?" html-title="At most 16 digits number with 2 dicimal places" value="{!keySupplierItemMap[key].Price__c}" styleClass="{!key}referencePrice form-control input-sm numberField" style="width:50%;display:inline-block;" html-placeholder="{!$Label.IDP_Create_Catalog_Item_Placeholder_Reference_Price}" onchange="restrictNumInputformat('{!key}referencePrice');"/>
+                                                        
+                                                        <div class="input-input"/>
+                                                        <apex:inputField Id="priceExpiryDate" value="{!keySupplierItemMap[key].Expiry_Date__c}" styleClass="form-control input-sm" html-placeholder="Expiry Date" style="width:99%"/>
+                                                        <apex:outputPanel id="errorPanelReferencePrice">
+                                                            <div>
+                                                                <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_Reference_Price]}" style="color:red;"></apex:outputText>
+                                                            </div>
+                                                        </apex:outputPanel>                                                                                         
+                                                    </td>
+                                                    
+                                                    <td style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, '', 'display:none;')}">
+                                                        <apex:inputField Id="moq" value="{!keySupplierItemMap[key].Minimum_Order_Quantity__c}" styleClass="moq form-control input-sm numberField" type="text" html-pattern="[0-9]{0,18}" html-title="At most 18 digits Integer" html-placeholder="{!$Label.IDP_Create_Catalog_Item_Placeholder_MOQ}"/>
+                                                        
+                                                        <apex:outputPanel id="errorPanelMOQ">
+                                                            
+                                                            <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_MOQ]}" style="color:red;"> </apex:outputText>
+                                                        </apex:outputPanel>
+                                                    </td>         
+                                                    
+                                                    <td style="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, '', 'display:none;')}">
+                                                        
+                                                        <apex:selectList id="leadTimeFormatSelectOptionList" value="{!keySupplierItemMap[key].Lead_Time_Format__c}" styleClass="js-basic-single-Lead-Time-Format" style="width:100%;">                                         
+                                                                    <apex:selectOptions id="leadTimeFormatSelectOption" value="{!leadTimeFormatSelectOptionList}">
+                                                                    </apex:selectOptions>
+                                                        </apex:selectList>
+                                                        <div class="input-input"/>
+                                                        <apex:inputField Id="leadTimeFormat" value="{!keySupplierItemMap[key].Lead_Time_Days__c}" styleClass="leadTimeFormat form-control input-sm numberField" style="width:100%;" html-placeholder="{!$Label.IDP_Create_Catalog_Item_Placeholder_Lead_Time_Days}" type="text" html-pattern="[0-9]{0,17}([.][0-9])?" html-title="At most 17 digits number with 1 dicimal place"/>
+                                                        <apex:outputPanel id="errorPanelLeadTime">
+                                                            <apex:outputText value="{!$Label.IDP_Create_Catalog_Item_Require_Input_Message}" rendered="{!keyRequiredMap[key][$Label.IDP_Create_Catalog_Item_Validation_Lead_Time]}" style="color:red;"> </apex:outputText>
+                                                        </apex:outputPanel>
+                                                    </td>
+                                               -->
+                                               </tr>
+                                            </apex:repeat>
+                                        </tbody>
+                                    </table>
+                                
+                                </apex:outputPanel>
+                            
+                        </apex:pageblock>
+                        </div>
+                    
+                    <!-- /.table-responsive -->
+                    <div class="slds">
+                        <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Create_Catalog_Item_Button}" action="{!createCatalogItem}" reRender="errorPanel1, errorPanel2, errorPanel3, errorPanel4, errorPanel5, errorPanel6, errorPanel7" oncomplete="alert('{!message}');if( {!insertedCatalogItemSize} > 0) {window.location.href = '{!$Label.IDP_Path_IDPBrowseCatalogVFP}';}" rendered="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Standard, true, false)}"/>
+                        <div class="divider"/>
+                        <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Add_Non_Catalog_Item_To_Cart_Button}" action="{!createCatalogItem}" reRender="errorPanel1, errorPanel2, errorPanel3, errorPanel4, errorPanel5, errorPanel6, errorPanel7" oncomplete="alert('{!message}');if( {!insertedShoppingCartItemSize} > 0) {window.location.href = '{!$Label.IDP_Path_IDPBrowseCatalogVFP}';}" rendered="{!if(mode == $Label.IDP_Create_Catalog_Item_Mode_Non_Catalog_Item, true, false)}"/>
+                        <div class="divider"/>
+                        <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Back_Button}" onclick="window.location.href = '{!$Label.IDP_Path_IDPBrowseCatalogVFP}';return false;"/>                    
+                    </div>
+                    </div>
+                </div>
+                <!-- /.panel-body -->
+            </div>
+           
+            <script>
+                $tab1 = null;
+                $progressbar = null;
+                $dateFormat = null;
+                $inputSupplier = null;
+                
+            </script>
+            <apex:includeScript value="/soap/ajax/32.0/connection.js"/>
+            <script>
+                    var sampleArray;
+                    $(document).ready(function() {
+                       sforce.connection.sessionId = "{!$Api.Session_ID}";
+                       //sforce.connection.query('select id, Name from Supplier__c order by Name ', { onSuccess: okay, onFailure: fail });
+                       var query = "select id, Name from Supplier__c where status__c = 'ACT' order by Name"; 
+                       var result = sforce.connection.query(query); 
+                       var queryMore = true;
+                       sampleArray = [];
+                       while (queryMore) {
+                            var records = result.getArray("records");
+                            for (var i = 0; i < records.length; i++) {
+                                sampleArray.push({ "id" : records[i]['Id'], "text" : records[i]['Name']});
+                            }
+                            if (result.getBoolean("done")) {
+                                queryMore = false;
+                            } else {
+                                result = sforce.connection.queryMore(result.queryLocator);
+                            }
+                        }
+                       init();
+                       restrictNumInputformat();
+                       $dateFormat.remove();
+                       $inputSupplier.addClass("form-control input-sm");
+                       $inputSupplier.css("display", "inherit");
+                       setPicklists();
+                       $("#wrapper").show();
+                    });
+                    
+            </script>
+            <script>
+                    
+                    function init() {
+                        $tab1 = $("#tab1");
+                        $progressbar = $(".progressbar");
+                        $dateFormat = $(".dateFormat");
+                        $inputSupplier = $("input.supplier");
+                    }
+                    
+                    /*
+                    function okay(result) {
+                        var resulyArray  = result.getArray("records");
+                        sampleArray = [];
+                        
+                        for(var x in resulyArray){
+                            sampleArray.push({ "id" : resulyArray[x]['Id'], "text" : resulyArray[x]['Name']});
+                            //sampleArray.push({ "id" : resulyArray[x]['Id'], "text" : resulyArray[x]['Name']});
+                            //sampleArray.push({ "id" : resulyArray[x]['Id'], "text" : resulyArray[x]['Name']});
+                            //sampleArray.push({ "id" : resulyArray[x]['Id'], "text" : resulyArray[x]['Name']});
+                            //sampleArray.push({ "id" : resulyArray[x]['Id'], "text" : resulyArray[x]['Name']});
+                        }
+                        //console.log(sampleArray);
+                        setPicklists();
+                         $("#wrapper").show();
+                    }
+                    function fail(error) {
+                        sampleArray  = error.toString().replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    }
+                    */
+                    function setPicklists() {
+                        /*
+                        $(".js-basic-single-supplier").select2({
+                            placeholder: "{!$Label.IDP_Create_Catalog_Item_Placeholder_Supplier}",
+                            data: sampleArray,
+                            containerCssClass: "wrap",
+                            allowClear: true
+                        });
+                        */
+                        $(".js-basic-single-catalog").select2({
+                            placeholder: "{!$Label.IDP_Create_Catalog_Item_Placeholder_Catalog}",
+                            containerCssClass: "wrap",
+                            allowClear: true
+                        });
+                        $(".js-basic-single").select2({
+                            placeholder: "Please select",
+                            allowClear: true
+                        });
+                        $(".js-basic-single-optional").select2({
+                            placeholder: "Optional",
+                            allowClear: true
+                        });
+                        $(".js-basic-single-currency").select2({
+                            placeholder: "{!$Label.IDP_Create_Catalog_Item_Placeholder_Currency}",
+                             width: "45%",
+                            allowClear: true
+                        });                        
+                        
+                        /*
+                        $(".js-basic-single-supplier").select2({
+                            placeholder: "{!$Label.IDP_Create_Catalog_Item_Placeholder_Supplier}",
+                            containerCssClass: "wrap",
+                            allowClear: true
+                        });
+                       */
+                        $(".js-basic-single-UOM").select2({
+                            placeholder: "UOM",
+                            allowClear: true
+                        });
+                                               
+                        $(".js-basic-single-Lead-Time-Format").select2({
+                            placeholder: "Type",
+                            allowClear: true
+
+                        });    
+                    }
+                    
+               function deleteLineAction(action) {
+                   if(action == "CL") {
+                        $tab1.hide();
+                        $progressbar.show();      
+                   }
+                   if(action == "CP") {
+                        $tab1.show();
+                        $progressbar.hide();      
+                   }
+               
+               }                    
+            </script>
+            <script>
+                    function changeSupplier(evt, key){
+                        $('.sOriginSite'+key).val(evt.value);
+                        supplierOnChangeFunction(key);
+                        
+                    }
+                     function setNumInput(pSelector){
+                        $(pSelector).keydown(function (e) {
+                            // Allow: backspace, delete, tab, escape, enter and .
+                            if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+                                 // Allow: Ctrl+A
+                                (e.keyCode == 65 && e.ctrlKey === true) ||
+                                 // Allow: Ctrl+C
+                                (e.keyCode == 67 && e.ctrlKey === true) ||
+                                 // Allow: Ctrl+X
+                                (e.keyCode == 88 && e.ctrlKey === true) ||
+                                 // Allow: home, end, left, right
+                                (e.keyCode >= 35 && e.keyCode <= 39)) {
+                                     // let it happen, don't do anything
+                                     return;
+                            }
+                            // Ensure that it is a number and stop the keypress
+                            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                    function restrictNumInputformat(){
+                        setNumInput(".numberField");
+                        $(".numberField").each(function() {
+                          $( this ).val($(this).val().replace(/,/g, ''));
+                        });
+                                      
+                    }
+                    
+            </script>
+        </apex:form>
+    </div>
+</body>
+
+</apex:page>

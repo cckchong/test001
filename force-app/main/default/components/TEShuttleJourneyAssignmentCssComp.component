@@ -1,0 +1,134 @@
+<apex:component >
+    <style>
+        .tal-errors {
+            color: darkred;
+            padding: 10px;
+        }
+        .tal-panel {
+            border-radius: 4px;
+            -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+            box-shadow: 0 1px 1px rgba(0,0,0,.05);
+            border: 1px solid #ddd;
+            background-color: white;
+            color: #696969;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .tal-panel h6 {
+            text-transform: uppercase;
+            margin-bottom:5px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        .pageTitleIcon {
+            display: none;
+        }
+        .tal-nav {
+            background-color: #E2E2E2;
+            padding: 8px;
+            border-radius: 2px;
+            text-align: left;
+        }
+        .bs .panel {
+            border: 1px solid #ddd;
+            background-color: white;
+            color: #696969;
+            margin-bottom: 10px;
+        }
+        .bs .panel h6 {
+            text-transform: uppercase;
+            margin-bottom:5px;
+        }
+        .bs .row {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+        @media screen and (min-height:1030px){
+        
+            /* This is for the full screen DIV */
+            .popupBackground {
+                /* Background color */
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+        
+                /* Dimensions */
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 998;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:wait;
+            }
+        
+            /* This is for the message DIV */
+            .PopupPanel {
+                /* Background color */
+                border: solid 1px #EAEAEA;
+                background-color: white;
+                
+                /* Dimensions */
+                left: 50%;
+                width: 200px;
+                height: 50px;
+                margin-left: -100px;
+                top: 20%;
+                margin-top: -25px;
+                z-index: 999;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:pointer;
+                border-radius: 3px;
+            }
+        }
+        
+        /*NickWu added for the desktop version compatibility */
+        @media screen and (max-height:1030px) {
+        
+            /* This is for the full screen DIV */
+            .popupBackground {
+                /* Background color */
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+                
+                /* Dimensions */
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 998;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:wait;
+            }
+            
+            /* This is for the message DIV */
+            .PopupPanel {
+                /* Background color */
+                border: solid 1px #EAEAEA;
+                background-color: white;
+                
+                /* Dimensions */
+                left: 50%;
+                width: 200px;
+                margin-left: -100px;
+                top: 50%;
+                height: 50px;
+                margin-top: -25px;
+                z-index: 999;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:pointer;
+                border-radius: 3px;
+                color: #888;
+            }
+        }
+    </style>
+</apex:component>

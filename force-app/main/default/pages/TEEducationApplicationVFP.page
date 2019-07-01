@@ -1,0 +1,491 @@
+<apex:page standardcontroller="Education_Application__c" extensions="TEEducationApplicationCtrl" action="{!redirect}" showHeader="true" standardStylesheets="true" sidebar="false" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0" id="thePage">    
+     
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+   
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+   
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    
+    
+    <script>
+    $(document).ready(function() {
+        if ({!!eligible}){
+           alert('{!$Label.TE_Education_Application_Not_Allowed_Create_Records}');
+           window.history.back();
+        }
+    });
+    
+    
+    $(function() {
+        $( "#tabs" ).tabs();
+        
+        //resetTable();
+
+        var text = $("<span></span>");
+        var str = '<div  class="sfFont bPageBlock bDetailBlock"><div class="requiredInput"><div class="requiredBlock"></div>';
+            str += '{!$Label.TE_Required_Field_Message}';
+            str += '</div></div>';
+        text = $(str);       
+        text .css('position', 'absolute');        
+        text .css('right', '20px');
+        text .css('top', '12px');
+        var bool = {!applicantTabReadOnly&&HCMTabReadOnly};  
+        if (!bool){
+            $("#tabs").append(text );     
+        }
+        
+        if ( '{!renderHCMTab}' == 'false' && '{!staffType}' == 'true' ){
+            $( "#tabs" ).tabs( { disabled: [1] } );
+        }
+    });   
+    
+    $(function (){
+         $(".disabledField").attr('disabled', true);
+    });  
+
+    function resetTable() {
+                tableInit = dataTableInitSetting();
+                $("#tabs").tabs();
+                $(".js-basic-single").select2({
+                    placeholder: "Select Option",
+                    allowClear: false
+                }); // 
+                //, dropdownAutoWidth : true
+                d = document.getElementById('tabs-1');
+                d.style.width = ($(window).width() - 80) + "px";
+            }
+   
+    function btnloading(){
+          $('#btnGroup').fadeOut(0);
+          setTimeout(function(){$('#btnGroup').fadeIn(0);}  , 2000); 
+    }
+    </script>
+    
+    <style type="text/css">  
+    .dateFormat{
+       visibility:hidden;
+    }
+    .dependentListWrapper select{width:83%;}  
+    
+    label, .sfFont {
+        font: 100%/1.5 "Salesforce Sans", Arial, sans-serif;
+        //font-weight: bold;
+    }
+    
+    .select2-dropdown {
+        margin-left: 10px;
+        width: 999px;
+    }
+    
+    .bPageBlock .detailList .labelCol{
+        width: 14.5%;
+    }
+    
+    .bPageBlock textarea {
+        font-family: Salesforce Sans, Arial, sans-serif;1
+    }
+    .bPageBlock input{
+        font-family: Salesforce Sans, Arial, sans-serif;
+    } 
+    .bPageBlock select{
+        font-family: Salesforce Sans, Arial, sans-serif;
+    } 
+    .ui-tabs-anchor{
+        font-weight: bold;
+        font-size: 14px; 
+    }
+    
+           
+    </style>
+    
+    <apex:form id="theForm" rendered="{!eligible}">  
+       
+        <div class="slds">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-grid" style = "margin-right:-10px;">
+                    <div class="slds-media__body">                               
+                        <h1 class="slds-text-heading--medium">Education Application - {!IF(staffType, "Staff", "Child")}</h1>                
+                    </div>
+                    <div class="slds-col slds-no-flex slds-align-middle" id = "btnGroup">
+                        <div class="slds-button-group" role="group">
+                             
+                            <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!saveAndRedirect}" rendered="{!renderSave}" onclick="btnloading();"/>
+                            <apex:commandButton value="Submit" styleClass="slds-button slds-button--neutral" action="{!saveAndSubmit}" rendered="{!renderSubmit}" onclick="if(!confirm('{!$Label.TE_Expense_Application_Confirm_Approval}')){return false;}else{btnloading();}"/>
+                            <apex:commandButton value="Approve" styleClass="slds-button slds-button--neutral" action="{!saveAndApprove}" rendered="{!renderApprove}" onclick="if(!confirm('{!$Label.TE_Confirm_to_Approve}')){return false;}else{btnloading();}"/>
+                            <!--
+                            <apex:commandButton value="Reject" styleClass="slds-button slds-button--neutral" rendered="{!!HCMTabReadOnly}" immediate="true" html-formnovalidate="formnovalidate" reRender="tabs-2">
+                                <apex:param assignTo="{!skipHCMValidation}" value="true"/>
+                            </apex:commandButton>
+                            -->
+                            <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" action="{!cancel}" immediate="true" html-formnovalidate="formnovalidate"/>                       
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <BR/>
+            
+            <!--<apex:message id="showmsg" />-->
+            <apex:pageMessages id="showmsg" />
+                <apex:outputpanel id="staffHeader" rendered="{!staffType}"> <!-- rendereslds-form-element__labeld="{!TextId != ''}" -->
+                    <div class="slds-grid slds-grid--align-left slds-wrap">                  
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Education Application:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--3-of-12">
+                              <apex:outputtext value="{!ea.Name}" style="width:100%;"/>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-12">
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--5-of-12">
+                        </div>
+                        <!--
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <div class="panel panel-info" style="margin-right:12px;" >
+                              <div class="panel-heading" style="width:100%;" ><b><u>Application Summary:</u></b></div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12"></div>
+                        -->
+                    </div>
+                         
+                    <div class="slds-grid slds-grid--align-left slds-wrap">                  
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Created By:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--3-of-12">
+                            <apex:outputtext value="{!createdBy}" styleClass="disabledField" style="width:100%;" />                  
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Submitted Tuition Fee:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style = "margin-bottom:-20px;">
+                            <apex:outputtext value="{!IF (ea.Name != NULL, ea.Applied_Tuition_Fee__c, '-')}" style="width:100%;" />
+                            <!--<apex:outputtext value="{!ea.Applied_Tuition_Fee__c}" style="width:100%;" /> -->
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--1-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Apply Date:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12">
+                            <apex:outputfield value="{!ea.Apply_Date__c}" styleClass="disabledField" style="width:100%;"/>
+                        </div>             
+                         
+                    </div>
+                
+                    <div class="slds-grid slds-grid--align-left slds-wrap">                  
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Applicant:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--3-of-12" style = "margin-bottom:-20px;">
+                            <apex:pageBlock mode="maindetail">
+                                <div class="requiredInput">
+                                <div class="requiredBlock"></div>
+                                    <apex:selectList rendered="{!!applicantTabReadOnly}" id="applicant" value="{!ea.On_Behalf_Of__c}" size="1" style="width:100%;" required="true">
+                                        <apex:selectOptions value="{!applicants}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                                <apex:inputText rendered="{!applicantTabReadOnly}" value="{!ea.On_Behalf_Of__r.Name}" style="width:100%;" styleClass="disabledField"/>
+                            </apex:pageBlock>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Approved Tuition Fee:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12" style = "margin-bottom:-20px;">
+                            <apex:outputtext value="{!IF (ea.Name != NULL, ea.Approved_Tuition_Fee__c, '-')}" style="width:100%;" /> 
+                            <!--<apex:outputtext value="{!ea.Approved_Tuition_Fee__c}" style="width:100%;" /> -->
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--1-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Status:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--2-of-12">
+                            <apex:outputfield value="{!ea.Status__c}" styleClass="disabledField"/>
+                        </div> 
+                        
+                    </div>
+                </apex:outputpanel>
+                
+                <!--
+                <a href="/{!ea.On_Behalf_Of__c}"
+                id="lookup{!ea.On_Behalf_Of__c}opp4"
+                onblur="LookupHoverDetail.getHover('lookup{!ea.On_Behalf_Of__c}opp4').hide();"
+                onfocus="LookupHoverDetail.getHover('lookup{!ea.On_Behalf_Of__c}opp4', '/{!ea.On_Behalf_Of__c}/m?retURL=/{!ea.On_Behalf_Of__c}&isAjaxRequest=1').show();"
+                onmouseout="LookupHoverDetail.getHover('lookup{!ea.On_Behalf_Of__c}opp4').hide();"
+                onmouseover="LookupHoverDetail.getHover('lookup{!ea.On_Behalf_Of__c}opp4', '/{!ea.On_Behalf_Of__c}/m?retURL=/{!ea.On_Behalf_Of__c}&isAjaxRequest=1').show();">
+                {!ea.On_Behalf_Of__c}
+                </a>
+                -->
+                
+                <!--
+                <apex:outputpanel id="amountSummary" rendered="{!staffType}">
+                    <div class="slds-grid slds-grid--align-left slds-wrap"  style = "margin-top:10px;">             
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <div class="panel panel-info" style="margin-right:12px;" >
+                              <div class="panel-heading" style="width:100%;" ><b><u>Amount Summary:</u></b></div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--10-of-12">
+                        </div>
+                    </div>
+                    
+                    <div class="slds-grid slds-grid--align-left slds-wrap">               
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Submitted Tuition Fee:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12" style = "margin-bottom:-20px;">
+                            <apex:outputtext value="{!ea.Applied_Tuition_Fee__c}" style="width:100%;" /> 
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Approved Tuition Fee:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12" style = "margin-bottom:-20px;">
+                            <apex:outputtext value="{!ea.Approved_Tuition_Fee__c}" style="width:100%;" /> 
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--2-of-12">
+                        </div>
+    
+                    </div>
+                </apex:outputpanel>
+                -->
+                
+                <apex:outputpanel id="childHeader" rendered="{!!staffType}">
+                    <div class="slds-grid slds-grid--align-left slds-wrap">                  
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Education Application:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12">
+                              <apex:outputtext value="{!ea.Name}" style="width:100%;"/>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--6-of-12"></div>
+                    </div>
+                         
+                    <div class="slds-grid slds-grid--align-left slds-wrap">                  
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Created By:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12">
+                            <apex:outputtext value="{!createdBy}" styleClass="disabledField" style="width:100%;" />                  
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-12"></div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Apply Date:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12">
+                            <apex:outputfield value="{!ea.Apply_Date__c}" styleClass="disabledField" style="width:100%;"/>
+                        </div>  
+                            <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-12">
+                        </div>                
+                    </div>
+    
+                    <div class="slds-grid slds-grid--align-left slds-wrap">                  
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Applicant:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12" style = "margin-bottom:-20px;">
+                            <apex:pageBlock mode="maindetail">
+                                <div class="requiredInput">
+                                <div class="requiredBlock"></div>
+                                    <apex:selectList rendered="{!!applicantTabReadOnly}" id="applicant2" value="{!ea.On_Behalf_Of__c}" size="1" style="width:100%;" required="true">
+                                        <apex:selectOptions value="{!applicants}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                                <apex:inputText rendered="{!applicantTabReadOnly}" value="{!ea.On_Behalf_Of__r.Name}" style="width:100%;" styleClass="disabledField"/>
+                            </apex:pageBlock>
+                        </div> 
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-12"></div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-12" style="{!IF(isSalesforceOne, "text-align:left", "text-align:right")}">
+                            <label class="slds-form-element__label">Status:</label>
+                        </div>
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--3-of-12">
+                            <apex:outputfield value="{!ea.Status__c}" styleClass="disabledField"/>
+                        </div>   
+                        <div class="slds-col slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-12">
+                        </div>              
+                    </div>
+                </apex:outputpanel>
+            </div>
+
+            <apex:outputpanel >
+            <div id="tabs" style = "width :100%; margin-top:15px;">
+                  <ul>
+                      <li><a href="#tabs-1" class="sfFont" style = "width:140px">Education Details</a></li>
+                      <apex:outputtext rendered="{!staffType}" > <!-- rendered="{!renderHCMTab}" -->
+                      <li><a href="#tabs-2" class="sfFont" style = "width:140px">HCM</a></li>
+                      </apex:outputtext>
+                  </ul>
+                                   
+                  <div id="tabs-1" > 
+                  
+                  <div id="table-scroll" class = "dependentListWrapper" style = "margin-bottom:-10px;">  
+                      <!--<div style = "margin-left:-53px;">-->
+                      <apex:pageBlock mode="maindetail" id="staffApplicant" rendered="{!staffType}" >
+                      
+                        <apex:pageBlockSection columns="{!IF(isSalesforceOne, 1, 2)}">
+                      <!--
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Course Type" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList size="1" value="{!ea.Couse_Type__c}">
+                                        <apex:selectOptions value="{!courseTypes}"/>
+                                        <apex:actionSupport event="onchange" rerender="paymentMethod, staffApplicant"/>
+                                    </apex:selectList>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        
+                        
+                        
+                      -->
+                        <apex:pageBlockSectionItem dataStyle="width:20%" labelStyle="width:7%;">                      
+                              <apex:outputLabel value="Course Type" />
+                            <apex:outputPanel >
+                                <apex:inputField value="{!ea.Couse_Type__c}" required="{!!applicantTabReadOnly}" style="{!IF(applicantTabReadOnly , "width:83%;background-color:#EBEBE4;", "width:83%;")}" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                
+                        <!--<apex:inputField value="{!ea.Couse_Type__c}" required="{!!applicantTabReadOnly}" style="width:83%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>-->
+                   
+                        <apex:pageBlockSectionItem dataStyle="width:30%" labelStyle="width:20%;">
+                            <apex:outputLabel value="Education Institute / Organization" />
+                            <apex:outputPanel >
+                                <apex:inputField value="{!ea.Education__c}" required="{!!applicantTabReadOnly}" style="width:83%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        
+                                     
+                        <apex:inputField value="{!ea.Program_Course_Title__c}" required="{!!applicantTabReadOnly}" style="width:82%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                       
+                        <apex:inputField value="{!ea.Start_Date__c}" required="{!!applicantTabReadOnly}" style="width:83%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <apex:inputField value="{!ea.Course_URL__c}" required="{!!applicantTabReadOnly}" style="width:82%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <apex:inputField value="{!ea.End_Date__c}" required="{!!applicantTabReadOnly}" style="width:83%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Currency" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                <div class="requiredBlock"></div>
+                                    <apex:selectList id="currency" value="{!ea.Currency__c}" size="1" style="width:83%;" required="true" rendered="{!!applicantTabReadOnly}">
+                                        <apex:selectOptions value="{!currencies}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                                <!--<apex:inputTextarea value="{!appliedCurrency}" style="width:70%;background-color:#EBEBE4;color:rgb(84, 84, 84)" styleClass="disabledField" rendered="{!applicantTabReadOnly}"/>-->
+                                <apex:selectList value="{!ea.Currency__c}" size="1" style="width:83%;background-color:#EBEBE4;" disabled="{!applicantTabReadOnly}" rendered="{!applicantTabReadOnly}">
+                                    <apex:selectOptions value="{!currencies}"></apex:selectOptions>
+                                </apex:selectList>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        <apex:inputField value="{!ea.Tuition_Fee__c}" required="{!!applicantTabReadOnly}" style="width:83%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                    
+                    <!--
+                    </apex:pageBlockSection>
+
+                    <apex:pageBlockSection id="paymentMethod" >
+                        
+                        <apex:outputPanel id="ajaxrequest">
+                        <apex:pageBlockSectionItem>
+                            <apex:outputLabel value="Payment Method" />
+                            <apex:outputPanel >
+                                <div class="requiredInput">
+                                <div class="requiredBlock"></div>
+                                    <apex:selectList value="{!ea.Payment_Method__c}" size="1" style="width:71%;" required="true" rendered="{!!applicantTabReadOnly&&ea.Couse_Type__c==null}">
+                                        <apex:selectOptions value="{!paymentMethods}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        
+                    -->
+                        <apex:inputField value="{!ea.Payment_Method__c}" required="{!!applicantTabReadOnly}" rendered="{!!applicantTabReadOnly}"/>
+                        <apex:pageBlockSectionItem rendered="{!applicantTabReadOnly }" >
+                            <apex:outputLabel value="Payment Method" />
+                            <apex:outputPanel >
+                                <apex:inputText value="{!paymentMethod}" required="{!!applicantTabReadOnly}" style="width:82%;" styleClass="disabledField"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        
+                        
+                        <!--<apex:inputField value="{!ea.Tech_Payment_Method__c}" required="{!!applicantTabReadOnly}" style="width:70%;" rendered="{!applicantTabReadOnly }" styleClass="disabledField"/>-->
+                        <!--
+                        <apex:pageBlockSectionItem dataStyle="width:30%" labelStyle="width:23%">
+                            <apex:outputLabel value="Reason of Studying" />
+                            <apex:outputPanel >
+                                <apex:inputField value="{!ea.Reason_of_Studying__c}" style="width:70%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        -->
+                        <apex:inputField value="{!ea.Reason_of_Studying__c}" style="width:83%;height:140%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <!--</apex:outputPanel>-->
+                      </apex:pageBlockSection>
+                       
+                      </apex:pageBlock>
+                      <!--</div>-->
+                     <apex:pageBlock mode="maindetail" id="childApplicant" rendered="{!!staffType}">
+                        <apex:pageBlockSection columns="{!IF(isSalesforceOne, 1, 2)}">
+                        <apex:pageBlockSectionItem dataStyle="width:10%" labelStyle="width:23%">
+                            <apex:outputLabel value="Education Institute / Organization" />
+                            <apex:outputPanel >
+                                <apex:inputField value="{!ea.Education__c}" required="{!!applicantTabReadOnly}" style="width:82%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem dataStyle="width:20%" labelStyle="width:10%">
+                            <apex:outputLabel value="Start Date" />
+                            <apex:outputPanel >
+                                <apex:inputField value="{!ea.Start_Date__c}" required="{!!applicantTabReadOnly}" style="width:62%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                            </apex:outputPanel>
+                        </apex:pageBlockSectionItem>
+                        <!--<apex:inputField value="{!ea.Start_Date__c}" required="{!!applicantTabReadOnly}" style="width:70%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>-->
+                        <apex:inputField value="{!ea.Program_Course_Title__c}" required="{!!applicantTabReadOnly}" style="width:82%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <apex:inputField value="{!ea.End_Date__c}" required="{!!applicantTabReadOnly}" style="width:62%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <apex:inputField value="{!ea.Name_of_Child__c}" required="{!!applicantTabReadOnly}" style="width:82%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        <apex:inputField value="{!ea.Length_of_Program_Year__c}" required="{!!applicantTabReadOnly}" style="width:62%;" styleClass="{!IF(applicantTabReadOnly , "disabledField", "")}"/>
+                        </apex:pageBlockSection>          
+                      </apex:pageBlock>
+
+                  </div>
+                  </div>  
+                  <apex:outputpanel rendered="{!renderHCMTab}">
+                      <div id="tabs-2" style = "margin-bottom:-25px;">
+                          <apex:pageBlock mode="maindetail" id="staffHCM" rendered="{!staffType}">
+                            <apex:pageBlockSection columns="{!IF(isSalesforceOne, 1, 2)}">
+                            <apex:inputField value="{!ea.Relevancy_to_work__c}" required="{!!HCMTabReadOnly}" style="width:82%;" styleClass="{!IF(HCMTabReadOnly, "disabledField", "")}"/>
+                            <apex:pageBlockSectionItem dataStyle="width:30%" labelStyle="width:20%">
+                                <apex:outputLabel value="Reliability of Course / Institute"/>
+                                <apex:outputPanel >
+                                    <apex:inputField value="{!ea.Reliability_of_Course_Institute__c}" required="{!!HCMTabReadOnly}" style="width:82%;" styleClass="{!IF(HCMTabReadOnly, "disabledField", "")}"/>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Currency" />
+                                <apex:outputPanel >                            
+                                    <div class="requiredInput" >
+                                    <div class="requiredBlock" ></div>
+                                    <apex:selectList value="{!ea.Tuition_Fee_Recommended_Currency__c}" size="1" required="true" style="width:83%;" rendered="{!!HCMTabReadOnly}">
+                                        <apex:selectOptions value="{!currencies}"></apex:selectOptions>
+                                    </apex:selectList>
+                                    </div>
+                                    <apex:selectList value="{!ea.Tuition_Fee_Recommended_Currency__c}" size="1" style="width:83%;background-color:#EBEBE4;" rendered="{!HCMTabReadOnly}" styleClass="disabledField">
+                                        <apex:selectOptions value="{!currencies}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+                            <apex:inputField value="{!ea.Tuition_Fee_Recommended__c}" required="{!!HCMTabReadOnly}" style="width:82%;" styleClass="{!IF(HCMTabReadOnly, "disabledField", "")}"/>
+                            <apex:inputField value="{!ea.Remarks__c}" style="width:82%;" styleClass="{!IF(HCMTabReadOnly, "disabledField", "")}"/>
+                          </apex:pageBlockSection>
+                          </apex:pageBlock>
+                          
+                          <apex:pageBlock mode="maindetail" id="childHCM" rendered="false"> <!--rendered="{!!staffType}" -->
+                            <apex:pageBlockSection columns="{!IF(isSalesforceOne, 1, 2)}">
+                            <apex:inputField value="{!ea.Remarks__c}" style="width:82%;" styleClass="{!IF(HCMTabReadOnly, "disabledField", "")}"/>
+                            </apex:pageBlockSection>
+                          </apex:pageBlock>          
+                      </div> 
+                  </apex:outputpanel>  
+
+            </div>
+     </apex:outputpanel>    
+     </apex:form>
+
+</apex:page>

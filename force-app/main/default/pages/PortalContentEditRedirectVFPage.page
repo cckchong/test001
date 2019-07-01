@@ -1,0 +1,9 @@
+<apex:page standardController="Portal_Content__c" extensions="PortalContentOverrideEditButtonCtrl" showHeader="false" sidebar="false">
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <script>
+        $( document ).ready(function() {
+            window.top.location.href = "{!CASE(recordTypeName, 'HTML', '/' & Portal_Content__c.id & '?edit=true', 'Announcement', '/' & Portal_Content__c.id & '?edit=true', 
+                URLFOR($Action.Portal_Content__c.Edit, Portal_Content__c.id, [id = Portal_Content__c.id, retURL = Portal_Content__c.id], true))}";
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,40 @@
+<!-- 
+    Override for Leave Transaction Edit.
+    Redirect back to the Request Header Edit page.
+    action="{!newaction}" 
+ -->
+<apex:page standardController="Leave_Request__c"  extensions="ELeaveTransactionEditController"  action="{!newaction}"    >
+
+    <c:JavascriptUtilsComponent />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <script>
+     
+        if(getIsSalesforceOne()) {
+            var notSupported = '{!notSupported}';
+            if(notSupported == 'true') {
+                alert('{!$Label.ELeave_Edit_Not_Supported}');
+                sforce.one.back();
+            } else {                
+                sforce.one.navigateToURL('{!$Label.ELeave_App_Path}?id={!LeaveRequest.Leave_Application__c}',true)               
+            }            
+        } else { 
+           if ( '{!errorMsg}' != '' ){
+               alert ( '{!errorMsg}' );
+           }
+           window.location.href = '{!returnURL}'; 
+        }
+    </script>
+    
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-xs-12">
+
+                <div style="margin-top:50px;margin-left:5px;" id="TalBackId">
+                    <a href="#" class="bs btn btn-primary" onclick="sforce.one.back();" style="width:150px;">{!$Label.Library_Back}</a>
+                </div>
+                                
+            </div>
+        </div>
+    </div>
+    
+</apex:page>

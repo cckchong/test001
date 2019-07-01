@@ -1,0 +1,214 @@
+<apex:component >
+    <style>
+        .formatColumn img{
+            max-height: 100px;
+        }
+        
+        /*NickWu added for the mobile mode compatibility */
+        @media screen and (min-height:1030px){
+        
+            /* This is for the full screen DIV */
+            .popupBackground {
+                /* Background color */
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+        
+                /* Dimensions */
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 998;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:wait;
+            }
+        
+            /* This is for the message DIV */
+            .PopupPanel {
+                /* Background color */
+                border: solid 1px #EAEAEA;
+                background-color: white;
+                
+                /* Dimensions */
+                left: 50%;
+                width: 200px;
+                height: 50px;
+                margin-left: -100px;
+                top: 20%;
+                margin-top: -25px;
+                z-index: 999;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:pointer;
+                border-radius: 3px;
+            }
+        }
+        
+        /*NickWu added for the desktop version compatibility */
+        @media screen and (max-height:1030px) {
+        
+            /* This is for the full screen DIV */
+            .popupBackground {
+                /* Background color */
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+                
+                /* Dimensions */
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 998;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:wait;
+            }
+            
+            /* This is for the message DIV */
+            .PopupPanel {
+                /* Background color */
+                border: solid 1px #EAEAEA;
+                background-color: white;
+                
+                /* Dimensions */
+                left: 50%;
+                width: 200px;
+                margin-left: -100px;
+                top: 50%;
+                height: 50px;
+                margin-top: -25px;
+                z-index: 999;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:pointer;
+                border-radius: 3px;
+                color: #888;
+            }
+        }
+
+        .TalCustomHeader {
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+        
+        .TalCustomHeader a {
+            text-decoration: none;
+            background: #EAEAEA;
+            border-radius: 2px;
+            color: #888;
+            padding: 5px;
+            font-size: 11pt;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .TalCustomHeader a:hover {
+            text-decoration: none;
+            color: black;
+        }
+        
+        .TalCustomHeader table td{
+            vertical-align: middle;
+            font-size: 13pt;
+            font-weight: bold;
+            letter-spacing: -1px;
+            color: #888;
+        }
+        
+        .TalCustomHeader table {
+            width: 100%;
+        }
+        
+        .bs .row {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+        
+        .TalLibrarySearchBlock {
+            padding: 0px;
+            margin: 0px;
+        }
+        
+        .TalLibrarySearchBlock .bPageBlock {
+            border-top: 1px solid #eaeaea;
+            box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -webkit-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -moz-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -o-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            border-radius: 2px;
+
+        }
+        
+        .TalLibrarySearchExpand {
+            width:100%;
+            text-align:right;
+            display:block;
+            font-size:10pt;
+            font-weight:bold;
+            padding: 5px;
+            background: #EAEAEA;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .TalLibrarySearchCollapse {
+            width:100%;
+            text-align:right;
+            display:block;
+            font-size:10pt;
+            font-weight:bold;
+            padding: 5px;
+            border-radius: 3px;
+            padding-bottom: 10px;
+        }
+        
+        .TalLibrarySearchExpand:hover {
+            background: #F7F7F7;
+        }
+        
+        .TalLibrarySearchBlock a.TalLibrarySearchExpandLink:hover {
+            text-decoration:none;
+        }
+        
+        .bs .btn {
+            font-size: 11px;
+        }
+        
+        .bs .panel {
+            border: 1px solid #ddd;
+        }
+        
+        .TalRestrictChildImg img {
+            height:150px;    
+        }
+        
+        .TalLibraryBooksBlock {
+        /*background: #F8F8F8;
+            border: 1px solid #eaeaea;
+            box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -webkit-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -moz-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -o-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            border-radius: 2px;
+        margin-bottom: 5px;*/
+        }
+        
+        .tal-header {
+            clear: both;
+            padding-top: 8px;
+            padding-bottom: 5px;
+        }
+        
+        select:disabled {
+            color: graytext;
+        }
+
+    </style>
+</apex:component>

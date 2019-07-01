@@ -1,0 +1,3 @@
+<apex:page standardcontroller="Leave_Request__c" recordSetVar="requests"  extensions="ELeaveApproveRejectController" action="{!RejectAction}">
+   
+</apex:page>

@@ -1,0 +1,35 @@
+<!-- Purely for Cancel Leave button linked to Visualforce page on Page Layout -->
+<apex:page standardController="Education_Application__c" sidebar="false" showHeader="false" extensions="TEEducationApplicationCancellationCtrl">
+            <!-- action="{!cancel}"> -->
+
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <c:JavascriptUtilsComponent />
+
+    <script>
+        $(document).ready(function() {
+            if(getIsSalesforceOne()) {
+                var mobileRouteResult = '{!mobileRoute.navResult}';
+                var message = '{!mobileRoute.infoMessage}';
+                
+                if(message != null && message != '') {
+                    alert(message);
+                }
+                
+                if(mobileRouteResult == 'BACK') {
+                    //history.go(-2); // This page comes in via browser navigation, so we trigger browser back instead of Salesforce1 back
+                    sforce.one.back(true);
+                }
+            }
+            else {
+                if (confirm('{!$Label.TE_Application_Confirm_Cancel}')) {
+                    CancelAction();
+                } else {
+                    window.history.back();
+                }
+            }
+        });
+    </script>
+    <apex:form >
+        <apex:actionfunction name="CancelAction" action="{!cancel}" />
+    </apex:form> 
+</apex:page>

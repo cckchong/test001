@@ -1,0 +1,3 @@
+<apex:page standardController="Portal_Content__c" extensions="PortalContentOverrideNewButtonController" action="{!onLoad}">
+ 
+</apex:page>

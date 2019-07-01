@@ -1,0 +1,101 @@
+<apex:page controller="SiteFileBrowser" showHeader="false" >
+
+	<style>
+        .panelClass {
+            height: 100%;
+        }
+    	table.dataTable thead .sorting {
+		  background: url("{!$Resource.sort_both}") no-repeat center right;
+		}
+		table.dataTable thead .sorting_asc {
+		  background: url("{!$Resource.sort_asc}") no-repeat center right;
+		}
+		table.dataTable thead .sorting_desc {
+		  background: url("{!$Resource.sort_desc}") no-repeat center right;
+		}
+    </style>
+    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+	<apex:includeScript value="{!$Resource.jQueryUIMin_1_10_3}" />
+	<apex:includeScript value="{!$Resource.jQueryDataTables}" />
+	<apex:stylesheet value="{!$Resource.jQueryDataTablesCSS}" />
+	<apex:includeScript value="{!$Resource.jQueryDataTables_tableTools}" />
+	<apex:stylesheet value="{!$Resource.jQueryDataTables_tableToolsCSS}" />
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+        $j(document).ready(function(){
+            $j('#activeArticlesTable').dataTable( {
+                "iDisplayLength": 10,
+                "pagingType": "simple_numbers",
+                "aLengthMenu": [1,2,3,5,10],
+                "columnDefs": [ {
+				      "targets": 0,
+				      "searchable": false,
+				      "visible": true
+				    },
+				    {
+				      "targets": 1,
+				      "searchable": true,
+				      "visible": true
+				    }
+				 ],
+				 "order": [ [1, 'asc'] ]
+            } );
+        } );
+        
+        function SelectFile( fileUrl ) {
+            window.opener.CKEDITOR.tools.callFunction(1, fileUrl);
+            window.close() ;
+        }
+	    function selectFolder(id) {
+	        document.location.search = '?folder=' + id;
+	        
+	    }
+    </script>
+
+	<div class="bs wrapper">
+		<div class="bs panel panel-info panelClass">
+			<apex:form >
+				<b style="padding-right: 20px;">Select A Folder:</b>
+				<apex:selectList styleClass="folderSelector" id="folderSelect"
+					value="{!inFolderId}" size="1" onchange="selectFolder(this.value)">
+					<apex:selectOptions value="{!myItems}" />
+				</apex:selectList>
+			</apex:form>
+			<br />
+			<div class="bs panel-body">
+
+				<table id="activeArticlesTable" class="display" cellspacing="0"
+					width="100%">
+					<thead>
+						<tr>
+							<th>Thumbnail</th>
+							<th>File Name</th>
+							<th>Size</th>
+							<th>Content Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						<apex:repeat value="{!files}" var="image">
+							<tr>
+								<td><apex:facet name="header">Thumbnail</apex:facet> <a
+									href="javascript:SelectFile('{!image.url}');"><img
+										src="{!image.url}" width="200" /></a></td>
+								<td><apex:facet name="header">File Name</apex:facet> <a
+									href="javascript:SelectFile('{!image.url}');">{!image.doc.Name}</a>
+								</td>
+								<td><apex:facet name="header">Size</apex:facet>
+									{!ROUND((image.doc.BodyLength / 1000), 1)} kb</td>
+								<td><apex:facet name="header">Content Type</apex:facet>
+									{!image.doc.ContentType}</td>
+							</tr>
+						</apex:repeat>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</apex:page>

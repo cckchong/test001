@@ -1,0 +1,3 @@
+<apex:page StandardController="Travel_Distance__c" extensions="TravelDistanceOverwriteNewController" action="{!redirectIfOnlySingleRecordType}">
+     
+</apex:page>

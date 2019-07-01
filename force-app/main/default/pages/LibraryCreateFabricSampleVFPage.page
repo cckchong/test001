@@ -1,0 +1,83 @@
+<!-- 
+	LibraryCreateFabricSampleVFPage
+	
+	Description: 
+	Allows users to associate a Fabric record to a Sample. 
+	Overrides the "New" action for Sample_Fabric__c
+-->
+<apex:page standardController="Sample_Fabric__c" extensions="LibraryCreateFabricSampleCtrl">
+<apex:form id="theform">
+<br/>
+	<apex:pageMessages />
+	<apex:pageblock title="New Fabric for Sample: {!sampleName}"  rendered="{!AND(bEditMode=true,bEditAccess)}">
+		<apex:pageblockbuttons >
+			<apex:commandButton action="{!createNewButton}" value="Save Fabric"/>
+			<apex:commandButton action="{!saveAndNewButton}" value="Save and New"/>
+			<apex:commandButton action="{!cancelButton}" value="Cancel" />
+		</apex:pageblockbuttons>
+		<span>Populating a Fabric ID and Color ID will overwrite your values with Fabric information from FLS</span>
+		<br/><br/>
+		<apex:pageblocksection columns="2">
+			<apex:inputField value="{!fabric.Sample_Fabric_ID_1__c}" />
+			<apex:inputField value="{!fabric.Color_ID_1__c}" />
+			<apex:pageblocksectionitem ></apex:pageblocksectionitem>
+			<apex:pageblocksectionitem ></apex:pageblocksectionitem>
+			<apex:inputField value="{!fabric.Fls_Content__c}" />
+			<apex:inputField value="{!fabric.Content_Percent__c}" />
+			<apex:inputField value="{!fabric.Fls_Content_2__c}" />
+			<apex:inputField value="{!fabric.Content_Percent_2__c}" />
+			<apex:inputField value="{!fabric.Fls_Content_3__c}" />
+			<apex:inputField value="{!fabric.Content_Percent_3__c}" />
+			<apex:inputField value="{!fabric.Fls_Content_4__c}" rendered="{!!bTGASamples}"/>
+			<apex:inputField value="{!fabric.Content_Percent_4__c}" rendered="{!!bTGASamples}"/>
+			<apex:inputField value="{!fabric.Density_Warp__c}" />
+			<apex:inputField value="{!fabric.Density_Weft__c}" />
+			<apex:inputField value="{!fabric.Warp_Yarn_Size__c}" />
+			<apex:inputField value="{!fabric.Yarn_Type_Warp__c}" />
+			<apex:inputField value="{!fabric.Weft_Yarn_Size__c}" />
+			<apex:inputField value="{!fabric.Yarn_Type_Weft__c}" />
+			<apex:inputField value="{!fabric.Fls_Woven_Type__c}" rendered="{!!bTGASamples}"/>
+			<apex:inputField value="{!fabric.Weave_Knit_Type_TGA__c}" rendered="{!bTGASamples}"/>
+			<apex:inputField value="{!fabric.Fls_Color__c}" />
+			<apex:inputField value="{!fabric.Fls_Pattern__c}" />
+		</apex:pageblocksection>
+		<apex:pageblocksection columns="1">
+			<apex:inputField value="{!fabric.Fls_Fabric_Finish__c}" />		
+		</apex:pageblocksection>
+	</apex:pageblock>
+	<apex:pageblock title="Fabric for Sample: {!sampleName}" rendered="{!OR(bEditMode=false,!bEditAccess)}">
+		<apex:pageblockbuttons >
+			<apex:commandButton action="{!editButton}" value="Edit" rendered="{!bEditAccess}"/>
+			<apex:commandButton action="{!cancelButton}" value="Back"/>
+		</apex:pageblockbuttons>
+		<apex:pageblocksection columns="2">
+			<apex:outputField value="{!fabric.Sample_Fabric_ID_1__c}" rendered="{!ISBLANK(fabric.Fabric_ID__c)}"/>
+			<apex:outputField value="{!fabric.Fabric_ID__c}" rendered="{!!ISBLANK(fabric.Fabric_ID__c)}"/>
+			<apex:outputField value="{!fabric.Color_ID_1__c}" />
+			<apex:pageblocksectionitem ></apex:pageblocksectionitem>
+			<apex:pageblocksectionitem ></apex:pageblocksectionitem>
+			<apex:outputField value="{!fabric.Fls_Content__c}" />
+			<apex:outputField value="{!fabric.Content_Percent__c}" />
+			<apex:outputField value="{!fabric.Fls_Content_2__c}" />
+			<apex:outputField value="{!fabric.Content_Percent_2__c}" />
+			<apex:outputField value="{!fabric.Fls_Content_3__c}" />
+			<apex:outputField value="{!fabric.Content_Percent_3__c}" />
+			<apex:outputField value="{!fabric.Fls_Content_4__c}" rendered="{!!bTGASamples}"/>
+			<apex:outputField value="{!fabric.Content_Percent_4__c}" rendered="{!!bTGASamples}"/>
+			<apex:outputField value="{!fabric.Density_Warp__c}" />
+			<apex:outputField value="{!fabric.Density_Weft__c}" />
+			<apex:outputField value="{!fabric.Warp_Yarn_Size__c}" />
+			<apex:outputField value="{!fabric.Yarn_Type_Warp__c}" />
+			<apex:outputField value="{!fabric.Weft_Yarn_Size__c}" />
+			<apex:outputField value="{!fabric.Yarn_Type_Weft__c}" />
+			<apex:outputField value="{!fabric.Fls_Woven_Type__c}" rendered="{!!bTGASamples}"/>
+			<apex:outputField value="{!fabric.Weave_Knit_Type_TGA__c}" rendered="{!bTGASamples}"/>
+			<apex:outputField value="{!fabric.Fls_Color__c}" />
+			<apex:outputField value="{!fabric.Fls_Pattern__c}" />
+		</apex:pageblocksection>
+		<apex:pageblocksection columns="1">
+			<apex:outputField value="{!fabric.Fls_Fabric_Finish__c}" />			
+		</apex:pageblocksection>
+	</apex:pageblock>
+</apex:form>
+</apex:page>

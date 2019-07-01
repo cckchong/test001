@@ -1,0 +1,474 @@
+<apex:component >
+            <!--Global Variable-->
+            <script>
+                //Use to record the changes of checkboxes and quantity, then it is converted to JSON and passed to controller, but every time the datatable init load will be clear the value
+                var editedCatalogItem = {editedCatalogItemList:[]};
+                
+                //Use to record the changes of  favourite item, whether the catalog item is a favourite item or not
+                var editedfavouriteItem = {editedFavouriteItemList:[]}
+                var displayRereferencePrice = "{!$Label.IDP_Display_Currency_Original}";
+                //var reloadWithCheckedItems = false;
+                //var parentCatalog = "";
+                //var subCatalog = "";
+            </script>                                  
+            <!--DataTable Sava and load checkbox, quantity and favourite item Script-->
+            <script>  
+                
+                //Save the id and quantity of edited Catalog item, i.e. the on change of quanitity and checkbox
+                //The saved records will be cleared if the DataTable is initial build / reset
+                function saveEditedCatalogItemIdQuantity (pCatalogItemId){
+                
+                    var checkboxId = "#ciCheckbox" + pCatalogItemId;
+                    var quantityInputId = "#ciQuantity" + pCatalogItemId;
+                    var ciUOMSelectListId = '#ciUOMSelectList' + pCatalogItemId;
+
+                    var item = {catalogItemId: pCatalogItemId, checked:$(checkboxId).prop("checked"), quantity: $(quantityInputId).val(), unitOfMeasure: $(ciUOMSelectListId).val()};
+        
+                    //for(key in window.editedCatalogItem.editedCatalogItemList){
+                    for(var i=0; i < window.editedCatalogItem.editedCatalogItemList.length; i++) {
+                        if(window.editedCatalogItem.editedCatalogItemList[i].catalogItemId == item.catalogItemId) {
+                            window.editedCatalogItem.editedCatalogItemList.splice(i,1);          
+                            break;
+                        }
+                    }
+                    window.editedCatalogItem.editedCatalogItemList.push(item);
+                                 
+                }
+                
+                //load the id and quantity of edited Catalog item after each draw/changing page, i.e. the on change of quanitity and checkbox
+                function loadEditedCatalogItemIdQuantity (){
+                    var checkboxId = '';
+                    var quantityInputId = '';
+                    var uomSelectListId = '';
+                    //for (key in window.editedCatalogItem.editedCatalogItemList) {
+                    for(var i=0; i < window.editedCatalogItem.editedCatalogItemList.length; i++) {
+
+                        checkboxId = "#ciCheckbox" + window.editedCatalogItem.editedCatalogItemList[i].catalogItemId;
+                        quantityInputId = "#ciQuantity" + window.editedCatalogItem.editedCatalogItemList[i].catalogItemId;    
+                        uomSelectListId = "#ciUOMSelectList" + window.editedCatalogItem.editedCatalogItemList[i].catalogItemId;
+                        
+                        $(checkboxId).prop('checked', window.editedCatalogItem.editedCatalogItemList[i].checked);
+                        $(quantityInputId).val(window.editedCatalogItem.editedCatalogItemList[i].quantity);            
+                        $(uomSelectListId).val(window.editedCatalogItem.editedCatalogItemList[i].unitOfMeasure);
+
+                    }
+                }
+                
+                //-------------------------used in uat but outdated------------------------
+                /*
+                function saveEditedFavouriteItemImageStatus (pCatalogItemId){
+                
+                    var favouriteButtonId = "#ciFavouriteButtonImage" + pCatalogItemId;
+
+                    var item = {catalogItemId: pCatalogItemId, FavouriteItemImage: $(favouriteButtonId).prop("src")};
+
+
+                    for(var i=0; i < window.editedfavouriteItem.editedFavouriteItemList.length; i++) {
+                        if(window.editedfavouriteItem.editedFavouriteItemList[i].catalogItemId == item.catalogItemId) {
+                            window.editedfavouriteItem.editedFavouriteItemList.splice(i,1);          
+                        }
+                    }
+                    window.editedfavouriteItem.editedFavouriteItemList.push(item);
+
+                }
+                */
+                //----------------------------------------------------------------------
+                
+                function saveEditedFavouriteItemImageStatus (pCatalogItemId, isMass){
+                
+                    var favouriteButtonId = "#ciFavouriteButtonImage" + pCatalogItemId;
+                    
+                    if(isMass) {
+                        var item = {catalogItemId: pCatalogItemId, FavouriteItemImage: location.protocol + "//" + location.host + "{!$Resource.IDP_Remove_From_Favourite_Button_Icon}"};
+                    }
+                    else {
+                        var item = {catalogItemId: pCatalogItemId, FavouriteItemImage: $(favouriteButtonId).prop("src")};
+                    }
+                    for(var i=0; i < window.editedfavouriteItem.editedFavouriteItemList.length; i++) {
+                        if(window.editedfavouriteItem.editedFavouriteItemList[i].catalogItemId == item.catalogItemId) {
+                            window.editedfavouriteItem.editedFavouriteItemList.splice(i,1);          
+                        }
+                    }
+                    window.editedfavouriteItem.editedFavouriteItemList.push(item);
+
+                }
+                                
+                function loadEditedFavouriteItemImageStatus() {
+                
+                    var favouriteButtonId = "";
+                    for(var i=0; i < window.editedfavouriteItem.editedFavouriteItemList.length; i++) {
+                        favouriteButtonId = "#ciFavouriteButtonImage" + window.editedfavouriteItem.editedFavouriteItemList[i].catalogItemId;
+                        $(favouriteButtonId).prop("src", window.editedfavouriteItem.editedFavouriteItemList[i].FavouriteItemImage);
+                    } 
+                }
+                
+                function preventEmptyQuantity(pCatalogItemId) {
+                    var quantityInputId = "#ciQuantity" + pCatalogItemId;
+                    var quantityInput = $(quantityInputId);
+                    if(quantityInput.val() == null || quantityInput.val() == "") {
+                        quantityInput.val(1);    
+                    }
+                    
+                }
+            </script>
+            <!--DataTale Button script-->
+            <script>
+                //used in IDPBrowseCatalogVFP and IDPFavouriteListVFP
+                //in IDPBrowseCatalogVFP, it is using ajax controller's full.itemdata.id, i.e. Catalog_Item__r.Id
+                //in IDPFavouriteListVFP, it is using existingFavouriteItemMap's key, which is Catalog_Item__r.Id only, without the UOM
+                function singleAddToCartOnePara(pCatalogItemId){
+                    var inputId = "#ciQuantity" + pCatalogItemId;
+                    var ciUOMSelectListId = '#ciUOMSelectList' + pCatalogItemId;
+                    singleAddToCartParaFunction(pCatalogItemId, $(inputId).val(), $(ciUOMSelectListId).val());
+                    alert("{!$Label.IDP_Add_To_Cart_Message}");
+                }
+                //used in IDPBrowseCatalogVFP
+                //in IDPBrowseCatalogVFP, it is using ajax controller's full.itemdata.id, i.e. Catalog_Item__r.Id
+                function singleAddToFavouriteItemOnePara(pCatalogItemId){
+                    var favouriteButtonId = "#ciFavouriteButtonImage" + pCatalogItemId;
+                    singleAddRemoveFavouriteItemParaFunction(pCatalogItemId);
+                    
+                    if($(favouriteButtonId).prop("src") == location.protocol + "//" + location.host + "{!$Resource.IDP_Add_To_Favourite_Button_Icon}"){
+                        $(favouriteButtonId).prop("src","{!$Resource.IDP_Remove_From_Favourite_Button_Icon}");
+                        alert("{!$Label.IDP_Add_To_Favourite_List_Message}"); 
+                    }
+                    else if($(favouriteButtonId).prop("src") == location.protocol + "//" + location.host + "{!$Resource.IDP_Remove_From_Favourite_Button_Icon}") {
+                        $(favouriteButtonId).prop("src","{!$Resource.IDP_Add_To_Favourite_Button_Icon}");
+                        alert("{!$Label.IDP_Remove_From_Favourite_List_Message}"); 
+
+                    }
+                    
+                }   
+                
+                function removeSingleItemRow (pCatalogId) {
+                    var itemRowId = "#ciRow" + pCatalogId;
+                    var table = $("#itemTable").DataTable();
+                    var row = table.row( $(itemRowId));
+                    //set the draw as false means remain the same page
+                    row.remove().draw(false);
+                }
+
+                function removeMultipleItemRow () {
+                    var itemRowId = "";
+                    var table = $("#itemTable").DataTable();
+                    var row = null;
+
+                    for(var i=0; i < window.editedCatalogItem.editedCatalogItemList.length;) {
+                        if(window.editedCatalogItem.editedCatalogItemList[i].checked == true){
+                            itemRowId = "#ciRow" + window.editedCatalogItem.editedCatalogItemList[i].catalogItemId;
+            
+                            row = table.row(itemRowId);
+                            row.remove().draw(false);
+                            window.editedCatalogItem.editedCatalogItemList.splice(i,1);
+                        }
+                        else {
+                            i++;
+                        }
+                    }
+                }
+            </script>  
+            
+            <!--Checkbox Script-->
+            
+            <script>
+                function checkAll(obj,cName) {
+                    var checkboxs = document.getElementsByName(cName); 
+                    for(var i=0; i<checkboxs.length; i++) {
+                        $(checkboxs[i]).prop("checked",obj.checked);
+                        $(checkboxs[i]).trigger('change');
+                    } 
+                   
+                }      
+                
+                function updateCheckAllCheckbox(pCheckBox, pPageDrawMode) {
+                    var checkedAllCheckbox = document.getElementsByName("ciCheckboxCheckedAll"); 
+                    var checkboxs = document.getElementsByName("ciCheckbox"); 
+        
+                    if($(pCheckBox).prop("checked") == false) {
+                        $(checkedAllCheckbox).prop("checked", false);
+                    }
+                    
+                    //check if with all checkbox are checked or not
+                    for(var i=0; i<checkboxs.length; i++) {
+                        if($(checkboxs[i]).prop("checked") == false) {
+                            //Only when user is changing page will directly set the Check All checkbox to false
+                            //Because the checkAll() function is checking the checkbox one by one, so the Check All checkbox should not be immediately set to false once this function found a not checked checkbox
+                            if(pPageDrawMode == true) {
+                                $(checkedAllCheckbox).prop("checked", false);
+                            }
+                            break;
+                        }
+                        
+                        if(i == checkboxs.length-1) {
+                            if($(checkboxs[i]).prop("checked") == true) {
+                                $(checkedAllCheckbox).prop("checked", true);
+                            }
+                        }
+                    }
+                }
+                
+            </script>
+            
+            <!--UI Setting Script-->
+            <script>       
+                function setSearchPicklist(){
+                    $(".js-basic-single").select2({
+                    //    placeholder: "{!$Label.IDP_Search_Catalog_Placeholder}"
+                    });
+                }
+                
+                /*
+                //function to populate the catalog List from Catalog__c Object
+                function setCatalogList(pCatalogJSON) {
+        
+                    var json_obj = pCatalogJSON;
+                    var output = '';
+                    var levelTwoOutput = '';
+                    var parentCatalogIdArray= [];
+                    
+                    //for (var i in json_obj) {
+                    for(var i=0; i < json_obj.length; i++) {
+                        if(json_obj[i].Parent_Catalog__c == null){                
+                            output += '<li><a href="#" class="sidebarParentLevel" id="' + json_obj[i].Id + '" >';
+                            output +=  json_obj[i].Catalog_Name__c;
+                            output += '<span class="fa arrow"></span></a>';
+                            output += '<ul class="nav nav-second-level">';
+                            output += json_obj[i].Id + '</ul></li>';
+                            parentCatalogIdArray.push(json_obj[i].Id);
+                        }
+                        else if(json_obj[i].Parent_Catalog__c != null){
+                                            
+                            levelTwoOutput = '<li><a href="#" class="sidebarSubLevel" '
+                            levelTwoOutput += 'onclick="sidebarResetDataTable(\''+ json_obj[i].Id + '\');'
+                            //levelTwoOutput += 'setBreadcrumbsVariables(\'' + json_obj[i].Parent_Catalog__r.Catalog_Name__c + '\',\'' + json_obj[i].Catalog_Name__c + '\');
+                            //levelTwoOutput += 'saveBreadcrumbsVariables(\'' + json_obj[i].Parent_Catalog__r.Catalog_Name__c + '\',\'' + json_obj[i].Catalog_Name__c + '\');">';
+
+                            var temp = '/' + json_obj[i].Parent_Catalog__r.Catalog_Name__c + '/' + json_obj[i].Catalog_Name__c;
+                            levelTwoOutput += 'setBreadcrumbsVariables(\'' +temp + '\');">'';
+                            levelTwoOutput += json_obj[i].Catalog_Name__c + '</a></li>' + json_obj[i].Parent_Catalog__c + '</ul></li>';
+                            output = output.replace(json_obj[i].Parent_Catalog__c + '</ul></li>', levelTwoOutput);   
+                        }                
+                    }
+                    
+                    //for (var i in parentCatalogIdArray) {
+                    for(var i=0; i < parentCatalogIdArray.length; i++) {
+                        output = output.replace(parentCatalogIdArray[i] + '</ul></li>', '</ul></li>');  
+                    }       
+                    
+                    $('#side-menu').html(output);
+                    $('#side-menu').metisMenu();
+                    
+                }
+                */
+        
+                function setSidebarCatalogList (pCatalogJSON) {
+                    var output = '';
+                    var levelTwoOutput = '';
+                    var parentCatalogIdArray= [];
+                    var isGroupCat = false;
+                    console.log(pCatalogJSON);
+                    for(var levelOneId in pCatalogJSON) {  
+                        var levelOneCatalogName = '';
+                        for(var levelTwoId in pCatalogJSON[levelOneId]) {
+                            levelOneCatalogName = pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.Catalog_Name__c;
+                            isGroupCat  = pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.is_Group_Catalog__c;
+                            break;
+                        }
+                        if(!isGroupCat){
+                            continue;
+                        }
+                        output += '<li><a href="#" class="sidebarParentLevel" id="' + levelOneId + '" ';
+                        output += 'onclick="sidebarResetDataTable(\''+ levelOneId  + '\', false);';
+                        output += 'setBreadcrumbsVariables(\'' + '/ ' + levelOneCatalogName + '\');">';
+                        output += levelOneCatalogName;
+                        output += '</ul><span class="fa arrow"></span></a>';
+                        for(var levelTwoId in pCatalogJSON[levelOneId]) {
+                            output += '<ul class="nav nav-second-level">';
+                            output += '<li><a href="#" class="sidebarSubLevel" '
+                            output += 'onclick="sidebarResetDataTable(\''+ levelTwoId  + '\', false);'
+                            var temp = '/ ' + levelOneCatalogName + '/ ' + pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c;
+                            output += 'setBreadcrumbsVariables(\'' +temp + '\');">';                            
+                            output += pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c + '</a></li></ul>';
+                        }
+                        output += '</li>';
+                    }
+                    for(var levelOneId in pCatalogJSON) {  
+                        var levelOneCatalogName = '';
+                        for(var levelTwoId in pCatalogJSON[levelOneId]) {
+                            levelOneCatalogName = pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.Catalog_Name__c;
+                            isGroupCat  = pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.is_Group_Catalog__c;
+                            break;
+                        }
+                        if(isGroupCat){
+                            continue;
+                        }
+                        output += '<li><a href="#" class="sidebarParentLevel" id="' + levelOneId + '" ';
+                        output += 'onclick="sidebarResetDataTable(\''+ levelOneId  + '\', false);';
+                        output += 'setBreadcrumbsVariables(\'' + '/ ' + levelOneCatalogName + '\');">';
+                        output += levelOneCatalogName;
+                        output += '</ul><span class="fa arrow"></span></a>';
+                        for(var levelTwoId in pCatalogJSON[levelOneId]) {
+                            output += '<ul class="nav nav-second-level">';
+                            output += '<li><a href="#" class="sidebarSubLevel" '
+                            output += 'onclick="sidebarResetDataTable(\''+ levelTwoId  + '\', false);'
+                            var temp = '/ ' + levelOneCatalogName + '/ ' + pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c;
+                            output += 'setBreadcrumbsVariables(\'' +temp + '\');">';                            
+                            output += pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c + '</a></li></ul>';
+                        }
+                        output += '</li>';
+                    }
+                    
+                    /*
+                    for(var levelOneId in pCatalogJSON) {  
+
+                        var levelOneCatalogName = '';
+                        output += '<li><a href="#" class="sidebarParentLevel" id="' + levelOneId + '" ';
+                        output += 'onclick="sidebarResetDataTable(\''+ levelOneId  + '\', false);';
+
+                        for(var levelTwoId in pCatalogJSON[levelOneId]) {
+
+                            levelOneCatalogName = pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.Catalog_Name__c;
+                             
+                            //console.log(pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.Catalog_Name__c);
+                            break;
+                        }
+
+                        output += 'setBreadcrumbsVariables(\'' + '/ ' + levelOneCatalogName + '\');">';
+                        output += levelOneCatalogName;
+                        output += '</ul><span class="fa arrow"></span></a>';
+
+
+
+                        for(var levelTwoId in pCatalogJSON[levelOneId]) {
+                            output += '<ul class="nav nav-second-level">';
+                            output += '<li><a href="#" class="sidebarSubLevel" '
+                            output += 'onclick="sidebarResetDataTable(\''+ levelTwoId  + '\', false);'
+                            //output += 'setBreadcrumbsVariables(\'' + pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.Catalog_Name__c + '\',\'' + pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c + '\');';
+                            //output += 'saveBreadcrumbsVariables(\'' + pCatalogJSON[levelOneId][levelTwoId].Parent_Catalog__r.Catalog_Name__c + '\',\'' + pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c + '\');">';
+                            var temp = '/ ' + levelOneCatalogName + '/ ' + pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c;
+                            output += 'setBreadcrumbsVariables(\'' +temp + '\');">';                            
+                            output += pCatalogJSON[levelOneId][levelTwoId].Catalog_Name__c + '</a></li></ul>';
+                        }
+                        output += '</li>';
+                    }                    
+                    */
+                    
+                    /*
+                    for(var i=0; i < pCatalogJSON.length; i++) {
+                            output += '<li><a href="#" class="sidebarParentLevel" id="' + pCatalogJSON[i].Id + '" >';
+                            output +=  pCatalogJSON[i].Catalog_Name__c;
+                            output += '<span class="fa arrow"></span></a>';
+                            output += '<ul class="nav nav-second-level">';
+                            output += pCatalogJSON[i].Id + '</ul></li>';
+                            parentCatalogIdArray.push(pCatalogJSON[i].Id);
+                    }
+
+                    */
+                    $('#side-menu').html(output);
+                    $('#side-menu').metisMenu();
+                }
+        
+                function DEL_setBreadcrumbsVariables (pParentCatalogName, pSubCatalogName) {    
+                
+                    var output = document.getElementById("{!$Component.breadcrumbText}"); 
+                    output.innerHTML = '/ ' + pParentCatalogName;
+                    if(pSubCatalogName != null) {
+                    output.innerHTML += ' / ' + pSubCatalogName;
+                    }
+                
+                }
+                function setBreadcrumbsVariables (pParentCatalogNameSubCatalogName) {    
+                   var output = document.getElementById("{!$Component.breadcrumbText}"); 
+                    output.innerHTML = pParentCatalogNameSubCatalogName;
+                    
+                    /*
+                    if(pSubCatalogName != null) {
+                    output.innerHTML += ' / ' + pSubCatalogName;
+                    }
+                    */
+                }        
+            </script>  
+            
+            <!--Display Original/ Local Reference Price script-->
+            <script>
+                function setDisplayReferencePrice (pSelectedSelectOption) {
+                    displayRereferencePrice = pSelectedSelectOption;
+                    var table = $('#itemTable').DataTable();
+                    if(pSelectedSelectOption == "{!$Label.IDP_Display_Currency_Local}") {
+                       $( ".originalReference" ).hide();
+                       $( ".localReference" ).show();
+
+                    }
+                    else {
+                        $( ".originalReference" ).show();
+                        $( ".localReference" ).hide();
+                    }
+                    
+                }
+               
+                
+                function calculateLocalReferencePrice(pExistingFavouriteItemJSON, pFromToCurrencyIdExchangeRateMapJSON) {
+                
+                    var existingFavouriteJSON = pExistingFavouriteItemJSON;
+                    var fromToJSON = pFromToCurrencyIdExchangeRateMapJSON;
+                    
+                    
+                    var ciLocalCurrency = "";
+                    var ciLocalCurrencyId = "";
+                    var ciLocalReferencePrice = "";
+                    var ciLocalReferencePriceId = "";
+                    var ciOriginalAmountCurrencyId = "";
+                    var ciOriginalAmount = "";
+                    var ciOriginalAmountId = "";
+                    var ciLocalAmountCurrencyId = "";
+                    var ciLocalAmount = "";
+                    var ciLocalAmountId = "";
+                    var ciQuantityId = "";
+                    for(var key in existingFavouriteJSON) {
+                        
+                        ciLocalCurrencyId = "#ciLocalReferenceCurrency" + key;
+                        ciLocalReferencePriceId = "#ciLocalReferencePrice" + key;
+                        ciQuantityId = "#ciQuantity" + key;
+                        ciLocalAmountCurrencyId = "#ciLocalAmountCurrency" + key;
+                        ciLocalAmountId = "#ciLocalAmount" + key;
+                        
+                        ciOriginalAmountCurrencyId  = "#ciOriginalAmountCurrency" + key;
+                        ciOriginalAmountId = "#ciOriginalAmount" + key;
+                        
+                        if(existingFavouriteJSON[key].Catalog_Item__r.hasOwnProperty('Reference_Price__c') == true) {
+                            ciOriginalAmount =  (existingFavouriteJSON[key].Catalog_Item__r.Reference_Price__c * $(ciQuantityId).val()).toFixed(2);
+                        }
+                        else {
+                            ciOriginalAmount = "";
+                        }
+
+
+                        if(fromToJSON.hasOwnProperty(existingFavouriteJSON[key].Catalog_Item__r.Currency__c) == true) {
+                            ciLocalCurrency = fromToJSON[existingFavouriteJSON[key].Catalog_Item__r.Currency__c].To_Currency__r.Name;
+                            ciLocalReferencePrice = (existingFavouriteJSON[key].Catalog_Item__r.Reference_Price__c * fromToJSON[existingFavouriteJSON[key].Catalog_Item__r.Currency__c].Rate__c).toFixed(2);
+                            
+                            ciLocalAmount = (ciLocalReferencePrice * $(ciQuantityId).val()).toFixed(2);
+                        }
+                        else {
+                            ciLocalCurrency = "{!$Label.IDP_Not_Avaiable_Exchange_Rate_Message}";
+                            ciLocalReferencePrice = "";
+                            ciLocalAmount = "";
+                        }
+                        
+                        $(ciLocalCurrencyId).html(ciLocalCurrency);                
+                        $(ciLocalReferencePriceId).html(ciLocalReferencePrice);  
+                        if(existingFavouriteJSON[key].Catalog_Item__r.hasOwnProperty('Currency__c') == true) {
+                            $(ciOriginalAmountCurrencyId).html(existingFavouriteJSON[key].Catalog_Item__r.Currency__r.Name);
+                        }
+                        else {
+                            $(ciOriginalAmountCurrencyId).html("{!$Label.IDP_Not_Available_Reference_Price_Message}");
+                        }
+                        $(ciOriginalAmountId).html(ciOriginalAmount);
+ 
+                        $(ciLocalAmountCurrencyId).html(ciLocalCurrency);      
+                        $(ciLocalAmountId).html(ciLocalAmount);
+                    }
+
+                }
+            </script>
+</apex:component>

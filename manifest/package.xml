@@ -14,11 +14,12 @@
     </types>
     <types>
         <members>*</members>
-        <name>ApexTestSuite</name>
+        <name>ApexTrigger</name>
     </types>
+    <!--
     <types>
         <members>*</members>
-        <name>ApexTrigger</name>
+        <name>ApexTestSuite</name>
     </types>
     <types>
         <members>*</members>
@@ -32,5 +33,6 @@
         <members>*</members>
         <name>StaticResource</name>
     </types>
+    -->
     <version>45.0</version>
 </Package>

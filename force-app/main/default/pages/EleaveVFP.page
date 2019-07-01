@@ -1,0 +1,1145 @@
+<!-- 
+    EleaveVFP    
+    Main page for the E-Leave New Request page
+-->
+
+<apex:page controller="EleaveController" docType="html-5.0" showHeader="true" sidebar="true">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <!--<apex:includeScript value="{!URLFOR($Resource.bootstrap, '/js/bootstrap.min.js')}" /> -->
+    <apex:includeScript value="{!URLFOR($Resource.dc_auto_complete, 'json2.js')}"  />
+    <c:JavascriptUtilsComponent />
+    
+     <style>
+        .bs .row {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+        .bs .btn {
+            color: #333;
+            margin: 1px;
+            padding: 2px 3px;
+            border: 1px solid #b5b5b5;
+            border-bottom-color: #7f7f7f;
+            background: #e8e8e9 url('/img/alohaSkin/btn_sprite.png') repeat-x right top;
+            font-weight: bold;
+            font-size: .9em;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+        }
+        .bs .mobileBtn {
+            background-image: none;
+            border-radius: 2px;
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+        .bs .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 3px;
+            padding-top: 5px;
+        }
+        .TalCustomHeader {
+            padding-bottom: 10px;
+            padding-top: 10px;
+            
+        }
+        .TalCustomHeader a {
+            text-decoration: none;
+            background: #EAEAEA;
+            border-radius: 2px;
+            color: #888;
+            padding: 5px;
+            font-size: 11pt;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        .TalCustomHeader a:hover {
+            text-decoration: none;
+            color: black;
+        }
+        .TalCustomHeader table td{
+            vertical-align: middle;
+            font-size: 12pt;
+            font-weight: bold;
+            letter-spacing: -1px;
+            color: #767676;
+        }
+        .TalCustomHeader table {
+            width: 100%;
+        }
+        .tal-bottom-border {
+            padding-bottom: 5px;
+            border-bottom: 1px solid #EAEAEA;
+        }
+        .tal-simulate-disabled-input {
+            border: 1px solid #A9A9A9;
+            padding: 1px;
+            margin-top: 0px;
+            display: block;
+            background: #EBEBE4;
+            height: 19px;
+        }
+        .tal-error {
+            border: 1px solid #E0A2A2;
+            background: #FDE4E4;
+            border-radius: 2px;
+            padding: 5px;
+            margin-bottom: 15px;
+            color: red;
+        }
+         
+        
+        /*NickWu added for the mobile mode compatibility */
+        @media screen and (min-height:1030px){
+        
+            /* This is for the full screen DIV */
+            .popupBackground {
+                /* Background color */
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+        
+                /* Dimensions */
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 998;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:wait;
+            }
+        
+            /* This is for the message DIV */
+            .PopupPanel {
+                /* Background color */
+                border: solid 1px #EAEAEA;
+                background-color: white;
+                
+                /* Dimensions */
+                left: 50%;
+                width: 200px;
+                height: 50px;
+                margin-left: -100px;
+                top: 20%;
+                margin-top: -25px;
+                z-index: 999;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:pointer;
+                border-radius: 3px;
+            }
+        }
+        
+        /*NickWu added for the desktop version compatibility */
+        @media screen and (max-height:1030px) {
+        
+            /* This is for the full screen DIV */
+            .popupBackground {
+                /* Background color */
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+                
+                /* Dimensions */
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 998;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:wait;
+            }
+            
+            /* This is for the message DIV */
+            .PopupPanel {
+                /* Background color */
+                border: solid 1px #EAEAEA;
+                background-color: white;
+                
+                /* Dimensions */
+                left: 50%;
+                width: 200px;
+                margin-left: -100px;
+                top: 50%;
+                height: 50px;
+                margin-top: -25px;
+                z-index: 999;
+                position: fixed;
+                
+                /* Mouse */
+                cursor:pointer;
+                border-radius: 3px;
+                color: #888;
+            }
+        }
+         
+        @media only screen
+        and (min-device-width : 320px)
+        and (max-device-width : 480px) {
+            input[type="text"], select {
+                padding-top: 5px;
+                padding-bottom: 5px;
+
+            }
+            .tal-simulate-disabled-input {
+
+                height: 25px;
+                padding-top: 6px;
+                padding-bottom: 6px;
+            }
+        }
+         
+        .tal-label-col {
+            width: 70px;
+            vertical-align:top;
+        }
+        .TalUserDropDown input {
+            width:250px;    
+        }
+     </style>
+    <apex:pageMessages />
+    <apex:actionStatus id="ajaxStatusLoader" stopText="">
+        <apex:facet name="start">
+            <div>
+                <div class="popupBackground" />
+                <div class="PopupPanel">
+                    <table border="0" width="100%" height="100%">
+                        <tr>
+                            <td align="center"><b>{!$Label.Library_General_Wait}</b></td>
+                        </tr>
+                        <tr>
+                            <td align="center"><img src="{!$Resource.Loading_Image}"/></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </apex:facet>
+    </apex:actionStatus>
+    <div class="bs container">
+        <div class="bs row">
+            <div class ="bs col-xs-12">
+                <apex:form id="form" styleclass="bs form-inline">
+                   
+                    <div class="TalCustomHeader">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td width="32px">
+                                        <img src="/img/icon/plane24.png" />
+                                    </td>
+                                    <td width="180px">
+                                        {!$Label.ELeave_New_Leave_Requests}
+                                    </td>
+                                    <td>
+                                        <apex:actionStatus id="pageLoadingStatus">
+                                            <apex:facet name="start">
+                                                <img src="/img/loading.gif"/>
+                                            </apex:facet>
+                                        </apex:actionStatus>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <apex:pageBlock mode="maindetail">
+                    
+                        <apex:pageBlock >
+                            <div class="bs row">
+                                <div class="bs col-md-4"> 
+                                    <apex:outputText rendered="{!request.Name != '' }">                                       
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="tal-label-col">
+                                                        <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Application No."> </apex:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputText value="{!request.Name}"  disabled="true" style="width:188px" />
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputText>
+                                </div>
+                                <div class="bs col-sm-4" style="text-align:left;">
+                                    
+                                </div>
+                                <div class="bs col-sm-4" style="text-align:right;">
+                                    <apex:commandButton value="Save"  action="{!saveAction}" 
+                                                        oncomplete="initPage();mobileNavigation();" rerender="form,TalJsSection"
+                                                        status="ajaxStatusLoader"
+                                                        styleclass="{!IF(isMobile, 'mobileBtn', '')}"
+                                                        rendered="{!editable}"
+                                                        onclick="TimeOutchecker()"
+                                                        />
+                                    &nbsp;
+                                    <apex:outputPanel id="Submit" >
+                                        <apex:variable var="advchecker" value="{!0}"/>
+                                        <apex:variable var="advval" value="{!0}"/>
+                                        <apex:variable var="supportingDocRequire" value=""/>
+                                        <apex:repeat var="LeaveBalanceKey"  value="{!mapLeaveBalance}" >
+                                            <apex:variable var="advval" value="{!0}"/>
+                                            <apex:repeat var="key" value="{!ListLeaveSection}">
+                                                <apex:outputPanel rendered="{!LeaveBalanceKey == key.leavetransaction.Leave_Type__c}">
+                                                    <apex:variable var="advval" value="{!advval + BLANKVALUE (key.leavetransaction.Deduction__c,0)}"/>
+                                                </apex:outputPanel>
+                                            </apex:repeat>
+                                            <!--<apex:variable var="advchecker" value="{!advchecker + BLANKVALUE(advval,0) - BLANKVALUE(mapLeaveBalance[LeaveBalanceKey].Remaining_Balance__c,0 ) - BLANKVALUE(mappeadingLeaveBalance[LeaveBalanceKey],0)  }"  rendered="{! (BLANKVALUE(advval,0 ) - BLANKVALUE(mapLeaveBalance[LeaveBalanceKey].Remaining_Balance__c,0 ) - BLANKVALUE(mappeadingLeaveBalance[LeaveBalanceKey],0 )  >0) && (  mapLeaveBalance[LeaveBalanceKey].Leave_Type_Code__r.Allow_Advanced_Leave__c ) }" />-->
+
+                                            <apex:variable var="advchecker" value="{!advchecker + BLANKVALUE(advval,0) - BLANKVALUE(mapLeaveBalance[LeaveBalanceKey].Available_Balance_Days__c, 0 )   }"  rendered="{! (BLANKVALUE(advval,0 ) - BLANKVALUE(mapLeaveBalance[LeaveBalanceKey].Available_Balance_Days__c,0 )  >0) &&( BLANKVALUE(mapLeaveBalance[LeaveBalanceKey].Available_Balance_Days__c,0 ) > 0 ) &&( BLANKVALUE(advval,0)> 0 )&&(  mapLeaveBalance[LeaveBalanceKey].Leave_Type_Code__r.Allow_Advanced_Leave__c ) }" />
+                                            <apex:variable var="advchecker" value="{!advchecker + BLANKVALUE(advval,0)}"  rendered="{! BLANKVALUE(mapLeaveBalance[LeaveBalanceKey].Available_Balance_Days__c,0 ) <= 0   &&( BLANKVALUE(advval,0)> 0 )&&(  mapLeaveBalance[LeaveBalanceKey].Leave_Type_Code__r.Allow_Advanced_Leave__c ) }" />
+                                        </apex:repeat>
+                                        <apex:repeat var="key" value="{!ListLeaveSection}">
+                                            <apex:variable var="supportingDocRequire" value="{!supportingDocRequire} {!key.leavetransaction.Leave_Type__r.Display_Name__c} ({!key.leavetransaction.From_Date__c} - {!key.leavetransaction.To_Date__c}): Require Supporting Document. \n" rendered="{!key.leavetransaction.Required_Supporting_Document__c}"/>
+                                            <!--<apex:variable var="supportingDocRequire" value="Require Supporting Document" rendered="{!key.leavetransaction.Required_Supporting_Document__c}"/>-->
+                                            <!--
+                                            =================================\n
+                                            {!supportingDocRequire} {!key.leavetransaction.Leave_Type__r.Display_Name__c} ({!key.leavetransaction.From_Date__c} - {!key.leavetransaction.To_Date__c}): Require Supporting Document. \n
+                                            {!key.leavetransaction.Required_Supporting_Document__c}
+                                            =================================\n
+                                            -->
+                                        </apex:repeat>
+                                        
+                                        <apex:commandButton value="Submit" action="{!submitAction}"  
+                                                            styleclass="{!IF(isMobile, 'mobileBtn', '')}"
+                                                            rendered="{!advchecker == 0  && editable && supportingDocRequire == ''  }" 
+                                                            oncomplete="initPage();mobileNavigation();"                                                            
+                                                            status="ajaxStatusLoader"
+                                                            rerender="form,TalJsSection" 
+                                                            onclick="TimeOutchecker()"
+                                                            />
+                                                                                                 
+                                        <apex:commandButton value="Submit" action="{!submitAction}"
+                                                            styleclass="{!IF(isMobile, 'mobileBtn', '')}"
+                                                            rerender="form,TalJsSection"
+                                                            status="ajaxStatusLoader"
+                                                            oncomplete="initPage();mobileNavigation();"
+                                                            rendered="{!advchecker > 0  &&  editable && supportingDocRequire == '' }"
+                                                            onclick="TimeOutchecker();if(!confirm(({!advchecker}).toFixed(3) +' day(s) will be counted as Advance Leave. After getting first round approval, this request will be routed to a second approver')){return;}"     />
+                                        
+                                        <apex:commandButton value="Submit" action="{!submitAction}"
+                                                            styleclass="{!IF(isMobile, 'mobileBtn', '')}"
+                                                            rerender="form,TalJsSection"
+                                                            status="ajaxStatusLoader"
+                                                            oncomplete="initPage();mobileNavigation();"
+                                                            rendered="{!advchecker ==  0  && editable && supportingDocRequire != '' }"
+                                                            onclick="TimeOutchecker();if(!confirm('{!supportingDocRequire}')){return;}"     />
+                    
+                                        <apex:commandButton value="Submit" action="{!submitAction}"
+                                                            styleclass="{!IF(isMobile, 'mobileBtn', '')}"
+                                                            rerender="form,TalJsSection"
+                                                            status="ajaxStatusLoader"
+                                                            oncomplete="initPage();mobileNavigation();"
+                                                            rendered="{!advchecker >  0  && editable && supportingDocRequire != '' }"
+                                                            onclick="TimeOutchecker();if(!confirm('{!supportingDocRequire}')){return;}if(!confirm(({!advchecker}).toFixed(3) +' day(s) will be counted as Advance Leave. After getting first round approval, this request will be routed to a second approver')){return;}"     />
+                                    </apex:outputPanel>
+                                    &nbsp;
+                                    <apex:commandButton value="Cancel"  action="{!cancelAction}" rendered="{!!isMobile}" />
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                <div class="bs col-sm-12">
+                                    <div class="{! IF(stringErrorMsghead  != '', 'tal-error', '')}">
+                                        <apex:outputText escape="false" value="{!stringErrorMsghead }" style=""/>
+                                    </div>
+                                    <div id = "refresh_page" class="{! IF(request.Employee_Administrator__r.Name != EAname, 'tal-error', '')}" >
+                                        <apex:outputText escape="false" value="Please refresh your page" style="" rendered="{!request.Employee_Administrator__r.Name != EAname}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bs row">
+                                <div class="bs col-md-1">                                    
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Employee__c.fields.Name.label}"> </apex:outputLabel>
+                                </div>                                
+                                <div class="bs col-md-5"  style="align:left;width:280px">
+                                   <apex:inputText value="{!requester.Name}"  disabled="true"  style="align:left;width:250px" />
+                                </div>
+                                
+                                <div class="bs col-md-1" style="width:90px">
+                                   <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Employee__c.fields.Department__c.label}"> </apex:outputLabel>
+                                     
+                                </div>
+                                <div class="bs col-md-2"   >
+                                     <apex:inputText value="{!requester.Department__c}"  disabled="true"  style="width:90px" />
+                                </div>
+                                
+                                  <div class="bs col-md-1" style="width:80px">
+                                   <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Apply Date"> </apex:outputLabel>
+                                </div>
+                                <div class="bs col-md-1"   >
+                                     <apex:inputText value="{!dateApplicationDate}"  disabled="true"/>     
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                <div class="bs col-md-1">                                    
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$Label.ELeave_On_Behalf_Of}" > </apex:outputLabel>
+                                </div>  
+                                
+                                <div class="bs col-md-5" style="align:left;width:280px">
+                                    <apex:outputPanel rendered="{!booleanIsExisting}">
+                                        <!--<apex:inputText value="{!request.Employee_Administrator__c}"  disabled="true" />-->
+                                        <apex:inputText value="{!request.Employee_Administrator__r.Employee__r.name}"  styleClass="ea_name" disabled="true" style="width:250px"  />
+                                    </apex:outputPanel>
+                                    
+                                    <apex:inputField value="{!request.Employee_Administrator__c}" styleclass="ea_name"
+                                                        rendered="{!!booleanIsExisting && !isMobile}" style="width:250px">
+                                        <apex:actionSupport event="onchange" 
+                                                                timeout="10000" 
+                                                                action="{!changeEmployee}" 
+                                                                rerender="taLabel, tafield, rmp_name, RemainingBalance, employeename, employeedept, session_fr, session_to, leave_type,  totaldays, To_Date, From_Date"
+                                                                oncomplete="hiddendateFormat()"
+                                                                status="ajaxStatusLoader"
+                                                                onsubmit="hiddendateFormat()" />
+                                    </apex:inputField>
+                                    
+                                    <apex:inputtext id="rmp_name" styleclass="rmp_name" value="{!EAname}" style="visibility: hidden;" />
+                                    
+                                    
+                                    <!-- ---------------------------- -->
+                                    <!-- Mobile Lookup Selector -->
+                                    <apex:outputPanel rendered="{! !booleanIsExisting && isMobile}">
+                                        <input type="text" id="ea_name"  class="ea_name" value="" style="visibility: hidden;"  />
+                                        <!-- Search component-->
+                                        <input type="text" id="EmployeeSearch"/> <Button type="button" onclick="searchEmployeeOnBehalfOf();" class="bs mobileBtn">{!$Label.ELeave_Search}</Button>
+                                        <br/><br/>
+                                        
+                                        <!-- Label of the record selected -->
+                                        <span id="EmployeeSelected" style="display:none;padding:5px;font-weight:bold;" class="bs well "></span>
+                                        
+                                        <!-- Table of search results -->
+                                        <table id="EmployeeSearchResult" class="bs table table-condensed table-bordered"></table>
+                                        
+                                        <!-- Value of the record selected -->
+                                        <apex:inputText styleclass="TalLeaveOnBehalfOfInputValue" 
+                                                        value="{!request.Employee_Administrator__c}"
+                                                        style="display:none;">
+                                        </apex:inputText>
+                                        <!-- Action Function to refresh components once employee is selected -->
+                                        <apex:actionFunction name="afChangeEmployee"  
+                                                             action="{!changeEmployee}"
+                                                             status="ajaxStatusLoader"
+                                                             rerender="rmp_name, RemainingBalance, employeename, employeedept, session_fr, session_to, leave_type, totaldays, To_Date, From_Date"
+                                                             oncomplete="hiddendateFormat()" />
+                                    </apex:outputPanel>
+
+                                    <!-- End Mobile Lookup Selector -->
+                                    <!-- ---------------------------- -->
+                                </div>
+                                <div class="bs col-md-1" style="width:90px">
+                                    <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" 
+                                                                value="{!$ObjectType.Employee__c.fields.Department__c.label}"
+                                                                rendered="{!!isMobile}" />
+                                </div>
+                                <div class="bs col-md-2">
+                                    <apex:outputPanel id="employeedept" rendered="{!!isMobile}">
+                                        <apex:inputText value="{!request.Employee_Administrator__r.Employee_Department__c }" style="width:90px" disabled="true"/>
+                                    </apex:outputPanel> 
+                                    
+                                </div>
+                                <div class="bs col-md-2">
+                                    <!-- Nothing needed here just for padding -->                                    
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                <div class="bs col-md-1">                                    
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Acting / Copy To" ></apex:outputLabel>
+                                </div>  
+                                
+                                <div class="bs col-md-5"  style="align:left;width:270px">
+                                     
+                                                <!-- Start CC Functionality -------------------------------------------------------------- -->
+                                                    <apex:outputPanel rendered="{!NOT(editable)}">
+                                                        <apex:variable value="" var="cc" />
+                                                        <apex:variable value="{!cc}{!request.CC_1__r.name}, " var="cc"  rendered="{!request.CC_1__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_2__r.name}, " var="cc"  rendered="{!request.CC_2__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_3__r.name}, " var="cc"  rendered="{!request.CC_3__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_4__r.name}, " var="cc"  rendered="{!request.CC_4__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_5__r.name}, " var="cc"  rendered="{!request.CC_5__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_6__r.name}, " var="cc" rendered="{!request.CC_6__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_7__r.name}, " var="cc" rendered="{!request.CC_7__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_8__r.name}, " var="cc" rendered="{!request.CC_8__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_9__r.name}, " var="cc" rendered="{!request.CC_9__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}{!request.CC_10__r.name}, " var="cc" rendered="{!request.CC_10__r.name != '' }"/>
+                                                        <apex:variable value="{!cc}# " var="cc"  />
+                                                        <apex:variable value=" {!SUBSTITUTE(cc, ', #', '')} " var="cc"  />
+                                                        <apex:variable value=" {!SUBSTITUTE(cc, '#', '')} " var="cc"  />
+                                                        <apex:outputText styleClass="tal-simulate-disabled-input"  value="{!cc}" style="width : 95%"/>                                    
+                                                    </apex:outputPanel>
+                                                    
+                                                    <apex:outputPanel rendered="{!editable}">                                
+
+                                                            <apex:inputField value="{!request.CC_1__c}" 
+                                                                                styleClass="TalUserDropDown"
+                                                                                   
+                                                                                 style="align:left;width:250px"
+                                                                                rendered="{!!isMobile}" />
+                                                        
+                                                            <!-- ---------------------------- -->
+                                                            <!-- "CC" Mobile Lookup Selector -->
+                                                            <apex:outputPanel rendered="{!isMobile}">
+                                                               
+                                                                <!-- Search component-->
+                                                                <input type="text" id="UserSearch"/> <Button type="button" onclick="searchUserForCc();" class="bs mobileBtn">{!$Label.ELeave_Search}</Button>
+                                                                <br/><br/>
+                                                                
+                                                                <!-- Label of the record selected -->
+                                                                <div id="UserSelected" style="display:none;padding:5px;font-weight:bold;" class="bs well"></div>
+                                                                <Button type="button" onclick="clearSelectedUserForCc();" class="bs mobileBtn" id="UserSelectedClear" style="margin-bottom: 8px;display:none;">{!$Label.ELeave_Clear}</Button>
+                                                                
+                                                                <!-- Table of search results -->
+                                                                <table id="UserSearchResult" class="bs table table-condensed table-bordered"></table>
+                                                                
+                                                                <!-- Value of the record selected -->                                            
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue1" 
+                                                                                value="{!request.CC_1__c}"   
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue2" 
+                                                                                value="{!request.CC_2__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue3" 
+                                                                                value="{!request.CC_3__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue4" 
+                                                                                value="{!request.CC_4__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue5" 
+                                                                                value="{!request.CC_5__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue6" 
+                                                                                value="{!request.CC_6__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue7" 
+                                                                                value="{!request.CC_7__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue8" 
+                                                                                value="{!request.CC_8__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue9" 
+                                                                                value="{!request.CC_9__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                <apex:inputText styleclass="TalLeaveCcInputValue10" 
+                                                                                value="{!request.CC_10__c}" 
+                                                                                style="display:none;" disabled="{!NOT(editable)}"  />
+                                                                
+                                                            </apex:outputPanel>
+                    
+                                                            <!-- End "CC" Mobile Lookup Selector -->
+                                                            <!-- ---------------------------- -->
+                                                            
+                                                            <apex:outputPanel rendered="{!!isMobile}"> 
+                                                                <a href="javascript: toggleCc(this);" 
+                                                                   class="bs btn {!IF(isMobile, 'mobileBtn', '')}" 
+                                                                   style="float:left;margin-left:0px;" 
+                                                                   id="TalMoreCcLink">More</a> 
+                                                                <br/>
+                                                                <div id="TalMoreCcId" style="clear:left;display:none;">
+                                                                    <br/>
+                                                                    <apex:outputPanel rendered="{!!isMobile}">
+                                                                        <apex:inputField value="{!request.CC_2__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_3__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_4__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_5__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_6__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_7__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_8__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_9__c}" styleClass="TalUserDropDown" /><br/>
+                                                                        <apex:inputField value="{!request.CC_10__c}" styleClass="TalUserDropDown" />
+                                                                    </apex:outputPanel>
+                                                                </div>
+                                                            </apex:outputPanel>
+                                                    </apex:outputPanel>
+                                                    <!-- End CC Functionality -------------------------------------------------------------- -->
+                                                 
+                                </div>
+                                <div class="bs col-md-6">
+                                    <!-- Nothing needed here just for padding -->
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                            
+                                <apex:variable var="reqTA" value="{!0}" />
+                                <apex:repeat var="key" value="{!ListLeaveSection}">                                    
+                                    <apex:variable var="reqTA" value="{!1}" rendered="{!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c && key.leavetransaction.Leave_Type__c != null}"/>
+                                </apex:repeat>
+                                
+                                <div class="bs col-md-5">
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                <div class="bs col-md-1">
+                                    <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Reason / Remark"> </apex:outputLabel>
+                                </div>
+                                <div class="bs col-md-11">
+                                    <apex:inputTextarea style="width: 90%;" value="{!request.Remarks__c}"  disabled="{!NOT(editable)}" rendered="{!NOT(editable)}"/>
+                                    <apex:inputField rendered="{!editable}" style="width:90%;" value="{!request.Remarks__c}"/>
+                                </div>
+                            </div>
+                        </apex:pageBlock>
+                    <!-- START Details block -->
+
+                        <apex:pageBlock title="Details"> 
+                            <div class="bs row">
+                                <div class="bs col-sm-12" style="text-align:right;">
+                                        <apex:commandButton value="New"  action="{!addLeaveSection}" rendered="{!editable}" styleclass="{!IF(isMobile, 'mobileBtn', '')}" ></apex:commandButton>
+                                        &nbsp;
+                                        <apex:commandButton value="Remove"  action="{!removeLeaveSection}" rendered="{!editable}" styleclass="{!IF(isMobile, 'mobileBtn', '')}"></apex:commandButton>
+                                </div>
+                            </div>
+                            <br/>
+                            <apex:outputPanel id="LeaveSection">
+                                <apex:repeat var="key" value="{!ListLeaveSection}">
+                                    <div class="bs row">
+                                        <div class="bs col-md-12">
+                                            <div class="{! IF(key.stringErrorMsg != '', 'tal-error', '')}">
+                                                <apex:outputText escape="false" value="{!key.stringErrorMsg }" style=""/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bs row ">
+                                        <div class="bs col-md-1" style="width:20px;">
+                                            <apex:inputCheckbox id="checker" styleClass="checker" value="{!key.booleanechecked}"
+                                                                style="{!IF(isMobile, 'width:20px; height:20px;', '')}"
+                                                                disabled="{! ( key.leavetransaction.name != null && key.leavetransaction.status__c != 'DF' ) }"  />
+                                        </div>
+                                        <div class="bs col-md-1"  style="width:110px;">                                       
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="{!$ObjectType.Leave_Request__c.fields.Name.label}" > </apex:outputLabel>
+                                            <br/><br/>
+                                            <!--
+                                            <apex:inputText value="{!key.leavetransaction.Name}" rendered="{!key.leavetransaction.Name != ''}" disabled="true"/>
+                                            -->
+                                            <apex:inputText style="width:100px;"  value="{!key.leavetransaction.Name}"   disabled="true"/>
+                                        </div>
+                                        
+                                        <div class="bs col-md-1"  style="width:120px;">
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="Remaining Balance"   > </apex:outputLabel>
+                                            <br/>
+                                            
+                                             <apex:outputPanel id="RemainingBalance" >
+                                                <apex:variable var="RemainingBalance" value="{!0}"/>
+                                                <apex:repeat var="LeaveBalanceKey"  value="{!mapLeaveBalance}" >
+                                                    <apex:outputPanel rendered="{!LeaveBalanceKey == key.leavetransaction.Leave_Type__c}">
+                                                        <apex:variable var="RemainingBalance" value="{!mapLeaveBalance[key.leavetransaction.Leave_Type__c].Remaining_Balance__c}"/>
+                                                    </apex:outputPanel>
+                                                </apex:repeat>
+                                                
+                                               
+                                                <apex:outputText value="{0,number,#,###,###0.00}" styleClass="tal-simulate-disabled-input" rendered="{!!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c}">
+                                                    <apex:param value="{!RemainingBalance}" />
+                                                </apex:outputText>
+                                                
+                                                
+                                                <apex:outputText value="{0,number,#,###,###0.00}" styleClass="tal-simulate-disabled-input" rendered="{!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c}">
+                                                
+                                                    <apex:param value="{!if( isBlank(key.leavetransaction.Travel_Application__c) , 0, taComdaysMap[key.leavetransaction.Travel_Application__c] )}" />
+                                                </apex:outputText>
+                                                
+                                            </apex:outputPanel>
+                                            
+                                        </div>
+                                        
+                                        <apex:actionRegion >
+                                        
+                                        <div class="bs col-md-1" style="width:200px;">
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Request__c.fields.Leave_Type__c.label}" > </apex:outputLabel>
+                                            <br/><br/>
+                                            <apex:outputPanel id="leave_type"  >
+                                                <!--<apex:selectList style="width:95%"  size="1" value="{!key.leavetransaction.Leave_Type__c}" disabled="{! key.leavetransaction.status__c != null && key.leavetransaction.status__c != 'NS' && key.leavetransaction.status__c != 'RJ'  && key.leavetransaction.status__c != 'CA' }"   >-->
+                                                <apex:selectList style="width:100%"  size="1" value="{!key.leavetransaction.Leave_Type__c}" disabled="{! key.leavetransaction.status__c != null && Not(key.leavetransaction.Is_Editable__c)  }"   >
+                                                    <apex:selectOptions value="{!ListLeaveTypeOption}"/>
+                                                    <apex:actionSupport event="onchange" status="ajaxStatusLoader" action="{!key.changeLeaveTypefalse}" rerender="taLabel, travelApplicationPanel,   lateapplication, RemainingBalance, reminder, supporting_document_provided, session_fr, session_to, totaldays, To_Date, From_Date, lineremark, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded " oncomplete="hiddendateFormat()"   onsubmit="TimeOutchecker()" />
+                                                </apex:selectList>  
+                                            </apex:outputPanel>
+                                            
+                                            
+                                            <!--rendered="{!!isMobile}"
+                                            {{!key.leavetransaction.Leave_Type__r.Require_Travel_Application__c}}
+                                            -->
+                                        </div>
+                                        
+                                        <div class="bs col-md-1"  style="width:110px;">
+                                            
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Request__c.fields.From_Date__c.label}" > </apex:outputLabel>
+                                        
+                                            <br/><br/>
+                                            <apex:outputText value="{0,date, {!stringDateformat}}"  rendered="{! key.leavetransaction.status__c != null &&  NOT(key.leavetransaction.Is_Editable__c)   }"  styleClass="tal-simulate-disabled-input" >
+                                                <apex:param value="{!key.leavetransaction.From_Date__c}" />
+                                            </apex:outputText> 
+                                            <apex:outputPanel id="From_Date"  rendered="{!not( key.leavetransaction.status__c != null && NOT(key.leavetransaction.Is_Editable__c) )  }"   >
+                                                <apex:inputfield style="width:95%" value="{!key.leavetransaction.From_Date__c}" rendered="{!!isMobile}" >
+                                                    <apex:actionSupport event="onchange" status="ajaxStatusLoader" action="{!key.changeDeductionCalculation}"  rerender="lateapplication, supporting_document_provided,totaldays, lateapplication, Submit, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded"  onsubmit="TimeOutchecker()"  />
+                                                </apex:inputfield>
+
+                                                <apex:inputfield style="width:95%" value="{!key.leavetransaction.From_Date__c}" rendered="{!isMobile}"  type="date"  showDatePicker="false" >
+                                                    <apex:actionSupport event="onchange" action="{!key.changeDeductionCalculation}"  rerender="lateapplication, supporting_document_provided,totaldays, lateapplication, Submit, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded "     />
+                                                </apex:inputfield>
+                                            </apex:outputPanel>
+                                        </div>
+
+                                        <div class="bs col-md-2" style="width:120px;">
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="From (Session)" > </apex:outputLabel>
+                                        
+                                            <br/><br/>
+                                            <apex:outputPanel id="session_fr"  >
+                                                <apex:selectList style="width:110px"  size="1"  value="{!key.stringLeaveStartTime}" disabled="{! key.leavetransaction.status__c != null && NOT(key.leavetransaction.Is_Editable__c)  }"  >
+                                                    <apex:selectOptions value="{!key.ListLeaveStartTimeOption}"  ></apex:selectOptions>
+                                                        <apex:actionSupport event="onchange" status="ajaxStatusLoader" action="{!key.changeDeductionCalculation}" rerender="lateapplication, supporting_document_provided,totaldays, Submit, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded "  onsubmit="TimeOutchecker()"  /> 
+                                                </apex:selectList>
+                                            </apex:outputPanel>
+                                        </div>                                        
+                                        <div class="bs col-md-1"  style="width:110px;">
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Request__c.fields.To_Date__c.label}" > </apex:outputLabel>
+
+                                            <br/><br/>
+                                            <apex:outputText value="{0,date, {!stringDateformat}}"  rendered="{!( key.leavetransaction.status__c != null && NOT(key.leavetransaction.Is_Editable__c)) }"  styleClass="tal-simulate-disabled-input" >
+                                                <apex:param value="{!key.leavetransaction.To_Date__c}" />
+                                            </apex:outputText> 
+                                            
+                                            <apex:outputPanel id="To_Date" rendered="{!NOT( key.leavetransaction.status__c != null && NOT(key.leavetransaction.Is_Editable__c) ) }" >
+                                                <apex:inputfield style="width:95%" value="{!key.leavetransaction.To_Date__c}" rendered="{!!isMobile}">
+                                                    <apex:actionSupport event="onchange" status="ajaxStatusLoader" action="{!key.changeDeductionCalculation}" rerender="lateapplication, supporting_document_provided, totaldays, Submit, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded"   onsubmit="TimeOutchecker()" />
+                                                </apex:inputfield>
+                                                
+                                                <apex:inputfield style="width:95%" value="{!key.leavetransaction.To_Date__c}" rendered="{!isMobile}" type="date" showDatePicker="false"  >
+                                                    <apex:actionSupport event="onchange" status="ajaxStatusLoader" action="{!key.changeDeductionCalculation}" rerender=" lateapplication, supporting_document_provided, totaldays, Submit, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded "   />
+                                                </apex:inputfield>
+                                            </apex:outputPanel>
+                                        </div>
+                                        
+                                        <div class="bs col-md-2" style="width:120px;">
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="To (Session)" > </apex:outputLabel>
+                                            
+                                            <br/><br/>
+                                            <apex:outputPanel id="session_to" >
+                                            
+                                                <apex:selectList style="width:110px"  size="1"  value="{!key.stringLeaveEndTime}" disabled="{! key.leavetransaction.status__c != null && NOT(key.leavetransaction.Is_Editable__c)  }"  >
+                                                    <apex:selectOptions value="{!key.ListLeaveEndTimeOption}"  ></apex:selectOptions>
+                                                    <apex:actionSupport event="onchange" status="ajaxStatusLoader" action="{!key.changeDeductionCalculation}" rerender="lateapplication,  totaldays, Submit, SupportingDocumentRequire, LeaveHardDocRequire , SupportingDocumentUploaded  "  onsubmit="TimeOutchecker()"  />
+                                                </apex:selectList>
+                                            </apex:outputPanel>
+                                        </div>
+                                        
+                                        <div class="bs col-md-1">
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Total Days" > </apex:outputLabel>
+                                        
+                                            <br/><br/>                                            
+                                            <apex:outputPanel id="totaldays" styleClass="tal-simulate-disabled-input" style="width:50px;"> 
+                                                <apex:outputText value="{0,number,#,###,###0.00}">
+                                                    <apex:param value="{!key.leavetransaction.Deduction__c}" />
+                                                </apex:outputText>                                                
+                                                <!-- 
+                                                *************************************************************************
+                                                {!key.leavetransaction.Required_Supporting_Document__c }**
+                                                {!key.leavetransaction.Leave_Type__r.Document_Required__c }
+                                                {!key.stringtmp}
+                                                *************************************************************************
+                                                
+                                                <apex:repeat var="abc" value="{!key.mapLeaveTypeDeduction}" >
+                                                    
+                                                        {!abc}  {!key.mapLeaveTypeDeduction[abc]}
+                                                </apex:repeat>
+                                                /////////////////////////////////////////////////////////////////
+                                                <apex:repeat var="abc" value="{!key.mapItemLeaveTypeDeduction}" >
+                                                        {!abc}  {!key.mapItemLeaveTypeDeduction[abc]}
+                                                </apex:repeat>
+                                                -->
+                                                
+                                                
+                                            </apex:outputPanel> 
+                                            
+                                        </div>
+                                        
+                                        </apex:actionRegion>
+                                        
+                                        <div class="bs col-md-1">
+                                            <!-- padding -->
+                                        </div>
+                                    </div>
+                                
+                                 <div class="bs row tal-bottom-border">
+                                    <div class="bs col-md-1" style="width:20px;"></div>
+                                    <!--<div class="bs col-md-1"  style="width:110px;"></div> -->
+                                    <div class="bs col-md-3"  style=" text-align: right;width:230px;">
+                                    <apex:outputPanel id="taLabel">
+                                        <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Travel Application" rendered="{!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c}"  > </apex:outputLabel>
+                                    </apex:outputPanel>                                    
+                                    </div>
+                                    <div class="bs col-md-4">                                        
+                                        <apex:outputPanel id="travelApplicationPanel">
+                                            <apex:selectList style="width:96%"  size="1" value="{!key.leavetransaction.Travel_Application__c}" rendered="{!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c}" disabled="{! key.leavetransaction.status__c != null && NOT(key.leavetransaction.Is_Editable__c)  }"  >
+                                                <apex:selectOptions value="{!ListTravelRequestOption}"/>
+                                                <apex:actionSupport event="onchange" status="ajaxStatusLoader"   rerender="LeaveSection , reminder , RemainingBalance" oncomplete="hiddendateFormat()"    />
+                                            </apex:selectList>
+                                            <apex:outputText rendered="{!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c && !isBlank(key.leavetransaction.Travel_Application__c)}" >
+                                                <a href="../{!key.leavetransaction.Travel_Application__c}"  target="_blank" ><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a> 
+                                            </apex:outputText>
+
+                                        </apex:outputPanel>
+                                    </div>
+                                    <div class="bs col-md-4"></div>                                
+                                </div>
+                                
+                                    <br/>
+                                    <div class="bs row tal-bottom-border">
+                                        <div class="bs col-sm-1">                                        
+                                            <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$Label.ELeave_Reminder}: " ></apex:outputLabel>
+                                            
+                                       </div>     
+                                       <div class="bs col-sm-11">
+                                            <apex:outputPanel id="reminder">
+                                                 
+                                                <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" >
+                                                    <apex:outputtext escape="false" value="{!key.leavetransaction.Leave_Type__r.Reminder__c}"></apex:outputtext>
+                                                    </apex:outputLabel>
+                                                <BR/>
+                                                <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" rendered="{!key.leavetransaction.Leave_Type__r.Reference_Travel_Application__c && !isBlank(key.leavetransaction.Travel_Application__c)}">
+                                                     Travel Compensation Day(s): {!taComLeaveMap[key.leavetransaction.Travel_Application__c]}<BR/><BR/>
+                                                 </apex:outputLabel>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div class="bs row tal-bottom-border">
+                                        <div class ="bs row">
+                                        <div class="bs col-sm-12" style="padding-top:6px;"> 
+                                            <apex:outputPanel id="lateapplication" >                                           
+                                                <apex:outputPanel rendered="{!key.leavetransaction.Late_Application__c}" >
+                                                    <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$Label.ELeave_Late_Application} " > </apex:outputLabel>
+                                                    <!--<apex:outputText value="{!IF(key.leavetransaction.Late_Application__c, $Label.General_Yes, $Label.General_No)}" />--> 
+                                                    <apex:inputCheckbox disabled="true"   value="{!key.leavetransaction.Late_Application__c}"   />
+                                                </apex:outputPanel>                                            
+                                            </apex:outputPanel>
+                                        </div>
+                                        </div>
+                                        <!--
+                                        <div class="bs col-sm-3" style="padding-top:6px;">
+                                               
+                                            <apex:outputPanel id="SupportingDocumentRequire">
+                                                <apex:outputPanel rendered="{!OR( key.leavetransaction.Leave_Type__r.Document_Required__c == 0  , NULLVALUE( key.leavetransaction.Deduction__c   , 0) > NULLVALUE( key.leavetransaction.Leave_Type__r.Document_Required__c, NULLVALUE( key.leavetransaction.Deduction__c,0) +1 ) )}" >
+                                                    <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Type__c.fields.Document_Required__c.label}: " > </apex:outputLabel>
+                                                    <apex:outputText value="{!IF( OR( key.leavetransaction.Leave_Type__r.Document_Required__c == 0  , NULLVALUE( key.leavetransaction.Deduction__c   , 0) > NULLVALUE( key.leavetransaction.Leave_Type__r.Document_Required__c, NULLVALUE( key.leavetransaction.Deduction__c,0) +1 ) ), $Label.General_Yes, $Label.General_No)}" /> 
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </div>
+                                        -->
+                                        <div class ="bs row">
+                                        <div class="bs col-sm-12">
+                                            <apex:outputPanel id="LeaveHardDocRequirel" ></apex:outputPanel>
+                                            <apex:outputPanel id="LeaveHardDocRequire" rendered="{!request.Employee_ID__r.Leave_Policy__r.Leave_Hard_Doc_Require__c == true}">                                             
+                                                <!-- <apex:outputPanel rendered="{!OR( key.leavetransaction.Leave_Type__r.Document_Required__c == 0  , NULLVALUE( key.leavetransaction.Deduction__c   , 0) > NULLVALUE( key.leavetransaction.Leave_Type__r.Document_Required__c, NULLVALUE( key.leavetransaction.Deduction__c,0) +1 ) )}" > -->
+                                                    <apex:outputPanel rendered="{!key.leavetransaction.Required_Supporting_Document__c }" >
+                                                    <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Request__c.fields.Supporting_Document_Provided__c.label}" > </apex:outputLabel>
+                                                    <!--<apex:inputfield value="{!key.leavetransaction.Supporting_Document_Provided__c}" styleclass="margin:0"    /> -->
+                                                    <apex:inputCheckbox disabled="true"   value="{!key.leavetransaction.Supporting_Document_Provided__c}"   /> 
+                                                    <!--<apex:outputText value="{!IF(key.leavetransaction.Supporting_Document_Provided__c, $Label.General_Yes, $Label.General_No)}" />-->
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        
+                                        </div>
+                                        </div>
+                                        
+                                        <div class ="bs row">
+                                        <div class="bs col-sm-12">
+                                            <apex:outputPanel id="SupportingDocumentUploaded" rendered="{!key.leavetransaction.id != '' && request.Employee_ID__r.Leave_Policy__r.Leave_Soft_Doc_Require__c == true   }">
+                                                <apex:outputPanel rendered="{!OR( key.leavetransaction.Leave_Type__r.Document_Required__c == 0  , NULLVALUE( key.leavetransaction.Deduction__c   , 0) > NULLVALUE( key.leavetransaction.Leave_Type__r.Document_Required__c, NULLVALUE( key.leavetransaction.Deduction__c,0) +1 ) )}" >
+                                                    <input TYPE="button" VALUE="Upload"  onclick="window.location.href='../p/attach/NoteAttach?pid={!key.leavetransaction.id}&parentname={!key.leavetransaction.name}&retURL=../apex/EleaveVFP?id={!request.id}'" /> 
+                                                    <apex:inputCheckbox disabled="true" value="{!key.leavetransaction.Supporting_Document_Uploaded__c}" style="margin-left:10px;"/>
+                                                    <!--<apex:outputText value="{!IF(key.leavetransaction.Supporting_Document_Uploaded__c, $Label.General_Yes, $Label.General_No)}" />-->
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <br/><br/>
+                                    <div class="bs row">
+                                        <div class="bs col-sm-12">
+                                            <apex:outputPanel id="lineremark" >
+                                                <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Reason / Remark" > </apex:outputLabel>                                    
+                                                 
+                                                 <apex:outputPanel rendered="{! ( key.leavetransaction.status__c != null  && key.leavetransaction.status__c != 'DF' && key.leavetransaction.status__c != 'NS'  && key.leavetransaction.status__c != 'RJ'   && key.leavetransaction.status__c != 'CA' ) }">
+                                                     {!key.leavetransaction.Remarks__c}
+                                                 </apex:outputPanel>
+                                                 
+                                                 <apex:outputPanel rendered="{! NOT( key.leavetransaction.status__c != null  && key.leavetransaction.status__c != 'DF' && key.leavetransaction.status__c != 'NS'  && key.leavetransaction.status__c != 'RJ'   && key.leavetransaction.status__c != 'CA' ) }">
+                                                    <apex:inputfield style="width:95%" value="{!key.leavetransaction.Remarks__c}"  required="{!key.booleanRemarkRequire  }"  />
+                                                 </apex:outputPanel>
+                                                 
+                                                
+                                                
+                                            </apex:outputPanel>
+                                           
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div class="bs row">
+                                        <div class="bs col-sm-12">
+                                            <hr style="border-top: 8px solid #EAEAEA;"/>
+                                        </div>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel> 
+                        </apex:pageBlock>
+                    
+                        <!-- END Details block -->
+                    </apex:pageBlock>
+                    <!-- Is Mobile: {!isMobile} -->
+                </apex:form>
+            </div>
+        </div>
+    </div>
+    <apex:outputPanel id="TalJsSection">
+        <script>
+            function mobileNavigation() {
+                if(getIsSalesforceOne()) {
+                    var mobileRouteResult = '{!mobileRoute.navResult}';
+                    if(mobileRouteResult == 'BACK') {
+                        sforce.one.back(true);
+                    } else if(mobileRouteResult == 'OBJECTID') {
+                        var mobileObjectId = '{!mobileRoute.navResultObjectId}'
+                        sforce.one.navigateToSObject(mobileObjectId);
+                    }
+                }
+            }
+        </script>
+    </apex:outputPanel>
+        <script>
+            var LEAVE_NS = {
+                ccCount: 0
+            };
+    
+            $( document ).ready(function() {
+                initPage();
+            });
+            
+            function initPage() {
+                // Hide the "Today" links on the date selectors
+                hiddendateFormat();
+                // Hide the CC User picklists
+                hideUserTypePicker();
+                
+                var isMobile = '{!isMobile}';
+                
+                if(isMobile == 'true') {                   
+                    initEmployeeOnBehalfOf();
+                    if ( '{!request.CC_1__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_1__c}', '{!request.CC_1__r.name}' );
+                    }
+                    if ( '{!request.CC_2__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_2__c}', '{!request.CC_2__r.name}' );
+                    }
+                    if ( '{!request.CC_3__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_3__c}', '{!request.CC_3__r.name}' );
+                    }
+                    if ( '{!request.CC_4__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_4__c}', '{!request.CC_4__r.name}' );
+                    }
+                    if ( '{!request.CC_5__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_5__c}', '{!request.CC_5__r.name}' );
+                    }
+                    if ( '{!request.CC_6__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_6__c}', '{!request.CC_6__r.name}' );
+                    }
+                    if ( '{!request.CC_7__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_7__c}', '{!request.CC_7__r.name}' );
+                    }
+                    if ( '{!request.CC_8__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_8__c}', '{!request.CC_8__r.name}' );
+                    }
+                    if ( '{!request.CC_9__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_9__c}', '{!request.CC_9__r.name}' );
+                    }
+                    if ( '{!request.CC_10__r.name}' != ''  ){
+                        selectCcUser( '{!request.CC_10__c}', '{!request.CC_10__r.name}' );
+                    }
+                }
+            }
+            
+            function disabletextbox(e , disable) {
+                e.disabled = true;
+            }
+            function TimeOutchecker(){
+                var empName = $(".rmp_name").val().replace(/ /g, '');
+                var EAName = $(".ea_name").val().replace(/ /g, '');
+                if ( empName  != EAName   ){
+                   alert('{!$Label.ELeave_Time_Out}');
+                    location.reload();
+                }
+                
+                
+            }
+            
+            function hiddendateFormat() {  
+                $(".dateFormat ").fadeOut(0); 
+            }
+    
+            function toggleCc() {  
+                $('#TalMoreCcId').toggle();     
+                if($('#TalMoreCcLink').text() == 'More') {
+                    $('#TalMoreCcLink').text('Less');
+                } else {
+                    $('#TalMoreCcLink').text('More');
+                }
+            }
+            
+            function hideUserTypePicker() {
+                $('div.TalUserDropDown select').each(function(index) {
+                    $(this).hide();
+                });
+            }
+    
+        /** Start Mobile Lookup Replacement ****************************************/
+        
+        /** For "On Behalf Of" Employee selection **/
+            function initEmployeeOnBehalfOf() {
+                /*$('#EmployeeSelected').text('{!$Label.ELeave_Selected}: {!SUBSTITUTE(request.Employee_Administrator__r.Employee_Full_Name__c, "'", "\'")}');*/
+                $('#EmployeeSelected').text('{!$Label.ELeave_Selected}: {!SUBSTITUTE(request.Employee_Administrator__r.Name, "'", "\'")}');
+                $('#ea_name').val('{!SUBSTITUTE(request.Employee_Administrator__r.Name, "'", "\'")}');
+                $('#EmployeeSelected').fadeIn('fast');    
+            }
+    
+            function searchEmployeeOnBehalfOf() {
+                var result = $('#EmployeeSearch').val();
+                $('#EmployeeSelected').hide();
+                
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.EleaveController.searchEmployeesJson}', 
+                    result,
+                    function(result, event){
+    
+                        if (event.status) { 
+                            console.log(result);
+                            var resultArray = JSON.parse(result);
+                            setOnBehalfEmployeeTable(resultArray);
+                            
+                        } else if (event.type === 'exception') {
+                            alert(event.message);
+                        }
+                    }, 
+                    {escape: false}
+                );
+            }
+            function resetOnBehalfEmployeeSelection() {
+                $('#EmployeeSearchResult').empty();
+                $('#EmployeeSearch').val('');
+            }
+        
+            function setOnBehalfEmployeeTable(resultList) {
+                $('#EmployeeSearchResult').empty();
+                var result = '<thead><th>{!$ObjectType.Employee__c.fields.Name.label}</th></thead><tbody>';
+                
+                $.each(resultList, function(index, item) {
+                    var employeeName = item.Name;
+                    employeeName = employeeName.replace(/'/g, "\\'");
+                    
+                    result = result + '<tr><td> <a href="javascript:selectOnBehalfEmployee(\'' + item.Id + '\',\'' + employeeName + '\');">' + item.Employee__r.Name + '</a></td></tr>';
+                });  
+                result = result + '</tbody>';
+                
+                $('#EmployeeSearchResult').append(result);
+            }
+        
+            function selectOnBehalfEmployee(selectedId, selectedName) {
+                $('#ea_name').val(selectedName);
+                $('#EmployeeSelected').text('{!$Label.ELeave_Selected}: ' + selectedName);
+                $('#EmployeeSelected').fadeIn('fast');
+                resetOnBehalfEmployeeSelection();
+                
+                $('.TalLeaveOnBehalfOfInputValue').val(selectedId);
+                afChangeEmployee();
+            }
+        /** For "CC" Employee selection **/
+            function searchUserForCc() {
+                var result = $('#UserSearch').val();
+                //$('#EmployeeSelected').hide();
+                
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.EleaveController.searchUsersJson}', 
+                    result,
+                    function(result, event){
+    
+                        if (event.status) { 
+                            console.log(result);
+                            var resultArray = JSON.parse(result);
+                            setCcUserTable(resultArray);
+                            
+                        } else if (event.type === 'exception') {
+                            alert(event.message);
+                        }
+                    }, 
+                    {escape: false}
+                );
+            }
+    
+            function resetCcUserSelection() {
+                $('#UserSearchResult').empty();
+                $('#UserSearch').val('');
+            }
+        
+            function setCcUserTable(resultList) {
+                $('#UserSearchResult').empty();
+                var result = '<thead><th>{!$ObjectType.User.fields.Name.label}</th></thead><tbody>';
+                
+                $.each(resultList, function(index, item) {
+                    var employeeName = item.Name;
+                    employeeName = employeeName.replace(/'/g, "\\'");
+                    
+                    result = result + '<tr><td> <a href="javascript:selectCcUser(\'' + item.Id + '\',\'' + employeeName + '\');">' + item.Name + ': ' + item.Email +'</a></td></tr>';
+                });  
+                result = result + '</tbody>';
+                
+                $('#UserSearchResult').append(result);
+            }
+        
+            function selectCcUser(selectedId, selectedName) {
+                if(LEAVE_NS.ccCount == 10) {
+                    alert('{!$Label.ELeave_Cannot_Cc_More_Than_10}');
+                } else if(LEAVE_NS.ccCount > 0) {
+                    var selectedText = $('#UserSelected').text();
+                    selectedText = selectedText + ', ' + selectedName;
+                    $('#UserSelected').text(selectedText);
+                    
+                    LEAVE_NS.ccCount = LEAVE_NS.ccCount + 1;
+                    assignCcValue(selectedId);
+                } else {
+                    $('#UserSelected').text('{!$Label.ELeave_Selected}: ' + selectedName);
+                    $('#UserSelected').fadeIn('fast');
+                    $('#UserSelectedClear').fadeIn('fast');
+                    
+                    LEAVE_NS.ccCount = LEAVE_NS.ccCount + 1;
+                    assignCcValue(selectedId);
+                }
+                
+                
+                resetCcUserSelection();
+            }
+    
+            function assignCcValue(selectedId) {
+                $('.TalLeaveCcInputValue' + LEAVE_NS.ccCount).val(selectedId);
+            }
+    
+            function clearSelectedUserForCc() {
+                resetCcUserSelection();
+                for(var i = 1 ; i <= LEAVE_NS.ccCount ; i++) {
+                    $('.TalLeaveCcInputValue' + i).val('');
+                }
+                $('#UserSelected').text('');
+                $('#UserSelected').fadeOut('fast');
+                $('#UserSelectedClear').fadeOut('fast');
+                LEAVE_NS.ccCount = 0;
+            }
+    
+        /** End Mobile Lookup Replacement ****************************************/
+         </script>
+</apex:page>

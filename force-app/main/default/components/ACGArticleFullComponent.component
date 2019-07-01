@@ -1,0 +1,349 @@
+<apex:component controller="ACGArticleDetailCtrl" layout="block">
+    <apex:attribute name="articleRef" description="recordID" type="Id" assignTo="{!articleID}" required="false" />
+    <apex:attribute name="title" type="String" description="title of the Panel" required="false" />      
+    <apex:attribute name="recordRef" description="recordID" type="Id" required="false" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="false" />
+    <style>
+        .articleFullComp img {
+            max-width: 100%;
+            height: auto;
+        }       
+        .panelClass {
+            height: 100%;
+        }       
+        .FullTextTitle {
+            color: #006699;
+            font-size: 2em;
+            font-weight: bold;
+            font-family: arial;
+        }       
+        .PublishText {
+            color: #006699;
+            font-size: 1em;
+            font-weight: bold;
+            font-family: arial;
+        }       
+        .FullText {
+            color: #555;
+            font-family: arial;
+            font-size: 1em;
+        }       
+        .Author {
+            color: #888;
+            font-family: arial;
+            font-size: 1em;
+            font-style:normal
+        }       
+        .RevisedOn {
+            color: #990000;
+            font-family: arial;
+            font-size: 1em;
+            font-style:italic;
+            align: left
+        }   
+        @font-face {   
+            font-family: 'Glyphicons Halflings';   
+            src: url('{!URLFOR($Resource.bootstrap1, '/fonts/glyphicons-halflings-regular.eot')}');   
+            src: url('{!URLFOR($Resource.bootstrap1, '/fonts/glyphicons-halflings-regular.eot')}?#iefix') format('embedded-opentype'), 
+            url('{!URLFOR($Resource.bootstrap1, '/fonts/glyphicons-halflings-regular.woff')}') format('woff'),  
+            url('{!URLFOR($Resource.bootstrap1, '/fonts/glyphicons-halflings-regular.ttf')}') format('truetype'), 
+            url('{!URLFOR($Resource.bootstrap1, '/fonts/glyphicons-halflings-regular.svg')}#glyphicons-halflingsregular') format('svg'); 
+        }
+        .zen .publisherTypeOverflow .zen-options,
+        .zen .publisherTypeOverflow.zen-open .zen-trigger,
+        .zen .publisherTypeOverflow.zen-open .zen-options .publisherFeedItemTypeChoice {
+            -webkit-box-sizing: content-box;
+            -moz-box-sizing: content-box;
+            box-sizing: content-box;
+        }
+        .tal-chatter .feedcontainer .feeditem {
+            padding-top: 8px;
+            border-top: none;
+        }
+        .tal-file-preview {
+            border: 1px solid #EAEAEA;
+            padding: 12px;
+            border-radius: 3px;
+            color: #888;
+            width: 50%;
+        }
+        .tal-padded-row {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .vertical-divider {
+            font-size: 18px;
+            color: #EAEAEA;
+            padding-left: 8px;
+            padding-right: 0px;
+        }
+        .tal-chatter .feeditembodyandfooter .feeditembody, 
+        .tal-chatter .feeditemusericon,
+        .tal-chatter .cxlikeitemaction,
+        .tal-chatter .cxfeeditemcommentdot,
+        .tal-chatter .feedDropDown {
+            display: none;
+        }
+        
+        .tal-chatter .feedcontainer .feeditemcommentplaceholder input {
+            height: auto;
+        }
+    </style>    
+    
+    <apex:includeScript value="/soap/ajax/29.0/connection.js" />    
+    <script type="text/javascript"> 
+    function cFollow() {    
+        var cRecordId = "{!articleID}"; 
+        var cUserID = "{!$User.Id}"; 
+        
+        var cEntSub = new sforce.SObject('EntitySubscription');
+        cEntSub.ParentId = cRecordId;
+        cEntSub.SubscriberId  = cUserID;
+        
+        sforce.connection.sessionId = "{!$Api.Session_ID}";
+        var result = sforce.connection.create([cEntSub]); 
+        
+        if (result[0].getBoolean("success")) { 
+            alert("You have followed the record so you can see updates in your Chatter feed, including field changes, posts, tasks, and comments on the record!"); 
+        } else { 
+            alert("Fails on " + result[0] + "."); 
+        } 
+        location.reload(true);  
+    } 
+    
+    function cUnfollow() {  
+        var cRecordId = "{!articleID}"; 
+        var cUserID = "{!$User.Id}"; 
+        
+        sforce.connection.sessionId = "{!$Api.Session_ID}";     
+        var result = sforce.connection.query("select Id, ParentId, SubscriberId from EntitySubscription Where SubscriberId='{!$User.Id}' And ParentId='{!articleID}' limit 100");
+        records = result.getArray("records");
+        var cEntSub = new sforce.SObject('EntitySubscription');
+        for (var i=0; i< records.length; i++) {
+            cEntSub.Id = records[i].Id;
+        }
+            
+        var delResult = sforce.connection.deleteIds([cEntSub.Id]);
+        if (delResult[0].getBoolean("success")) {
+            alert("Unfollowed!"); 
+        } else {
+            alert("Fails on " + delResult[0] + "."); 
+        }
+    }
+    
+    function initLikes() {
+        var feedItemId = '{!article.Tech_Feed_Item_Id__c}';
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.ACGArticleDetailCtrl.getNumLikes}',
+            feedItemId,
+            function(result, event){
+                if(event.status) {
+                    if(result != null) {
+                        //console.log(result);
+                        
+                        $('#tal-like-num').text(result.likes);
+                        
+                        PAGE_NS.numLikes = result.likes;
+                        PAGE_NS.userHasLiked = result.userHasLiked;
+
+                    }
+                } else if (event.type === 'exception') {
+                    alert(event.message);
+                }
+            }, 
+            {escape: true}
+        );    
+    }
+    function talLikePost() {
+        if(PAGE_NS.userHasLiked) {
+            alert('{!$Label.ACGAlreadyLiked}');
+            return;
+        }
+        
+        var feedItemId = '{!article.Tech_Feed_Item_Id__c}';
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.ACGArticleDetailCtrl.likeChatterPost}',
+            feedItemId,
+            function(result, event){
+                if(event.status) {
+                    if(result != null && result) {
+                        PAGE_NS.numLikes = PAGE_NS.numLikes + 1;
+                        PAGE_NS.userHasLiked = true;
+                        $('#tal-like-num').text(PAGE_NS.numLikes);
+                    }
+                } else if (event.type === 'exception') {
+                    alert(event.message);
+                }
+            }, 
+            {escape: true}
+        );    
+    }
+    function shareAcgArticle() {
+        alert('{!SUBSTITUTE($Label.ACGShareInfo, "'", "\'")}');
+        window.top.parent.location.href = '/{!article.Tech_Feed_Item_Id__c}';
+    }
+    $(document).ready(function() {
+        initLikes();
+    });
+    var PAGE_NS = {
+        numLikes: 0,
+        userHasLiked: false
+    };
+    </script> 
+    
+    <div class="bs wrapper">
+        <div class="bs panel panel-info panelClass" id="announcementPanel">
+            <div class="bs panel-heading">
+                <h3 class="bs panel-title">{!title}</h3>                
+            </div>      
+            <apex:outputPanel rendered="{!bReadArticle}">
+                <div id="Body" class="bs panel-body articleFullComp">   
+                    <div class="bs row">
+                        <div class="col-md-12 col-sm-12 col-xs-12" id="announcement">                   
+                            <ul id="tabs" class="bs nav nav-tabs" data-tabs="tabs">
+                                <li class="bs pull-right">
+                                    <apex:outputLink value="{!strNextId}" rendered="{!bNext}">
+                                        <Strong>Next</Strong>&nbsp;<span
+                                            class="bs glyphicon glyphicon-chevron-right"></span>
+                                    </apex:outputLink>
+                                </li>
+                                <li class="bs pull-right">
+                                    <apex:outputLink value="{!strPreviousId}" rendered="{!bPrevious}">
+                                        <span class="bs glyphicon glyphicon-chevron-left"></span>&nbsp;<Strong>Previous</Strong>
+                                    </apex:outputLink>
+                                </li>
+                                <li class="bs dropdown pull-right">
+                                    <a href="#" data-toggle="dropdown" class="bs dropdown-toggle"><Strong>Language</Strong> <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <apex:variable value="{!1}" var="counterPanel"/>
+                                        <apex:repeat value="{!Languages}" var="lang">                                       
+                                            <li class="{!IF(OR(fullArticle.objpc[TitleLangVar[lang]]=NULL,fullArticle.objpc[TitleLangVar[lang]]='' ),'hidden','')}">
+                                                <a href="#tab{!counterPanel}" data-toggle="tab">{!LanguagesLabel[Lang]}</a>
+                                            </li>
+                                        <apex:variable var="counterPanel" value="{!counterPanel + 1}"/>                                     
+                                        </apex:repeat>              
+                                    </ul>
+                                </li>
+                                <li class="bs pull-right">
+                                    <apex:outputLink rendered="{!bEditArticle}" value="/{!articleRef}"  target="_blank">
+                                        <Strong>Edit Content</Strong>
+                                    </apex:outputLink>
+                                </li>
+                                <li class="bs pull-right">
+                                    <apex:outputLink rendered="{!NOT(bFollowing)}" onclick="cFollow();">
+                                        <apex:image value="{!$Resource.ChatterFollow}"/>&nbsp;<Strong>Follow</Strong>
+                                    </apex:outputLink>
+                                </li>
+                                <li class="bs pull-right">
+                                    <apex:outputLink rendered="{!bFollowing}" onclick="cUnfollow();">
+                                        <Strong>Following</Strong>&nbsp;
+                                        <apex:image value="{!$Resource.ChatterUnfollow}"/>
+                                    </apex:outputLink>
+                                </li>
+                                <apex:actionRegion rendered="{!article.Tech_Feed_Item_Id__c != ''}">
+                                    <li class="bs pull-right">
+                                        <a href="#" onclick="shareAcgArticle()">
+                                            <Strong>Share</Strong>
+                                        </a>
+                                    </li>
+                                    <li class="bs pull-right">
+                                        <a href="#" id="tal-acg-like" onclick="talLikePost()">
+                                            <Strong><span id="tal-like-label">Like </span><span class="bs badge" id="tal-like-num">0</span></Strong>
+                                        </a>
+                                    </li>
+                                </apex:actionRegion>
+                            </ul>
+                            <div id="my-tab-content" class="bs tab-content">
+                                <apex:variable value="{!1}" var="counter"/>
+                                <apex:repeat value="{!Languages}" var="lang">
+                                    <div class="bs tab-pane {!IF(OR(AND(Lang = 'en' , userPreferLanguage = 'en'), AND(Lang = 'en', userPreferLanguage != 'en', OR(fullArticle.objpc[TitleLangVar[userPreferLanguage]] = NULL, fullArticle.objpc[TitleLangVar[userPreferLanguage]] = '')), AND(Lang = 'en' , userPreferLanguage != 'en', fullArticle.showDefault=false), AND(userPreferLanguage = Lang, fullArticle.showDefault=true, Lang != 'en')),'active','')}" id="tab{!counter}">      
+                                        <apex:outputPanel layout="block">
+                                            <div class="bs row tal-padded-row">
+                                                <div class="col-md-9 col-sm-9 col-xs-9">
+                                                    <apex:outputText value="{!fullArticle.objpc[TitleLangVar[lang]]}" styleClass="FullTextTitle" />
+                                                    <apex:outputText value=" | " styleClass="vertical-divider" />
+                                                    <apex:outputLink value="/{!IF(fullArticle.objpc[RevisedLangVar[lang]]=true,fullArticle.objpc.LastModifiedById,fullArticle.objpc.OwnerId)}" styleclass="RichTextContentURL" target="_blank">
+                                                    <apex:outputText value="{!IF(fullArticle.objpc[RevisedLangVar[lang]]=true,fullArticle.objpc.LastModifiedBy.Name,fullArticle.objpc.Owner.Name)}" styleClass="Author" />
+                                                    </apex:outputLink>  
+                                                    
+                                                </div>
+                                                <div class="col-md-3 col-sm-3 col-xs-3" align="right">
+                                                    <apex:outputText value="Published: {0, date, dd MMM yyyy}" styleClass="Author">
+                                                        <apex:param value="{!IF(NOT(ISNULL(fullArticle.objpc.Publish_Datetime__c)), fullArticle.objpc.Publish_Datetime__c, fullArticle.objpc.CreatedDate)}" />                                                        
+                                                    </apex:outputText>
+                                                    <br/>
+                                                    <apex:outputText rendered="{!IF(fullArticle.objpc[RevisedLangVar[lang]]=true,true,false)}" value="Revised: {0, date, dd MMM yyyy}" styleClass="RevisedOn">
+                                                        <apex:param value="{!fullArticle.objpc.LastModifiedDate}" /> 
+                                                    </apex:outputText>  
+                                                </div>
+                                            </div>
+                                            <div class="bs row">
+                                                <div class="col-md-12 col-sm-12 col-xs-12">
+                                                    <apex:outputText value="{!fullArticle.objpc[ContentsLangVar[lang]]}" styleClass="FullText" escape="false" />
+                                                </div>
+                                            </div>
+                                        </apex:outputPanel>
+                                    </div>
+                                    <apex:variable var="counter" value="{!counter + 1}"/>
+                                </apex:repeat>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <apex:outputPanel rendered="{!fullArticle.objpc.Attached_File_ID1__c != ''}">
+                    <div class="tal-file-preview fileContent">
+                        <a href="/{!fullArticle.objpc.Attached_File_ID1__c}"> 
+                            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!fullArticle.objpc.Attached_File_ID1__c}"
+                                 onError="this.onerror=null;this.src='/sfc/images/docicons/doctype_unknown_32.png';"/>
+                        </a><br/><br/>
+                        {!fullArticle.objpc.Attached_File_Name1__c}
+                    </div><br/><br/>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!fullArticle.objpc.Attached_File_ID2__c != ''}">
+                    <div class="tal-file-preview fileContent">
+                        <a href="/{!fullArticle.objpc.Attached_File_ID2__c}"> 
+                            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!fullArticle.objpc.Attached_File_ID2__c}"
+                                 onError="this.onerror=null;this.src='/sfc/images/docicons/doctype_unknown_32.png';"/>
+                        </a><br/><br/>
+                        {!fullArticle.objpc.Attached_File_Name2__c}
+                    </div><br/><br/>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!fullArticle.objpc.Attached_File_ID3__c != ''}">
+                    <div class="tal-file-preview fileContent">
+                        <a href="/{!fullArticle.objpc.Attached_File_ID3__c}"> 
+                            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!fullArticle.objpc.Attached_File_ID3__c}"
+                                 onError="this.onerror=null;this.src='/sfc/images/docicons/doctype_unknown_32.png';"/>
+                        </a><br/><br/>
+                        {!fullArticle.objpc.Attached_File_Name3__c}
+                    </div><br/><br/>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!fullArticle.objpc.Attached_File_ID4__c != ''}">
+                    <div class="tal-file-preview fileContent">
+                        <a href="/{!fullArticle.objpc.Attached_File_ID4__c}"> 
+                            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!fullArticle.objpc.Attached_File_ID4__c}"
+                                 onError="this.onerror=null;this.src='/sfc/images/docicons/doctype_unknown_32.png';"/>
+                        </a><br/><br/>
+                        {!fullArticle.objpc.Attached_File_Name4__c}
+                    </div><br/><br/>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!fullArticle.objpc.Attached_File_ID__c != ''}">
+                    <div class="tal-file-preview fileContent">
+                        <a href="/{!fullArticle.objpc.Attached_File_ID__c}"> 
+                            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!fullArticle.objpc.Attached_File_ID__c}"
+                                 onError="this.onerror=null;this.src='/sfc/images/docicons/doctype_unknown_32.png';"/>
+                        </a><br/><br/>
+                        {!fullArticle.objpc.Attached_File_Name__c}
+                    </div><br/><br/>
+                </apex:outputPanel>
+                <div class="bs well well-lg tal-chatter" id="chatter">
+                    <chatter:feed entityId="{!articleID}" />
+                </div>
+            </apex:outputPanel>
+            <apex:outputLink value="/{!recordRef}"
+                styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}"
+                target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+        </div>          
+    </div>
+</apex:component>

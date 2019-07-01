@@ -1,0 +1,2734 @@
+<apex:page controller="TETravelApplicationCtrl"   showHeader="true" standardStylesheets="true" sidebar="false" applyHtmlTag="true" applyBodyTag="true" tabStyle="Travel_Application__c" docType="html-5.0" >
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />   
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    <!--
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_custom_scrollbar_master, 'jquery.custom-scrollbar.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_custom_scrollbar_master, 'jquery.custom-scrollbar.js')}" />    
+    -->
+    <apex:includeScript value="{!URLFOR($Resource.datetimepicker, 'build/jquery.datetimepicker.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.datetimepicker, 'jquery.datetimepicker.css')}" />  
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+    <apex:includeScript value="{!URLFOR($Resource.FixedColumns, 'js/dataTables.fixedColumns.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    
+    <script>
+        var tdtable = null;
+        var accommodationtable = null;
+        var airTicketOpt = null;  
+        var hotelOpt = null;  
+        var tableInit = null;
+        var accommodationtableInit = null;
+        var airTicketOpttableInit = null;
+        var hotelOpttableInit = null; 
+        var cashadvancetableInit = null;
+        var loactionSitMap = new Array();
+        //var expensePolicyAllowanceMap = new Array();
+        //var eaExpensePolicyMap = new Array();
+        var isinit = null;
+        var js_basic_single = null;
+        var js_basic_single_cc = null;
+        var js_basic_single_short = null;
+        var tabs = null;
+        var selectedTab = null;
+        var datepicker = null;
+        var datetimepicker = null;
+        var dateFormat = null;            
+        var opt1 = null;
+        var opt2 = null;
+        var opt3 = null;
+        var itdtable = null;
+        var iaccommodationtable = null; 
+        var icashadvancetable = null;
+        var iuitable = null;
+        var iairTicketOpt = null;
+        var ihotelOpt = null;
+        var iairfare = null;
+        var imain = null;
+        var progressbar = null;
+        var progressbar1 = null;
+        var tab1 = null;
+        var tab1_1 = null;
+        var tab2 = null;
+        var tab3 = null;
+        var tab3_1 = null;
+        var tab4 = null;
+        var tab5 = null;
+        var disable = null;
+        var ca_progressbar = null;
+        var sopt1 = null;
+        var sopt2 = null;
+        var sopt3 = null;
+        var availableAirport = null;
+        var airport = null;
+        var optSelection1 = null;
+        var optSelection2 = null;
+        var optSelection3 = null;
+        var icons = null;
+        var requiredInfoText = null;
+        var accordion = null; 
+        var feedaccordion = null;
+        var destinationSet = new Array();
+        var destination = null;
+        var accommodationClick = null;
+    </script>
+    
+    <script>
+        <!-- remove the default open of date picker when page load //-->
+        function setFocusOnLoad() {}     
+        
+        $(function() {initVariable();init();});
+       
+        function initVariable(){
+            js_basic_single = $(".js-basic-single");
+            js_basic_single_cc = $(".js-basic-single-cc");
+            js_basic_single_short = $(".js-basic-single-short");
+            destination = $(".js-basic-single-destination");
+            tabs = $("#tabs");
+            selectedTab = $('.selectedTab');
+            datepicker = $('.datepicker');
+            datetimepicker = $('.datetimepicker');    
+            dateFormat = $(".dateFormat");                
+            opt1 = $('.opt1');
+            opt2 = $('.opt2');
+            opt3 = $('.opt3');
+            itdtable = $('#tdtable');
+            iaccommodationtable = $('#accommodationtable'); 
+            icashadvancetable = $('#cashadvancetable');
+            iuitable = $('#uitable');
+            iairTicketOpt = $('#airTicketOpt');
+            ihotelOpt = $('#hotelOpt');
+            iairfare = $('#airfare');
+            imain = $('#main');
+            progressbar = $( ".progressbar" );
+            progressbar1 = $( ".progressbar1" );
+            tab1 = $('#tab1');
+            tab1_1 = $('#tab1_1');
+            tab2 = $('#tab2');
+            tab3 = $('#tab3');
+            tab3_1 = $('#tab3_1');
+            tab4 = $('#tab4');
+            tab5 = $('#tab5');
+            disable  = $('.disable');
+            ca_progressbar = $('ca_progressbar');
+            sopt1 = $('.selectedopt1');
+            sopt2 = $('.selectedopt2');
+            sopt3 = $('.selectedopt3');
+            airport = $('.airport');
+            optSelection1 = $('.optSelection1');
+            optSelection2 = $('.optSelection2');
+            optSelection3 = $('.optSelection3');
+            availableAirport = new Array();
+            icons = {
+              header: "ui-icon-circle-arrow-e",
+              activeHeader: "ui-icon-circle-arrow-s"
+            };
+            accordion =  $("#accordion"); 
+            feedaccordion = $("#feedaccordion");
+            requiredInfoText = $("<span></span>");
+            var str = '<div  class="sfFont bPageBlock bDetailBlock"><div class="requiredInput"><div class="requiredBlock"></div>';
+                str += '{!$Label.TE_Required_Field_Message}';
+                str += '</div></div>';
+            requiredInfoText = $(str); 
+            requiredInfoText.css('position', 'absolute');        
+            requiredInfoText.css('right', '20px');
+            requiredInfoText.css('top', '8px');
+            <apex:repeat value="{!loactionSitMap}" var="key">
+                loactionSitMap["{!key}"] = "{!loactionSitMap[key].site__r.Name}";  
+            </apex:repeat>
+            //loactionSitMap 
+            isinit = true;
+            accommodationClick = false;
+        }
+        function init(){
+            var hash = '';
+            var optconfirm = true;
+            var disableTabs = new Array();
+            var arrayOfStrings = null;
+            if ( document.URL.indexOf('#') != -1 ){
+                hash  = document.URL.substr(document.URL.indexOf('#')+1);
+                hash = hash.substr(hash.indexOf('-')+1);
+                selectedTab.val(hash);
+            }
+            else{
+                selectedTab.val('1');
+            }
+            imain.show();
+            /*
+            progressbar.progressbar({
+              value: false 
+            });
+            progressbar1.progressbar({
+              value: false 
+            });
+            */
+            $('.emaillist option[value={!travelApplication.Copy_to_1__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_2__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_3__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_4__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_5__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_6__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_7__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_8__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_9__c}]').attr('selected','selected');
+            $('.emaillist option[value={!travelApplication.Copy_to_10__c}]').attr('selected','selected');
+            dateFormat.fadeOut();
+            tableInit = dataTableInitSetting();
+            tabs.tabs();                
+            dateTimepickerInit();
+            js_basic_single_cc.select2({allowClear: false,  maximumSelectionLength: 10});
+            js_basic_single.select2({placeholder: "Select Option", allowClear: false});
+            js_basic_single_short.select2({placeholder: "Select", allowClear: false});
+            //var names = [{"id":"a0SO0000007uRMnMAM","text":"Adair,James"} , {"id":"2","text":"Anderson,Peter"},{"id":"3","text":"Armstrong,Ryan"}];
+            resetLocationSelection();
+            
+
+            resizeTabWidth();
+            $(window).on('resize', function(){resizeTabWidth();});
+            tableRefesh();
+            /*<!--
+            <apex:repeat value="{! expensePolicyAllowanceMap}" var="key">
+                expensePolicyAllowanceMap ["{!key}"] = "{! expensePolicyAllowanceMap[key]}";
+            </apex:repeat>
+            
+            <apex:repeat value="{! eaExpensePolicyMap}" var="key">
+                eaExpensePolicyMap["{!key}"] = "{! eaExpensePolicyMap[key]}";
+            </apex:repeat>
+            -->*/
+            //updateAllBudget();
+            airportRefesh();
+            <apex:repeat var="to" value="{!airtravelOptionList}">
+                if( '{!to.travelOption.Status__c}' != 'CON' ){
+                    optconfirm = false; 
+                }
+            </apex:repeat>
+            <apex:repeat var="to" value="{!hoteltravelOptionList}">
+                if( '{!to.travelOption.Status__c}' != 'CON' ){
+                    optconfirm = false; 
+                }
+            </apex:repeat>
+            
+            if(!optconfirm){
+                //tabs.tabs( { disabled: [4] } );
+                disableTabs.push(4);
+                if ( '{!isTravelAgent}' == 'true'){
+                    // disableTabs.push(3);  //Comment by DTT Support Team
+                }
+            }
+            if ( '{!travelApplication.Status__c}' == 'DF' || '{!travelApplication.Status__c}' == 'NS'){
+                //tabs.tabs( { disabled: [3,4] } );
+                disableTabs.push(3);
+                disableTabs.push(4);
+            }
+            
+            tabs.tabs( { disabled: disableTabs } );
+            if ( '{!travelApplication.Status__c}' != 'DF' && '{!travelApplication.Status__c}' != 'NS'){
+                updateAllSiteVisit();
+            }
+            $("*[class*='departureRoutePanel']").fadeOut(0);
+            $("*[class*='returnRoutePanel']").fadeOut(0);
+            for (i = 1; i <= {!travelDetailList.size}; i++){
+                changeJourneyType(i, true);
+                var str = $('.siteToVisitinput'+i).val();
+                if ( str != ''){
+                    arrayOfStrings = str.split(',');                    
+                    $('#siteToVisitopt'+i).val(arrayOfStrings ).trigger("change");
+                }
+            }
+            disable.attr("disabled", true);
+            feedaccordion.accordion({
+              collapsible: true,
+              icons: icons,
+              active: false
+            });
+            
+            accordion.accordion({
+              collapsible: true,
+              icons: icons
+            });
+            $(".details-toggle").click(function () {
+                $(".edit-toggle").text("");
+                if({!isApplicantMode}){
+                    $(".ui-state-active").find(".edit-toggle").html(requiredInfoText);
+                }
+            });
+            if({!isApplicantMode}){
+                $(".ui-state-active").find(".edit-toggle").html(requiredInfoText);
+            }
+            isinit = false;
+            
+
+       }
+       
+       function resizeTabWidth(){
+           var windowWidth = ($(window).width()-90)+"px";
+           d = document.getElementById('tabs-1');
+           d.style.width= windowWidth;
+           d = document.getElementById('tabs-2');
+           d.style.width= windowWidth;
+           d = document.getElementById('tabs-3');
+           d.style.width= windowWidth;
+           d = document.getElementById('tabs-4');
+           d.style.width= windowWidth;
+           d = document.getElementById('tabs-5');
+           d.style.width= windowWidth;
+       }
+       
+       function resetLocationSelection(){
+           //*
+           var url = '';
+           <apex:outputText rendered="{!istravelAgent}">
+               url = window.location.protocol + "//" + window.location.hostname + '/travel/TEAjaxQueryVFP?core.apexpages.devmode.url=1&type=location';
+           </apex:outputText>
+           <apex:outputText rendered="{!!istravelAgent}">
+               url = window.location.protocol + "//" + window.location.hostname + '/apex/TEAjaxQueryVFP?core.apexpages.devmode.url=1&type=location';
+           </apex:outputText>
+                    
+           var selection = destination.select2({
+                placeholder: "Select Option", 
+                allowClear: false,
+                minimumInputLength: 1,
+                language: { inputTooShort: function () { return 'Please input location'; } },
+                //theme: "classic",
+                ajax: {
+                    //data: names,
+                    url: url,                     
+                    //cache: true,
+                    //escapeMarkup: function (markup) { return markup; },
+                    
+                    delay: 250,        
+                    processResults: function (data, page) {                    
+                        var rs = data;
+                        //rs = rs.split("#$#$#")[1];
+                        rs = $.parseJSON(rs);
+                        return {results: rs};      
+                    }
+                }                
+           });
+           if (isinit){
+               selection .on('select2:close', function() {
+                   resetLocationSelection();
+                });
+           }
+       }
+       function dataTableInitSetting(){
+           return {
+                //"language": {"emptyTable": "<BR/><B>Self-Arrangement from Applicant</B><BR/><BR/>"},
+                "language": {"emptyTable": "<BR/><Label><B>Self-Arrangement from Applicant</B><Label><BR/><BR/>"},
+                "scrollY": 265,
+                "scrollX": true,
+                "paging": false,
+                "scrollCollapse": true,
+                //"bFilter": true, 
+                "bFilter": false, 
+                "bInfo": false,
+                "bSort" : false
+                //"bSort" : true
+            };
+       }
+        
+       function dateTimepickerInit(){
+            $('.datepicker').datetimepicker({
+            dayOfWeekStart : 1,
+            lang:'en',
+            defaultTime: '00:00',
+            //format:'d/m/Y',
+            format:'{!sDATE_FORMAT}',                
+            timepicker:false,
+            showOn: 'both',
+            scrollInput : false
+            });
+            
+            $('.datetimepicker').datetimepicker({
+            //showOn: 'focus',
+            dayOfWeekStart : 1,
+            lang:'en',
+            defaultTime: '00:00',
+            //format: "n/j/Y H:i",
+            //format:'d/m/Y H:i',
+            format:'{!sDT_FORMAT}', 
+            timepicker:true,
+            scrollInput : false,
+            onShow: function (ele) {
+                console.log(ele);
+            },
+            //startDate:  '1986/01/05',
+            
+            });
+        }
+        
+        function airportRefesh(){
+            <apex:repeat value="{!airportMap}" var="airportKey">
+                availableAirport.push("{!airportMap[airportKey]}");
+            </apex:repeat>            
+            airport.autocomplete({source: availableAirport});
+        }
+        
+        function tableRefesh(){       
+           tableInit["scrollY"] = false;        
+           tdtable =  itdtable.DataTable(tableInit);           
+           accommodationtableInit = dataTableInitSetting();
+           accommodationtableInit ["bAutoWidth"] = false;
+           accommodationtableInit ["aoColumns"] = [
+                    {"sWidth": "10px"},
+                    {"sWidth": "100px"},
+                    {"sWidth": "100px"},
+                    {"sWidth": "50px"},
+                    {"sWidth": "50px"},
+                    {"sWidth": "100px"},
+                    {"sWidth": "200px"},
+                    {"sWidth": "400px"},
+           ];
+           accommodationtable =  iaccommodationtable.DataTable(accommodationtableInit);
+           
+           uitableInit = dataTableInitSetting();
+           uitableInit["scrollX"] = true;          
+           uitable = iuitable.DataTable(uitableInit);               
+           
+           airTicketOpttableInit = dataTableInitSetting();
+           airTicketOpttableInit["scrollX"] = true;
+           
+           airTicketOpttableInit["scrollY"] = false;
+           airTicketOpttableInit["bAutoWidth"] = false;
+           airTicketOpttableInit["aoColumns"] = [
+                    {"sWidth": "10px"},
+                    {"sWidth": "40px"},
+                    //{"sWidth": "40px"},
+                    {"sWidth": "40px"},
+                    {"sWidth": "500px"},
+                    {"sWidth": "500px"},
+                    {"sWidth": "500px"},
+           ];
+           airTicketOpt = iairTicketOpt.DataTable(airTicketOpttableInit);
+           
+           hotelOpttableInit = dataTableInitSetting();
+           hotelOpttableInit["scrollX"] = true;
+           hotelOpttableInit["scrollY"] = false;
+           hotelOpttableInit["bAutoWidth"] = false;
+           hotelOpttableInit["aoColumns"] = [
+                    {"sWidth": "1%"},
+                    {"sWidth": "20%"},
+                    {"sWidth": "7%"},
+                    {"sWidth": "7%"},
+                    {"sWidth": "65%"},
+           ];
+           hotelOpt = ihotelOpt.DataTable(hotelOpttableInit);
+           
+           airfaretableInit = dataTableInitSetting();
+           airfaretableInit["scrollX"] = true;
+           airfaretableInit["bAutoWidth"] = false;
+           airfaretableInit["aoColumns"] = [
+                    {"sWidth": "50px"},
+                    {"sWidth": "110px"},
+                    {"sWidth": "90px"},
+                    {"sWidth": "100px"},
+                    {"sWidth": "200px"},
+                    {"sWidth": "200px"},
+                    {"sWidth": "700px"},
+           ];
+           airfare = iairfare.DataTable(airfaretableInit);               
+                 
+           cashadvancetableInit = dataTableInitSetting();             
+           cashadvancetableInit["scrollX"] = true;
+           cashadvancetableInit ["bAutoWidth"] = false;
+           cashadvancetableInit ["aoColumns"] = [
+                    {"sWidth": "50px"},
+                    {"sWidth": "150px"},
+                    {"sWidth": "100px"},
+                    {"sWidth": "200px"},
+                    {"sWidth": "250px"},
+                    {"sWidth": "700px"},
+           ];
+           cashadvancetable = icashadvancetable.DataTable(cashadvancetableInit);               
+        }
+        
+        function changeJourneyType(num){
+            changeJourneyType(num,false);
+        }
+        function changeJourneyType(num, isInit){
+            var str = $( ".jt"+num+" option:selected" ).text();
+            if( str == 'Air'){
+                changeAir(num);
+            }
+            if( str == 'Surface'){
+                changeSurface(num);
+                if(!isInit){
+                    $(".selfArragnment"+num).prop("checked", true);
+                    $(".selfArragnment"+num).attr("disabled", false);
+                }
+            }
+            if( str == 'Shuttle'){
+                changeShuttle(num);
+            }
+            changeDateFormat(num);
+            
+        }
+        function changeAir(num){
+            //alert(11);
+            //$(".returnRoutePanel"+num).fadeOut(0);
+            //$(".departureRoutePanel"+num).fadeOut(0);
+            
+            var str = $( ".jt"+num+" option:selected" ).text();
+            if( str == 'Air'){                
+                $("#departureShuttle"+num).fadeOut(0);            
+                $("#returnShuttle"+num).fadeOut(0);            
+                $(".location"+num).fadeIn(0);
+                $('.selfArragnment'+num).attr("disabled", "disabled");
+                $('.selfArragnment'+num).prop( "checked", false);
+                $('.NoOfSeats'+num).attr("disabled", "disabled");
+                $('.NoOfSeats'+num).val(1);
+                $(".returnRoutePanel"+num).fadeOut(0);
+                $(".departureRoutePanel"+num).fadeOut(0);                
+                //$(".departureShuttleArrangement"+num).select2("val", "");
+                //$(".returnShuttleArrangement"+num).select2("val", ""); 
+                //$(".departureDateTime"+num).css("margin-top", "0px");
+                //$(".returnDateTime"+num).css("margin-top", "0px");
+            //*/
+            }
+            
+        }
+        
+        function changeSurface(num){                
+            var str = $( ".jt"+num+" option:selected" ).text();
+            if( str == 'Surface'){
+                $("#departureShuttle"+num).fadeOut(0);
+                $("#returnShuttle"+num).fadeOut(0);
+                $(".returnRoutePanel"+num).fadeOut(0);
+                $(".departureRoutePanel"+num).fadeOut(0);
+                $(".location"+num).fadeIn(0);
+                //$('.selfArragnment'+num).removeAttr("disabled", "disabled");
+                $('.NoOfSeats'+num).attr("disabled", "disabled");
+                $('.NoOfSeats'+num).val(1);
+                //$(".departureDateTime"+num).css("margin-top", "0px");
+                //$(".returnDateTime"+num).css("margin-top", "0px");
+            }
+        }
+        
+        
+        function changeShuttle(num){
+            var str = $( ".jt"+num+" option:selected" ).text();
+            if( str == 'Shuttle'){
+                $("#departureShuttle"+num).fadeIn(0);
+                $("#returnShuttle"+num).fadeIn(0);
+                $(".returnRoutePanel"+num).fadeIn(0);
+                $(".departureRoutePanel"+num).fadeIn(0);
+                
+                if ($(".departureRouteShuttleArrangement"+num +' > option ').length == 0 ){
+                    $(".departureRouteShuttleArrangement"+num).attr( "disabled", true );
+                }
+                if ($(".returnRouteShuttleArrangement"+num +' > option ').length == 0 ){
+                    $(".returnRouteShuttleArrangement"+num).attr( "disabled", true );
+                }
+                $(".OriginSite"+num).val('');
+                $(".OriginSiteName"+num).val('');
+                $(".Destination"+num).val('');
+                $(".DestinationName"+num).val('');
+                $(".sOriginSite"+num).select2("val", "");
+                $(".sDestination"+num).select2("val", "");
+                $(".location"+num).fadeOut(0);
+                $('.selfArragnment'+num).attr("disabled", "disabled");
+                $('.selfArragnment'+num).prop( "checked", false);
+                $('.NoOfSeats'+num).removeAttr("disabled", "disabled");
+                if ($('.NoOfSeats'+num).val() == 0 ){
+                    $('.NoOfSeats'+num).val(1);
+                }
+                str = $(".departureDateTime"+num).val().split(' ');
+                $(".departureDateTime"+num).val(str[0]);
+                str = $(".returnDateTime"+num).val().split(' ');
+                $(".returnDateTime"+num).val( str[0] );
+                //$(".returnDateTime"+num).css("margin-top", "0px");
+                //$(".departureDateTime"+num).css("margin-top", "0px");
+            }
+        }
+        
+        function changeDateFormat(num){
+            var str = $( ".jt"+num+" option:selected" ).text();
+            if( str == 'Shuttle'){
+                $(".departureDateTime"+num).removeClass( "datetimepicker" );
+                $(".departureDateTime"+num).addClass( "datepicker" );                    
+                $(".returnDateTime"+num).addClass( "datepicker" );
+                $(".returnDateTime"+num).removeClass( "datetimepicker" );
+            }
+            else{
+                $(".departureDateTime"+num).addClass( "datetimepicker" );
+                $(".departureDateTime"+num).removeClass( "datepicker" );
+                $(".returnDateTime"+num).addClass( "datetimepicker" );
+                $(".returnDateTime"+num).removeClass( "datepicker" );
+            }
+            dateTimepickerInit();
+        }
+        
+        function updateAllSiteVisit(){
+            $("*[id*='siteToVisitopt']").each(function( index ) {
+                $('#siteToVisitopt'+(index+1)).attr('disabled','disabled'); 
+            });
+        }
+        /*
+        function updateAllBudget(){
+            $("*[class*='travelLocation']").each(function( index ) {
+               updateSingleBudget((index+1), $(this).val());
+            });
+        }
+        
+        function updateSingleBudget(num, val){
+            var applicantId = $('.OnBehalfof').val();
+            if ( applicantId == ''){
+                applicantId = $('.OnBehalfof :selected').val();
+            }
+            $('#accommodationBudget'+num).text(expensePolicyAllowanceMap[eaExpensePolicyMap[applicantId]+val]);
+        }
+        */
+        /*
+        function inputOption(){
+            var text = opt1.val();
+            var eachLine = text.split('\n');                
+            text = $("#optResult1").html();
+            for(var i = 0, l = eachLine.length; i < l; i++) {
+                //text += '<BR/>'+'<span style="float:left" id="opt'+i+'">'+eachLine[i] + '</span><div style="float:left" class="ui-icon ui-icon-circle-minus actionIcon"/>';
+                text += '<BR/>'+'<span style="float:left" id="opt'+i+'">'+eachLine[i] + '</span>';
+            }
+            $("#optResult1").html(text);
+            
+        }            
+        function accommodationtablerefresh(){
+            dateTimepickerInit();
+            dateFormat.fadeOut(0);
+            //js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+            iaccommodationtable.DataTable(tableInit);
+            js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+            //$('.js-basic-single').select2({ placeholder: 'Select Option',  allowClear: false});
+            //$('#accommodationtable').DataTable(tableInit);
+        }
+        */
+        function cashAdvancetablerefresh(){
+            dateTimepickerInit();
+            dateFormat.fadeOut(0);                
+            js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+            icashadvancetable.DataTable(tableInit);
+        }
+        
+        function optselection(num){
+            optSelection1.prop("disabled", false);
+            optSelection2.prop("disabled", false);
+            optSelection3.prop("disabled", false);
+            if (num != 1){
+                opt1.prop('checked', false);
+                optSelection1.prop("disabled", true);
+            }            
+            if (num != 2){
+                opt2.prop('checked', false);
+                optSelection2.prop("disabled", true);
+            }
+            if (num != 3){
+                opt3.prop('checked', false);
+                optSelection3.prop("disabled", true);
+            }            
+            sopt1.prop('checked', opt1.prop('checked'));
+            sopt2.prop('checked', opt2.prop('checked'));
+            sopt3.prop('checked', opt3.prop('checked'));
+            
+            
+        }
+        
+        function tabSelection(num){
+            initVariable();
+            if (num == '1'){
+                tdtable.columns.adjust().draw();
+                uitable.columns.adjust().draw();
+                selectedTab.val('1');
+            }
+            if (num == '2'){
+                accommodationtable.columns.adjust().draw();
+                selectedTab.val('2');
+            }
+            if (num == '2.1'){
+                selectedTab.val('2');
+                
+            }
+            if (num == '3'){
+                airTicketOpt.columns.adjust().draw();
+                hotelOpt.columns.adjust().draw();
+                selectedTab.val('3');
+            }
+            if (num == '4'){
+                cashadvancetable.columns.adjust().draw();
+                selectedTab.val('4');
+            }
+            if (num == '5'){
+                airfare.columns.adjust().draw();
+                selectedTab.val('5');
+            }
+        }
+        
+        function changesiteToVisit(num){
+            var stv = $("#siteToVisitopt"+num);
+            if ( stv.val() == null  ){
+                $(".pickup"+num).prop("checked", false);
+                $(".pickup"+num).attr("disabled", true);
+            }
+            else{
+                $(".pickup"+num).prop("checked", true);
+                $(".pickup"+num).attr("disabled", false);;
+            }
+            $(".siteToVisitinput"+num).val(stv.val());
+        }
+        
+        function tabAction(num, action){
+            initVariable();
+            progressbar.hide();
+            progressbar1.hide();
+            ca_progressbar.hide();
+            if (num == '1'){
+                if (action == 'A'){                        
+                    tab1.show();
+                    dateTimepickerInit();
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    itdtable.DataTable(tableInit);                    
+                    resetLocationSelection();
+                    //changeJourneyType('2');
+                }
+                if (action == 'D'){
+                    progressbar.show();
+                    tab1.hide();
+                    tdtable.destroy();                    
+                }
+            }
+            if (num == '1.1'){
+                if (action == 'A'){
+                    tab1_1.show();
+                    dateTimepickerInit();
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    iuitable.DataTable(uitableInit);
+                }
+                if (action == 'D'){
+                    progressbar1.show();
+                    tab1_1.hide();
+                    uitable.destroy();
+                }
+                airportRefesh();
+            }
+            if (num == '2'){
+                if (action == 'A'){
+                    tab2.show();
+                    dateTimepickerInit();
+                    dateFormat.fadeOut(0);
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    iaccommodationtable.DataTable(accommodationtableInit);
+                    resetLocationSelection();
+                    accommodationClick = true;
+                }
+                if (action == 'D'){
+                    progressbar.show();
+                    tab2.hide();
+                    accommodationtable.destroy();
+                }
+            }
+            if (num == '3.1'){
+                if (action == 'A'){
+                    tab3.show();
+                    dateTimepickerInit();
+                    dateFormat.fadeOut(0);
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    js_basic_single_short.select2({ placeholder: 'Select',  allowClear: false});
+                    iairTicketOpt.DataTable(airTicketOpttableInit);
+                    resetLocationSelection();
+                }
+                if (action == 'D'){
+                    progressbar.show();
+                    tab3.hide();
+                    airTicketOpt.destroy();
+                }
+            }
+            if (num == '3.2'){
+                if (action == 'A'){
+                    tab3_1.show();
+                    dateTimepickerInit();
+                    dateFormat.fadeOut(0);
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    ihotelOpt.DataTable( hotelOpttableInit );
+                    resetLocationSelection();
+                }
+                if (action == 'D'){
+                    progressbar1.show();
+                    tab3_1.hide();
+                    hotelOpt.destroy();
+                }
+            }
+            
+            if (num == '4'){
+                if (action == 'A'){
+                    tab4.show();
+                    dateTimepickerInit();
+                    dateFormat.fadeOut(0);                
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    //icashadvancetable.DataTable(tableInit);
+                    icashadvancetable.DataTable(cashadvancetableInit);
+                }
+                if (action == 'D'){
+                    ca_progressbar.show();
+                    tab4.hide();
+                    cashadvancetable.destroy();
+                }
+            }
+            if (num == '5'){
+                if (action == 'A'){
+                    tab5.show();
+                    dateTimepickerInit();
+                    dateFormat.fadeOut(0);
+                    js_basic_single.select2({ placeholder: 'Select Option',  allowClear: false});
+                    iairfare.DataTable(airfaretableInit);
+                    
+                }
+                if (action == 'D'){
+                    progressbar.show();
+                    tab5.hide();
+                    airfare.destroy();
+                }
+            }
+            if (action == 'A'){
+                $("*[class*='jt']").each(function( index ) {changeJourneyType((index +1), true);});
+            }              
+        }
+        function changeBudget(locationId, onBehalfId, counter, type){
+                //alert(locationId +'//'+ onBehalfId+'//'+ counter);
+                var cost;
+                Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.TETravelApplicationCtrl.getBudget}',
+                locationId, onBehalfId,
+                function(result, event){
+                    if (event.status){
+                        
+                          if (result == null){
+                             cost = "-";
+                             if ( type == 'a'){
+                                 $('.budgetPerNight'+counter).val('');
+                                 $('.budgetcurrency'+counter).val('');
+                             }
+                             if ( type == 'o'){
+                                 $('.optbudgetPerNight'+counter).val('');
+                                 $('.optbudgetcurrency'+counter).val('');
+                             }
+                          }
+                          else{
+                               cost = result.Maximum_of_Hotel_Allowance_Currency__c + ' ' + result.Daily_Maximum_Hotel_Cost__c.toFixed(2);
+                               if ( type == 'a'){
+                                   $('.budgetPerNight'+counter).val(result.Daily_Maximum_Hotel_Cost__c); 
+                                   $('.budgetcurrency'+counter).val(result.Maximum_of_Hotel_Allowance_Currency__c );
+                               }
+                               if ( type == 'o'){
+                                   $('.optbudgetPerNight'+counter).val(result.Daily_Maximum_Hotel_Cost__c); 
+                                   $('.optbudgetcurrency'+counter).val(result.Maximum_of_Hotel_Allowance_Currency__c );
+                               }
+                           }
+                           if ( type == 'a'){
+                               $('#accommodationBudget'+counter).text(cost);
+                           }
+                           if ( type == 'o'){
+                               $('#optaccommodationBudget'+counter).text(cost);
+                           }
+                        
+                        
+                    } else if (event.type == 'exception') {
+                    } else {
+                        document.getElementById("responseErrors").innerHTML = event.message;
+                    }
+                }, 
+                {escape: true}
+            );
+       }
+       function changeShuttleTo(num){
+           var sit = $('.returnShuttleArrangement'+num).select2('data')[0]['text'];
+           $('#siteToVisitopt'+num).val(sit).trigger("change");
+       }       
+       function changeShuttleSite(type, num){
+           var str = $( ".jt"+num+" option:selected" ).text();
+           if( str != 'Shuttle'){
+               return;
+           }
+           //*
+           if(type == 'r'){
+               if ($(".returnRouteShuttleArrangement"+num +' > option ').length == 0 ){
+                   $(".returnRouteShuttleArrangement"+num).attr( "disabled", true );
+               }
+               else{
+                   $(".returnRouteShuttleArrangement"+num).attr( "disabled", false );
+               }
+               /*
+               if( $(".returnDateTime"+num).val() != '' && $(".departureShuttleArrangement"+num).val() != '' && $(".returnShuttleArrangement"+num).val() != ''){
+                    //$('.returnRouteShuttleArrangement'+num).select2({  placeholder: 'Select Option', allowClear: false});
+                    $(".returnRoutePanel"+num).fadeIn(0);
+                }
+                else{
+                    $(".returnRoutePanel"+num).fadeOut(0);
+                }
+                */
+           }
+           if(type == 'd'){
+                if ($(".departureRouteShuttleArrangement"+num +' > option ').length == 0 ){
+                    $(".departureRouteShuttleArrangement"+num).attr( "disabled", true );
+                }
+                else{
+                    $(".departureRouteShuttleArrangement"+num).attr( "disabled", false );
+                }
+                /*
+                if( $(".departureDateTime"+num).val() != '' && $(".departureShuttleArrangement"+num).val() != '' && $(".returnShuttleArrangement"+num).val() != ''){
+                    //$('.departureRouteShuttleArrangement'+num).select2({  placeholder: 'Select Option', allowClear: false});
+                    $(".departureRoutePanel"+num).fadeIn(0);
+                }
+                else{
+                    $(".departureRoutePanel"+num).fadeOut(0);
+                }
+                */
+           }
+           //*/
+       }
+       function locationChange(evt, objname, num){
+           $('.'+objname+num).val($(evt).val());
+           $('.'+objname+'Name'+num).val($(evt).find('option:selected').text());
+           
+           if(objname == 'Destination'){
+               $('#siteToVisitopt'+num).val(loactionSitMap[$(evt).val()]).trigger("change");    
+           }
+           //alert($(evt).val());
+           //$(this).val($(evt).val());
+           //resetLocationSelection();
+       }
+       function changeAccommodationBy(evt, num){
+           //$('.alocation'+num).val('');
+           //$('.alocationName'+num).val('');
+           
+           if($(evt).val() == 'Travel Agency' ){
+               $("#acclocation"+num).fadeIn(0);
+               $("#accsitelocation"+num).fadeOut(0);
+               $('.alocation'+num).val($('#sacclocation'+num).val());
+               $('.alocationName'+num).val($('#sacclocation'+num).text());
+           }
+           if($(evt).val() == 'Site Admin' ){
+               $("#acclocation"+num).fadeOut(0);
+               $("#accsitelocation"+num).fadeIn(0);
+               if( $('#saccsitelocation'+num).val() == '' ){
+                   $('.alocationName'+num).val('');
+               }
+               else{
+                   $('.alocationName'+num).val($('#saccsitelocation'+num).text());
+               }
+               $('.alocation'+num).val($('#saccsitelocation'+num).val());
+           }
+       }
+       
+       function submitAlert(){           
+           var conf = null;
+           if(!accommodationClick){
+               conf = confirm('No accommodation input. Are you sure?');
+               if(!conf){
+                   $('.acctab').click();
+               }else{
+                   SubmitAction();
+               }
+           }
+           return conf;
+       }
+    </script>
+    <style type="text/css" class="init">
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        
+        .select2-dropdown {
+           margin-left: 0px;
+           width: 999px;
+        }
+        .select2-selection__rendered{
+            //margin-top: 99px;
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        
+        table.dataTable thead th, table.dataTable thead td {
+          padding-bottom: 0px;
+          //padding-left: 10px;
+          //padding-right: 10px;
+          padding-left: 10px;
+          padding-right: 0px;
+          border-bottom: 1px solid #111;
+        }
+        
+        table.dataTable tfoot td{
+          //padding-left: 10px;
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        
+        table.dataTable tbody td{
+          padding-left: 10px;
+          padding-right: 0px;
+          padding-top: 0px;
+          padding-bottom: 5px;
+        }    
+        .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td {
+            vertical-align: middle;
+           padding-top:5px; 
+        }
+        .dataTables_wrapper{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        } 
+        table.dataTable input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        label{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        #accordion table tr td {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        #accordion table tr td input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        #accordion table tr td textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        #accordion table tr td select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }        
+        .verticalLine{
+             border-left: medium solid #c00;             
+         }
+        
+        .inputClass{
+            //margin-top:4px;
+            margin-top:0px;
+        }
+        .errorAlert{
+            border:1px solid red;
+            outline: 2px solid #F00;
+        }
+        .ui-autocomplete {
+        max-height: 150px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        }
+        .ui-tabs-anchor{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+         }
+         
+         .ui-state-focus:focus { outline:none }
+         
+         .ui-state-default{
+          background-color: #dfeffc;
+          background-image: none;
+         }
+         .ui-accordion .ui-accordion-content {padding: 1em 0;}
+    </style>
+        
+        
+   <style type="text/css">
+     .ui-accordion-header.ui-state-active { background-color: #dfeffc; }
+
+    .alertlabel {
+        background-color: #f0ad4e;
+        color: black;
+        padding: 4px;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        color: #FFFFFF;
+    }
+    .infoLabel {
+        background-color: steelblue;
+        color: white;
+        padding: 4px;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        font-family: Salesforce Sans, Arial, sans-serif;
+        font-size: 10pt;
+    }
+    .hotelLabel{
+        background-color: SeaGreen;
+        color: white;
+        padding: 4px;
+        border-radius: 10px;
+        -moz-border-radius: 10px;
+        font-family: Salesforce Sans, Arial, sans-serif;
+        font-size: 10pt;
+    }
+    .actionIcon{
+        float:left;
+        margin-left:5px;
+    }
+    
+    .tal-simulate-disabled-input {
+        border: 1px solid #A9A9A9;
+        padding-top: 4px;
+        padding-left: 4px;
+        margin-top: 0px;
+        display: block;
+        background: #EBEBE4;
+        height: 19px;
+        font-family: Salesforce Sans, Arial, sans-serif;
+    }
+    .progressbar {
+        position: relative; 
+        left: 50%;
+        margin-top : 50px;
+        margin-bottom : 50px;
+     }
+     .progressbar1 {
+        position: relative; 
+        left: 40%;
+        margin-top : 50px;
+        margin-bottom : 50px;
+     }
+     .select2-search--inline{
+        margin-left: 0px;
+        margin-top: 2px;
+     }
+     
+     
+     li a{
+        outline-color: transparent;
+     }​
+   </style>
+   
+   <div id = "main"  style="display:none">
+   <apex:outputText rendered="{!!isblank(taid)}">
+       <div id="feedaccordion"    style = "width:99.5%; margin-top:5px;">
+           <label class="slds-form-element__label details-toggle" style="font-size:14px;">
+               Chatter Feed
+           </label>
+           <div style="margin-bottom:3px; font-family: Salesforce Sans, Arial, sans-serif;font-size: 10.5pt;Padding-left: 30px;">
+               <chatter:feed id="feedid" entityId="{!taid}"/>
+           </div>
+       </div>
+   </apex:outputText>
+   <apex:form >
+       
+        <apex:actionFunction name="SubmitJs" oncomplete="{!if(isEmptyAccommodation, 'return submitAlert();','SubmitAction()')}">
+        </apex:actionFunction>
+        <apex:actionFunction name="SubmitAction" action="{!submitAction}">
+        </apex:actionFunction>
+        <apex:inputtext id="selectedTab" value="{!selectedTab}" styleclass="selectedTab" style="display:none" />
+        <div class="slds">
+            <div class="slds-page-header" role="banner" >
+                <div class="slds-grid">
+                    <div class="slds-media__body">              
+                        <h1 class="slds-text-heading--medium">Travel Application</h1>                
+                    </div>
+                    <apex:variable var="tostatus" value=""/>
+                    <apex:repeat var="td"  value="{!travelDetailList}"> 
+                        <apex:outputText rendered="{!td.travelDetail.Record_Type_Name__c == 'Air'}">
+                            <apex:variable var="tostatus" value="{!td.travelDetail.Status__c}"/>
+                        </apex:outputText>
+                        
+                    </apex:repeat>
+                    <apex:repeat var="airTravelOptionList" >
+                    </apex:repeat>
+                    <div class="slds-col slds-no-flex slds-align-middle">
+                        <div class="slds-button-group" role="group">
+                            <apex:commandButton value="Rearrange" styleClass="slds-button slds-button--neutral" action="{!RearrangeAction}" rendered="{!isRearrange && (tostatus != 'PAR')}"/>
+                            <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!saveAction}" disabled="{!isSave}"/>
+                            <!--
+                            <apex:commandButton value="Submit" styleClass="slds-button slds-button--neutral" action="{!submitAction}" disabled="{!isSubmit}" onclick="{!if((travelApplication.Status__c == 'DF' || isBlank(travelApplication.id)), 'return submitAlert();' , ''  )}" />
+                            -->
+                            <apex:outputText rendered="{!!isSubmit}">
+                                <a href="javascript:;" onclick="SubmitJs()" class="actionbtn"  >
+                                    <apex:outputPanel styleClass="slds-button slds-button--neutral" >
+                                       Submit
+                                    </apex:outputPanel>
+                                </a>
+                            </apex:outputText>
+                            <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" action="{!cancelAction}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <apex:pageMessages id="showmsg" /> -->
+            <apex:outputPanel id="msg">
+                <apex:pageMessages id="showmsg" escape="false"></apex:pageMessages>
+            </apex:outputPanel>
+            <div style = "margin-bottom:-20px; ">
+            <apex:pageBlock mode="maindetail" id="headerBlock">
+            <div id="accordion" style = "width:99.5%; margin-top:5px;">
+               
+               <label class="slds-form-element__label details-toggle" style="font-size:14px;">Travel Application: {!travelApplication.Name}
+               <span class="edit-toggle">
+                   
+               
+               </span>
+               </label>
+               <div style="margin-bottom:3px;">
+                    <table style="width: 100%; margin-top:-10px; margin-bottom:-9px;" border = "0px">
+                        <tr>
+                            <td style="text-align:right; width: 15%" ></td>
+                            <td style="width: 26%"></td>
+                            <td style="text-align:right; width: 10%"></td>
+                            <td style="width: 22%" ></td>
+                            <td style="text-align:right; width: 12%"></td>
+                            <td style="width: 15%"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:right;"><label class="slds-form-element__label" >Applicant:</label></td>
+                            <td>
+                                <apex:outputField rendered="{!taId != null}" value="{!travelApplication.On_Behalf_of__r.Employee__r.Name}"/>
+                                <input  value="{!travelApplication.On_Behalf_of__c}" rendered="{!taId != null}" style="display:none" class = "OnBehalfof"/>
+                                <!--<apex:selectList size="1" value="{!travelApplication.On_Behalf_of__c}" multiselect="false"  style="width:100%"  styleclass="js-basic-single , OnBehalfof"   rendered="{!taId == null}" onchange="updateAllBudget">-->
+                                 <div class="requiredInput">
+                                 
+                                     <apex:outputText rendered="{!taId == null}">
+                                         <div class="requiredBlock"></div>
+                                         <div class="verticalLine1"> 
+                                            <apex:selectList size="1"   value="{!travelApplication.On_Behalf_of__c}" multiselect="false"  rendered="{!taId == null}"  style="width:100%;height:100%;"  styleclass="OnBehalfof"    > <!--onchange="updateAllBudget();"-->
+                                                <apex:selectOptions value="{!applicantSelectionList}"/>
+                                                <apex:actionSupport action="{!changeApplicant}" reRender="passporttype , membershiptype , travelagent" event="onchange" />
+                                            </apex:selectList>
+                                        </div>
+                                    </apex:outputText>
+                                </div>
+                            </td>
+                            <td style="text-align:right;" valign="top"><label class="slds-form-element__label">Remarks:</label></td>
+                            <td rowspan="3" valign="top">
+                                <apex:inputField value="{!travelApplication.Trip_Remarks__c}"  styleClass="{!IF((isApplicantMode), '' , 'disable')}" style="width:100%;height: 65px;"/>
+                            </td>
+                            <td style="text-align:right;"><label class="slds-form-element__label">Apply Date:</label></td>
+                            <td>
+                                {!ApplyDate}
+                                <!--
+                                <apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+                                    <apex:param value="{!ApplyDate}"/>
+                                </apex:outputText>
+                                -->
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="text-align:right;"><label class="slds-form-element__label" >Travel Document:</label></td>
+                            <td >  
+                                <apex:outputPanel id="passporttype"> 
+                                   <div class="requiredInput{!if(isApplicantMode&&!checkPassportType, ', errorAlert', '')}"> <!-- {!if(checkShuttleFrom, '', 'errorAlert')} -->
+                                        <apex:outputText rendered="{!isApplicantMode}">
+                                        <div class="requiredBlock"></div>
+                                       
+                                        <apex:selectList rendered="{!isApplicantMode}"  size="1" style="width:100%" value="{!travelApplication.Selected_Passport__c}">
+                                            <apex:selectOptions value="{!passportSelectionList}" rendered="{!ismyself || !isadmin}"></apex:selectOptions>
+                                        </apex:selectList>
+                                        </apex:outputText>
+                                   </div>
+                                </apex:outputPanel>
+                                <apex:outputText rendered="{!!isApplicantMode}" >
+                                    <span  style ="width : 100%;"  >
+                                         <input value="{!SUBSTITUTE(travelApplication.Selected_Passport__c, '_', ' ')}" style="width:100%" disabled ="disabled" />
+                               
+                                   </span>
+                               </apex:outputText>
+                            </td>
+                            <td></td>
+                            <td style="text-align:right;"><label class="slds-form-element__label">Created By:</label></td>
+                            <td>
+                                <apex:outputText rendered="{!!isblank(travelApplication.id)}" >
+                                    {!travelApplication.CreatedBy.Name}
+                                </apex:outputText>
+                                <apex:outputText rendered="{!isblank(travelApplication.id)}" >
+                                    {!currentEmp.user__r.Name}
+                                </apex:outputText>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="text-align:right;"><label class="slds-form-element__label" >Purpose Of Trip:</label></td>
+                            <td>
+                               <apex:inputText value="{!travelApplication.Purpose_of_Visit__c}" styleClass="{!IF((isApplicantMode), '' , 'disable')}"  style="width:100%"/>
+                                
+                            </td>
+                            <td></td>
+                            <td style="text-align:right;"><label class="slds-form-element__label">Status:</label></td>
+                            <td>
+                                <apex:outputField value="{!travelApplication.Status__c}"/>
+                            </td>
+                        </tr>
+                        
+                        <tr  valign="top" >
+                            <td style="text-align:right"><label class="slds-form-element__label"> CC E-Mail List:</label></td>
+                            <td valign="top" colspan ="3">
+                                <div id="js-basic-single-cc">
+                                    <apex:selectList disabled="{!!isApplicantMode}" size="1" multiselect="true" value="{!emailList}"  StyleClass="js-basic-single-cc emaillist"   style="width:100%" >
+                                        
+                                        <apex:selectOptions value="{!userSelectionList}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList1}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList2}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList3}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList4}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList5}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList6}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList7}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList8}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userSelectionList9}"></apex:selectOptions>
+                                        
+                                    </apex:selectList> 
+                                </div>
+                           </td>
+                           <td style="text-align:right;"><label class="slds-form-element__label">Travel Agency:</label></td>
+                           <td>
+                               
+                               <apex:outputPanel id="travelagent" >
+                                   <apex:variable var="AirExist" value="0"/>
+                                   <apex:repeat value="{!travelDetailList}" var="td">
+                                       <apex:repeat value="{!recordTypeList}" var="rtid">
+                                           <apex:variable var="AirExist" value="1" rendered="{!td.travelDetail.recordTypeId == rtid.id && rtid.Name == 'Air' }"/>
+                                       </apex:repeat>
+                                   </apex:repeat> 
+                                   <apex:selectList rendered="{!isApplicantMode && AirExist == '1'}"  size="1" style="width:95%" value="{!travelApplication.Travel_Agency__c}"  >
+                                        <apex:selectOptions value="{!travelAgentList}" ></apex:selectOptions>
+                                   </apex:selectList>
+                                   <apex:outputField rendered="{!!isApplicantMode && AirExist == '1' && !isblank(travelApplication.Travel_Agency__c)}" value="{!travelApplication.Travel_Agency__c}"/>
+                                   
+                                   <apex:outputText rendered="{!AirExist == '0' || (!isApplicantMode && AirExist == '1' && isblank(travelApplication.Travel_Agency__c)) }" value="---" >
+                                       <apex:selectList value="{!travelApplication.Travel_Agency__c}" style="display:none" />
+                                   </apex:outputText>
+                               </apex:outputPanel>
+                               
+                           </td>
+                        </tr>
+                        
+                    </table>
+                </div>
+            </div>
+            </apex:pageBlock>
+            </div>
+        </div>  
+        <div id="tabs" style = "width:99%; margin-top:4px;">
+            <ul>
+                <!--
+                <li onclick="tdtable.columns.adjust().draw();$('.selectedTab').val('1');"><a href="#tabs-1"  style = "width:140px">Travel Details</a></li>
+                -->
+                <li onclick="tabSelection('1')"><a href="#tabs-1"  style = "width:140px">Travel Details</a></li>                
+                <apex:outputText rendered="{!travelApplication.status__c != 'DF' && travelApplication.status__c != 'NS' }">
+                    <li onclick="tabSelection('2')" >
+                    <!--
+                    <li onclick="accommodationtable.columns.adjust().draw();$('.selectedTab').val('2');" >
+                    -->
+                        <a href="#tabs-2"  style = "width:140px">Accommodation</a>
+                    </li>
+                </apex:outputText>
+                <apex:outputText rendered="{!travelApplication.Status__c == 'DF' || travelApplication.Status__c == 'NS'}">
+                    <!--<li  onclick="$('.selectedTab').val('2');">-->
+                    <li  onclick="tabSelection('2.1')" >
+                        <apex:outputLink value="#tabs-2" style="width:140px" styleClass="acctab" >
+                        <!--
+                        onclick="accommodationtable.columns.adjust().draw();" 
+                        oncomplete="accommodationtable.destroy();accommodationtable.columns.adjust().draw();" 
+                        accommodationtablerefresh();
+                        -->
+                        <!--
+                        <apex:actionSupport event="onclick" onsubmit="tabAction('2', 'D');" oncomplete="tabAction('2', 'A');updateAllBudget();" action="{!accommodationAddRow}"  reRender="accommodationResult" /> 
+                        -->
+                        <apex:actionSupport event="onclick" onsubmit="tabAction('2', 'D');" oncomplete="tabAction('2', 'A');" action="{!accommodationAddRow}"  reRender="accommodationResult" /> 
+                        Accommodation
+                        </apex:outputLink>
+                    </li>
+                </apex:outputText>              
+                <apex:outputText rendered="{!!isTravelAgent}"> 
+                    <!--
+                    <li onclick="cashadvancetable.columns.adjust().draw();$('.selectedTab').val('4');" >
+                    -->
+                    <li onclick="tabSelection('4')" >
+                        <a href="#tabs-4"  style = "width:140px">Cash Advance</a>
+                    </li>
+                </apex:outputText>
+                <!--
+                <li onclick="airTicketOpt.columns.adjust().draw();hotelOpt.columns.adjust().draw();$('.selectedTab').val('3');" >
+                -->
+                <li onclick="tabSelection('3')" >
+                    
+                    <apex:variable var="actionOption" value="0"/>
+                    <apex:variable var="actionOption" value="1" rendered="{!OR(if(isBlank(travelApplication.Agent_Travel_Option_Counter__c),0,travelApplication.Agent_Travel_Option_Counter__c) != 0 && isTravelAgent, if(isBlank(travelApplication.Applicant_Travel_Option_Counter__c),0,travelApplication.Applicant_Travel_Option_Counter__c ) > 0 && isMySelf)}"/>
+                    <a href="#tabs-3"  style = "width:120px;{!IF(actionOption == '1' , 'background-color: yellow', '' )}">
+                        Air Travel Options
+                    </a>
+                </li>
+                <!--
+                <li onclick="airfare.columns.adjust().draw();$('.selectedTab').val('5');">
+                -->
+                <apex:outputText rendered="{!isTravelAgent}">
+                    <li onclick="tabSelection('5')" >
+                        <a href="#tabs-5"  style = "width:140px">Airfares/Hotel Price</a>
+                    </li>
+                </apex:outputText>
+            </ul>
+            
+            <div id="tabs-1" style="padding-top: 0px;">
+                <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>                
+                <div  id = "tab1">
+                <apex:outputPanel id="tdResult">
+                    <apex:variable value="{!0}" var="counter"/>
+                    <apex:repeat value="{!travelDetailList}" var="td">
+                        <apex:variable value="{!1}" var="counter" rendered="{!td.isedit}"/>
+                    </apex:repeat>
+                    <table id="tdtable" class="display nowrap" cellspacing="0" width="100%">
+                        <thead>
+                        <tr> 
+                            <th class = "tpadding"><apex:outputText rendered="{!counter != 0}">Action</apex:outputText></th>
+                            <th style = "width : 100px;">Travel Type</th>
+                            <th style = "width : 274px">From</th>
+                            <th style = "width : 274px">To</th>
+                            <th>Departure</th>
+                            <th>Return&nbsp;&nbsp;(Optional)</th>
+                            <th># ppl</th>
+                            <th>Self<BR/>Booking</th>
+                            <th>Arrange<BR/>Pick-Up</th>
+                            <th>Site(s) to Visit</th> 
+                            <th>Remarks</th>
+                            <th style = "width : 20px">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <apex:variable value="{!0}" var="counter"/>
+                            <apex:repeat value="{!travelDetailList}" var="td">
+                                
+                                <apex:variable value="{!(counter + 1)}" var="counter"/>
+                                <tr>
+                                    <td align = "center">
+                                        <div  class="inputClass" >
+                                        <apex:outputpanel id="tdAction">
+                                            <apex:outputText rendered="{!td.isEdit}" >
+                                                <a href="javascript:;" title="Add a new line">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon " >
+                                                        <apex:actionSupport event="onclick"  immediate="false" action="{!td.addRow}"  rerender="tdResult" oncomplete="tabAction('1', 'A')"  onsubmit="tabAction('1', 'D')" />
+                                                    </apex:outputPanel> 
+                                                </a>
+                                                <a href="javascript:;" title="Delete this line">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" >
+                                                        <apex:actionSupport event="onclick"  immediate="false" action="{!td.RemoveRow}"  rerender="tdResult" oncomplete="tabAction('1', 'A')" onsubmit="tabAction('1', 'D')" />
+                                                    </apex:outputPanel> 
+                                                </a>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!!td.isEdit}">
+                                                <div Class="ui-icon ui-icon ui-icon-locked"/>
+                                                <!--
+                                                <div Class="ui-icon ui-icon  {!IF(td.enableRcall, 'ui-icon-arrowreturnthick-1-n', 'ui-icon-locked')}"/>
+                                                <a href="javascript:;">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon  {!IF(td.enableRcall, 'ui-icon-arrowreturnthick-1-n', 'ui-icon-locked')}" >
+                                                        <apex:actionSupport rendered="{!td.enableRcall}" event="onclick"   action="{!td.Recall}"   rerender="tdAction , tdStatus"   />
+                                                    </apex:outputPanel>
+                                                </a>
+                                                -->
+                                            </apex:outputText>
+                                        </apex:outputpanel>
+                                        </div>                                      
+                                    </td>
+                                    <td>
+                                       <apex:outputText rendered="{!isApplicantMode}">
+                                           <div class="verticalLine1 , {!if(td.checkTravelType, '', 'errorAlert')}">
+                                               <apex:selectList size="1" value="{!td.travelDetail.recordTypeId}"   StyleClass="js-basic-single , jt{!counter}"   style="width:100px" >
+                                                   <apex:selectOptions value="{!journeyTypeSelectionList}"></apex:selectOptions>
+                                                   <apex:actionSupport reRender="travelagent" onsubmit="changeJourneyType({!counter});" event="onchange" />
+                                               </apex:selectList>
+                                           </div>
+                                       </apex:outputText>
+                                       <span class='tal-simulate-disabled-input' style ="{!IF(!isApplicantMode, '', 'display:none')}">
+                                           <apex:outputField value="{!td.travelDetail.recordTypeId}"   />
+                                       </span>
+                                      
+                                   </td>
+                                   <td>
+                                       <apex:outputText rendered="{!isApplicantMode}" >                                       
+                                           <div class="verticalLine1 , {!if(td.checkFom, '', 'errorAlert')} , location{!counter}"  >
+                                               <apex:inputText value="{!td.travelDetail.Origin_Site__c}"  styleClass="OriginSite{!counter}" style="display:none"/>
+                                               <apex:inputText value="{!td.OriginSiteName}" styleClass="OriginSiteName{!counter}" style="display:none"/>
+                                               <!--  
+                                               <apex:selectList size="1"   multiselect="false" styleclass="js-basic-single-destination" style="width : 200px" onchange="/*destinationArray(this , {!counter})*/">
+                                                   <apex:selectOptions value="{!travelLocationSelectionList}"/>
+                                               </apex:selectList>
+                                               
+                                               -->
+                                               <select size = "1" class="js-basic-single-destination sOriginSite{!counter}" style="width : 200px" onchange="locationChange(this , 'OriginSite', {!counter})">
+                                                   <apex:repeat value="{!travelLocationMap}" var="key">
+                                                       <apex:outputText rendered="{!key == td.travelDetail.Origin_Site__c}">
+                                                           <option value="{!key}">{!travelLocationMap[key].Name}</option>
+                                                       </apex:outputText>
+                                                   </apex:repeat>
+                                               </select>
+                                           </div>
+                                       </apex:outputText>
+                                       <apex:outputText rendered="{!!isApplicantMode}">
+                                           <span class='tal-simulate-disabled-input'   style ="width : 270px;">
+                                               <apex:outputText rendered="{!td.travelDetail.Origin_Site__c != '' && td.travelDetail.Record_Type_Name__c != 'Shuttle'}">{!travelLocationMap[td.travelDetail.Origin_Site__c].Name}</apex:outputText>
+                                               <apex:outputText rendered="{!td.travelDetail.Shuttle_From__r.Name != '' && td.travelDetail.Record_Type_Name__c == 'Shuttle'}" value="{!td.travelDetail.Shuttle_From__r.Name}"/>
+                                           </span> 
+                                       </apex:outputText>
+                                       <div id = "departureShuttle{!counter}"  style="display:none; margin-top: 0px;" class = "{!if(td.checkShuttleFrom, '', 'errorAlert')}"> 
+                                           <apex:selectList size="1"  value="{!td.travelDetail.Shuttle_From__c}"  disabled="{!td.travelDetail.Status__c != 'DF' && td.travelDetail.Status__c != 'NS'}" multiselect="false" styleclass="js-basic-single , departureShuttleArrangement{!counter}" style="width : 200px">
+                                                <apex:selectOptions value="{!routeSiteList}"  />
+                                                <apex:actionSupport event="onchange" reRender="ReturnRoute" oncomplete="changeShuttleSite('r', '{!counter}')"/>
+                                           </apex:selectList>
+                                       </div>
+                                           
+                                       <!--routeSiteList-->
+                                       
+                                   </td>
+                                   <td>
+                                       <apex:outputText rendered="{!isApplicantMode}">
+                                           <div class="verticalLine1 , {!if(td.checkTo, '', 'errorAlert')} , location{!counter}">
+                                                <apex:inputText value="{!td.travelDetail.Destination__c}"  styleClass="Destination{!counter}" style="display:none"/>
+                                                <apex:inputText value="{!td.DestinationName}" styleClass="DestinationName{!counter}" style="display:none"/>
+                                                <select size = "1" class="js-basic-single-destination sDestination{!counter}" style="width : 200px" onchange="locationChange(this , 'Destination', {!counter})">
+                                                  <apex:repeat value="{!travelLocationMap}" var="key">
+                                                       <apex:outputText rendered="{!key == td.travelDetail.Destination__c}">
+                                                           <option value="{!key}">{!travelLocationMap[key].Name}</option>
+                                                       </apex:outputText>
+                                                   </apex:repeat>
+                                               </select>
+                                           </div>
+                                       </apex:outputText>
+                                        <apex:outputText rendered="{!!isApplicantMode}">
+                                            <span class='tal-simulate-disabled-input' style ="width : 270px;">
+                                                <apex:outputText rendered="{!td.travelDetail.Destination__c != '' && td.travelDetail.Record_Type_Name__c != 'Shuttle'}" >{!travelLocationMap[td.travelDetail.Destination__c].Name}</apex:outputText>
+                                                <apex:outputText rendered="{!td.travelDetail.Shuttle_To__r.Name != '' && td.travelDetail.Record_Type_Name__c == 'Shuttle'}" value="{!td.travelDetail.Shuttle_To__r.Name}"/>                                              
+                                            </span>                                            
+                                        </apex:outputText>
+                                        <div id = "returnShuttle{!counter}" style="display:none; margin-top: 0px;"  class = "{!if(td.checkShuttleTo, '', 'errorAlert')}"> 
+                                           <apex:selectList size="1"  value="{!td.travelDetail.Shuttle_To__c}"  disabled="{!td.travelDetail.Status__c != 'DF' && td.travelDetail.Status__c != 'NS'}" multiselect="false" styleclass="js-basic-single , returnShuttleArrangement{!counter}" style="width : 200px">
+                                                <apex:selectOptions value="{!routeSiteList}"  />
+                                                <apex:actionSupport reRender="DepartureRoute" event="onchange"  onsubmit="changeShuttleTo('{!counter}');"  oncomplete="changeShuttleSite('d', '{!counter}')"/>
+                                           </apex:selectList>
+                                       </div>
+                                   </td>
+                                   <td >
+                                       <div style="{!IF(!isApplicantMode, '', 'display:none')}">
+                                           <span class='tal-simulate-disabled-input , inputClass' style ="width : 140px;">
+                                              
+                                               <apex:outputText value="{!td.DepartureDateTime}"></apex:outputText>
+                                               <apex:outputText rendered="{!td.DepartureAssignedShuttle != ''}">
+                                                   <div style = "margin-top: -15px;margin-left: 115px;">                                               
+                                                       <a href = "../{!td.DepartureAssignedShuttle}" target="_blank"  title="Assign/View" >
+                                                           <span Class="ui-icon ui-icon-pencil actionIcon " />
+                                                       </a>
+                                                   </div>
+                                               </apex:outputText>
+                                               <!--
+                                               <label class="alertlabel" style="padding-right: 5px;padding-left: 5px;">
+                                                   <a href = "../{!td.ReturnAssignedShuttle}" target="_blank" >Schedule</a>
+                                               </label>
+                                               -->
+                                           </span>
+                                           <apex:outputText rendered="{!td.travelDetail.Record_Type_Name__c == 'Shuttle'}">
+                                               <span class='tal-simulate-disabled-input , inputClass' style ="width : 140px;">                                       
+                                                   <apex:outputText rendered="{!td.travelDetail.Confirmed_Departure_Pick_Up_Point__c != ''}" >
+                                                       {!td.travelDetail.Confirmed_Departure_Pick_Up_Point__r.Location__c}
+                                                       ({!td.travelDetail.Confirmed_Departure_Pick_Up_Point__r.Arrival_Time__c})                                               
+                                                   </apex:outputText>
+                                                   <apex:outputText rendered="{!td.travelDetail.Confirmed_Departure_Pick_Up_Point__c == '' && td.travelDetail.Departure_Pick_Up_Point__c != ''}" >
+                                                       {!td.travelDetail.Departure_Pick_Up_Point__r.Location__c}
+                                                       ({!td.travelDetail.Departure_Pick_Up_Point__r.Arrival_Time__c})                                               
+                                                   </apex:outputText>
+                                                   <apex:outputText rendered="{!td.travelDetail.Departure_Pick_Up_Point__c == ''}" value="No Shuttle" />
+                                               </span>
+                                           </apex:outputText>
+                                       </div>
+                                       <apex:outputText rendered="{!isApplicantMode}">
+                                           <div class="verticalLine1">
+                                               <apex:input value="{!td.DepartureDateTime}" styleclass="datetimepicker , departureDateTime{!counter} , inputClass , {!if(td.checkDepartureDT, '', 'errorAlert')}" style="width : 140px">
+                                                   <apex:actionSupport event="onchange"  reRender="DepartureRoute"  oncomplete="changeShuttleSite('d', '{!counter}');" onsubmit="changeJourneyType({!counter})" />
+                                               </apex:input>
+                                               <!--changeShuttle({!counter}) changeShuttleSite('d', '{!counter}');  -->
+                                           </div>                                       
+                                           <!-- disabled="{!td.travelDetail.Status__c != 'DF' && td.travelDetail.Status__c != 'NS'}"-->
+                                           <apex:outputPanel style="display:none" styleClass="departureRoutePanel{!counter}">
+                                               <apex:outputPanel id="DepartureRoute">
+                                                   <apex:selectList size="1"  value="{!td.travelDetail.Departure_Pick_Up_Point__c}" disabled="{!td.travelDetail.Status__c != 'DF' && td.travelDetail.Status__c != 'NS'}" multiselect="false" styleclass="js-basic-single1 , departureRouteShuttleArrangement{!counter}  , {!if(td.checkDeparturePickup, '', 'errorAlert')}" style="width : 144px">
+                                                        <apex:selectOptions value="{!td.shuttleArrangementFromSelectionList}"  />
+                                                   </apex:selectList>
+                                               </apex:outputPanel>
+                                           </apex:outputPanel>
+                                       </apex:outputText>
+
+                                   </td>
+                                   <td>
+                                       <div class="verticalLine1">
+                                           <apex:input rendered="{!isApplicantMode}" value="{!td.ReturnDateTime}" styleclass="datetimepicker , returnDateTime{!counter} , inputClass" style="width : 140px"  onchange="changeShuttle({!counter})">
+                                               <apex:actionSupport event="onchange"  reRender="ReturnRoute"   oncomplete="changeShuttleSite('r', '{!counter}');" onsubmit="changeJourneyType({!counter})" />
+                                           </apex:input>
+                                           <!--changeShuttleSite('r', '{!counter}')  reRender="ReturnRoute"  -->
+                                       </div>
+                                       <apex:outputPanel style="display:none" styleClass="returnRoutePanel{!counter}">
+                                       <!--" disabled="{!td.travelDetail.Status__c != 'DF' && td.travelDetail.Status__c != 'NS'}"-->
+                                           <apex:outputPanel id="ReturnRoute" >
+                                               <apex:selectList size="1"  value="{!td.travelDetail.Return_Pick_Up_Point__c}" disabled="{!td.travelDetail.Status__c != 'DF' && td.travelDetail.Status__c != 'NS'}" multiselect="false" styleclass="js-basic-single1 , returnRouteShuttleArrangement{!counter}  , {!if(td.checkReturnPickup, '', 'errorAlert')} " style="width : 144px">
+                                                   <apex:selectOptions value="{!td.shuttleArrangementToSelectionList}"/>
+                                               </apex:selectList>
+                                           </apex:outputPanel>
+                                       </apex:outputPanel>
+                                       
+                                       <div style="{!IF(!isApplicantMode, '', 'display:none')}">
+                                           <span class='tal-simulate-disabled-input' style ="width : 140px;" >
+                                               <apex:outputText value="{!td.ReturnDateTime}"></apex:outputText>
+                                               <apex:outputText rendered="{!td.ReturnAssignedShuttle != ''}">
+                                                   <div style = "margin-top: -15px;margin-left: 115px;">                                               
+                                                       <a href = "../{!td.ReturnAssignedShuttle}" target="_blank"  title="Assign/View">
+                                                           <span Class="ui-icon ui-icon-pencil actionIcon " />
+                                                       </a>
+                                                   </div>
+                                               </apex:outputText>
+                                           </span>                                           
+                                           <apex:outputText rendered="{!td.travelDetail.Record_Type_Name__c == 'Shuttle'}">
+                                               <span class='tal-simulate-disabled-input' style ="width : 140px;" >
+                                                   <apex:outputText rendered="{!td.travelDetail.Confirmed_Return_Pick_Up_Point__c != ''}" >
+                                                       {!td.travelDetail.Confirmed_Return_Pick_Up_Point__r.Location__c}
+                                                       ({!td.travelDetail.Confirmed_Return_Pick_Up_Point__r.Arrival_Time__c})                                               
+                                                   </apex:outputText>
+                                                   <apex:outputText rendered="{!td.travelDetail.Confirmed_Return_Pick_Up_Point__c == '' && td.travelDetail.Return_Pick_Up_Point__c != ''}" >
+                                                       {!td.travelDetail.Return_Pick_Up_Point__r.Location__c}
+                                                       ({!td.travelDetail.Return_Pick_Up_Point__r.Arrival_Time__c})                                               
+                                                   </apex:outputText>
+                                                   <apex:outputText rendered="{!td.travelDetail.Return_Pick_Up_Point__c == ''}" value="No Shuttle" />                                                  
+                                               </span>
+                                           </apex:outputText>                                           
+                                       </div>
+                                   </td>
+                                   <td>
+                                       <apex:inputField value="{!td.travelDetail.No_of_Seats__c}" style="width : 40px; text-align:center" styleClass="NoOfSeats{!counter} , inputClass , {!if(td.checkPplnum, '', 'errorAlert')}"  rendered="{!isApplicantMode}"  /> 
+                                       <span class='tal-simulate-disabled-input' style =" text-align:center;width : 40px;{!IF(!isApplicantMode, '', 'display:none')}">
+                                           <apex:outputText value="{!td.travelDetail.No_of_Seats__c}" ></apex:outputText>
+                                           <BR/>
+                                       </span>
+                                   </td>
+                                   <td align = "center" >
+                                       <apex:inputCheckbox value="{!td.travelDetail.Self_Arragnment__c}" disabled="{!!isApplicantMode}" styleClass="selfArragnment{!counter}"/>
+                                   </td>
+                                   
+                                   
+                                   <td align = "center">
+                                       <apex:outputText rendered="{!!isApplicantMode}">
+                                           <apex:inputCheckbox value="{!td.travelDetail.Admin_Pick_Up__c}" disabled="true"/>
+                                       </apex:outputText>
+                                       <apex:outputText rendered="{!isApplicantMode}">
+                                           <apex:inputCheckbox styleclass="pickup{!counter}"  value="{!td.travelDetail.Admin_Pick_Up__c}" disabled="false"/>
+                                       </apex:outputText>
+                                   </td>
+                                   
+                                   <td>
+                                       <apex:input value="{!td.siteToVisit}"   id="siteToVisitinput"  styleClass="siteToVisitinput{!TEXT(counter)}" style="display:none" />
+                                       <select size="1" id="siteToVisitopt{!TEXT(counter)}" onchange="changesiteToVisit('{!TEXT(counter)}')" multiple="true"  value="{!td.siteToVisit}"  class="js-basic-single , siteVisit{!counter}" style="width:175px" >
+                                           <apex:repeat value="{!siteSelectionMap}" var="siteOpt">
+                                               <apex:outputText rendered="{!td.siteSelectionSelectedMap[siteOpt]}">
+                                                   <option value="{!siteOpt}" selected = "true"  >{!siteSelectionMap[siteOpt]}</option>
+                                               </apex:outputText>
+                                               <apex:outputText rendered="{!!td.siteSelectionSelectedMap[siteOpt]}">
+                                                   <option value="{!siteOpt}" >{!siteSelectionMap[siteOpt]}</option>
+                                               </apex:outputText>
+                                           </apex:repeat>
+                                       </select>
+                                   </td>
+                                   <td>
+                                       <apex:inputField value="{!td.travelDetail.Preferred_Airline__c}"  rendered="{!isApplicantMode}"  styleClass="Airline{!counter} , inputClass" style="width : 200px" />
+                                       <Label><apex:outputField value="{!td.travelDetail.Preferred_Airline__c}"  rendered="{!!isApplicantMode}" /></Label>
+                                   </td>
+                                   <td align = "left">
+                                       <apex:outputpanel id="tdStatus">
+                                           <Label><apex:outputField value="{!td.travelDetail.Status__c}"/></Label>
+                                       </apex:outputpanel>
+                                       <!--{!td.status}-->
+                                   </td> 
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                    <BR/>
+                </apex:outputPanel>
+                </div>
+                
+                <apex:outputText rendered="{!(travelItineraryList.size != 0 || travelApplication.Status__c == 'CON') && (travelApplication.Confirmed_Air_Travel_Detail_Count__c > 0)}">
+                    <label class="alertlabel" style="padding-right: 44px;padding-left: 44px;">Itinerary</label>
+                    <div class="progressbar1" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                    <div  id = "tab1_1">
+                    <apex:outputPanel id="uitableResult">                      
+                    <table id="uitable" class="display nowrap" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Flight</th>
+                                <th>Cabin Class</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th></th>
+                                <!--
+                                <th>Departure Date</th>                                
+                                <th>ETD</th>                                
+                                <th>Arrival Date</th>
+                                <!--
+                                <th>ETA</th>
+                                -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat var="ti" value="{!travelItineraryList}">
+                                <apex:variable var="itineraryDisable" value="0"/>
+                                <apex:variable var="itineraryDisable" value="1" rendered="{!ti.journey.id != null }"/>
+                                <tr>
+                                    <td>
+                                        <div  class="inputClass" >
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon" >
+                                                <apex:actionSupport event="onclick"  immediate="false" action="{!ti.addRow}"  rerender="uitableResult" oncomplete="tabAction('1.1', 'A');" onsubmit="tabAction('1.1', 'D')" />
+                                            </apex:outputPanel> 
+                                        </a> 
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" >
+                                                <apex:actionSupport event="onclick"  immediate="false" action="{!ti.removeRow}"  rerender="uitableResult" oncomplete="tabAction('1.1', 'A')" onsubmit="tabAction('1.1', 'D')" />
+                                            </apex:outputPanel> 
+                                        </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <apex:inputText disabled="{!itineraryDisable == '1'}" value="{!ti.journey.Flight__c}" styleClass="inputClass , {!if(ti.checkFlight, '', '1errorAlert')}" style="width : 100px" />  
+                                    </td>
+                                    <td> 
+                                        <apex:selectList size="1" value="{!ti.journey.Cabin_Class__c}"   multiselect="false" styleclass="inputClass , js-basic-single1" style="width : 190px;{!if(ti.checkCabinClass , '', 'outline: 2px solid #F00;')}" disabled="{!itineraryDisable == '1'}">
+                                             <apex:selectOptions value="{!cabinClassSelectionList}"></apex:selectOptions>
+                                        </apex:selectList>
+                                        
+                                    </td>
+                                    <td>
+                                        <apex:inputText styleclass="inputClass , airport , {!if(ti.checkFrom , '', 'errorAlert')}" style="width : 300px" value="{!ti.journey.From_Airport_Text__c}" disabled="{!itineraryDisable == '1'}" />
+                                    </td>
+                                    <td>
+                                        <!--
+                                        <apex:selectList size="1" value="{!ti.journey.To_Airport__c}"   multiselect="false" styleclass="js-basic-single" style="width : 200px">
+                                             <apex:selectOptions value="{!airportSelectionList1}"></apex:selectOptions>
+                                             <apex:selectOptions value="{!airportSelectionList2}"></apex:selectOptions>
+                                             <apex:selectOptions value="{!airportSelectionList3}"></apex:selectOptions>
+                                             <apex:selectOptions value="{!airportSelectionList4}"></apex:selectOptions>
+                                        </apex:selectList>
+                                        -->
+                                        <apex:inputText styleclass="inputClass , airport , {!if(ti.checkTo , '', 'errorAlert')}" style="width : 300px" value="{!ti.journey.To_Airport_Text__c}" disabled="{!itineraryDisable == '1'}" />                                        
+                                    </td>
+                                    <td width="400px">
+                                    </td>
+                                    <!--
+                                    <td>
+                                        <apex:outputText rendered="{!itineraryDisable != '1'}">
+                                            <apex:inputText value="{!ti.departureDate }" styleclass="{!(IF(itineraryDisable == '1' , '', 'datepicker'))} , inputClass , {!if(ti.checkDeparture , '', 'errorAlert')}" style="width : 110px" disabled="{!itineraryDisable == '1'}" />
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!itineraryDisable == '1'}">
+                                            <span class='tal-simulate-disabled-input'  >
+                                               <apex:outputText value="{!ti.departureDate }"   ></apex:outputText>
+                                            </span>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        
+                                        <apex:outputText rendered="{!itineraryDisable != '1'}">
+                                            <apex:inputText value="{!ti.journey.ETD__c}" style="width : 50px" styleClass="inputClass , {!if(ti.checkETD, '', 'errorAlert')}" disabled="{!itineraryDisable == '1'}" />
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!itineraryDisable == '1'}">
+                                            <span class='tal-simulate-disabled-input' style="width : 50px"  >
+                                               <apex:outputText value="{!ti.journey.ETD__c}"></apex:outputText>
+                                            </span>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText rendered="{!itineraryDisable != '1'}">
+                                            <apex:inputText value="{!ti.arrivalDate }" styleclass="{!(IF(itineraryDisable == '1' , '', 'datepicker'))} , inputClass , {!if(ti.checkArrival , '', 'errorAlert')}" style="width : 110px" disabled="{!itineraryDisable == '1'}" />
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!itineraryDisable == '1'}">
+                                            <span class='tal-simulate-disabled-input'  >
+                                               <apex:outputText value="{!ti.arrivalDate }"></apex:outputText>
+                                            </span>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText rendered="{!itineraryDisable != '1'}">
+                                            <apex:inputText value="{!ti.journey.ETA__c}" style="width : 50px" styleClass="inputClass , {!if(ti.checkETD, '', 'errorAlert')}" disabled="{!itineraryDisable == '1'}" />
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!itineraryDisable == '1'}">
+                                            <span class='tal-simulate-disabled-input' style="width : 50px"  >
+                                               <apex:outputText value="{!ti.journey.ETA__c}"></apex:outputText>
+                                            </span>
+                                        </apex:outputText>
+                                    </td>
+                                    -->
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                    </apex:outputPanel>
+                    </div>
+                </apex:outputText>
+                
+            </div>
+            <div id="tabs-2" style="padding-top: 0px;">
+                <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                <div  id = "tab2">
+                 
+                    <BR/>
+                    <!--
+                    <apex:outputText styleClass="slds-button slds-button--neutral"></apex:outputText>    
+                    
+                    <div class="slds">
+                        <apex:commandButton value="Add" styleClass="slds-button slds-button--neutral"  action="{!saveAction}" disabled="{!isSave}" />
+                        <apex:outputText styleClass="ui-icon ui-icon-plusthick actionIcon" style="position:relative;left:18px;top:9px;" />
+                    </div>
+                    -->
+                    <apex:outputPanel id="accommodationResult">
+                    <apex:variable var="isAdminCheckBox" value="0"  />
+                    <apex:variable value="{!0}" var="counter"/>
+                    <apex:repeat value="{!travelAccommodationList}" var="ta">
+                        <apex:variable value="{!1}" var="counter" rendered="{!ta.isedit}"/>
+                        <apex:variable var="isAdminCheckBox" value="1"  rendered="{!ta.accommodation.Status__c == 'PR' && isAdmin && ta.Accommodation.Accommodation_By__c == 'Site Admin'}"/>
+                    </apex:repeat>
+                   
+                    <!--
+                    <a href="javascript:;">
+                    <label class="alertlabel" style="padding-right: 20px;padding-left: 20px;"> 
+                        <apex:outputText style = "position:relative;left:20px;" styleClass="ui-icon ui-icon-plusthick actionIcon"></apex:outputText>Add
+                    </label>
+                    </a>
+                    -->
+                    <table id="accommodationtable" class="display nowrap" cellspacing="0" border ="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>
+                            <apex:outputText rendered="{!counter != 0}">Action</apex:outputText>
+                            <!--
+                            <apex:outputText rendered="{!isAdminCheckBox == '1'}">
+                                <input type ="checkBox" onclick = "$('.adminCheckBox').prop('checked',$(this).is(':checked'));"/>
+                            </apex:outputText>
+                            -->
+                            </th>
+                            <th>Arranged By</th>
+                            <th>Location</th>
+                            <th>Check-in Date</th>
+                            <th>Check-out Date</th>
+                            <th style="text-align:center">Budget/Night</th>
+                            <th>Remarks</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <apex:variable value="{!0}" var="counter"/>
+                       
+                        <apex:repeat value="{!travelAccommodationList}" var="ta">
+                            <apex:variable value="{!(counter + 1)}" var="counter"/>
+                            <apex:variable value="{!ta.isEdit}" var="isTaEdit"/>
+                            <tr>
+                                <td align = "center" >
+                                    <div  class="inputClass" >
+                                        <apex:outputText rendered="{!ta.isEdit}">
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon" >
+                                                <apex:actionSupport event="onclick"  immediate="false" action="{!ta.addRow}"  rerender="accommodationResult" oncomplete="tabAction('2', 'A');" onsubmit="tabAction('2', 'D');" />
+                                            </apex:outputPanel> 
+                                        </a>
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" >
+                                                <apex:actionSupport event="onclick"  immediate="false" action="{!ta.RemoveRow}"  rerender="accommodationResult" oncomplete="tabAction('2', 'A')" onsubmit="tabAction('2', 'D');" />
+                                            </apex:outputPanel> 
+                                        </a>
+                                        </apex:outputText>
+                                        
+                                        <!--
+                                        <apex:outputText rendered="{!!ta.isEdit}">
+                                            <apex:outputText rendered="{!NOT(ta.Accommodation.Status__c == 'PR' ||  ta.Accommodation.Status__c == 'CON' || ta.Accommodation.Status__c == 'CN')}">
+                                                <div Class="ui-icon ui-icon  {!IF((isMySelf || (isTravelAgent && ta.Accommodation.Accommodation_By__c == 'Travel Agency' ) || (isadmin && ta.Accommodation.Accommodation_By__c != 'Travel Agency' )), 'ui-icon-arrowreturnthick-1-n', 'ui-icon-locked')}"/>
+                                            </apex:outputText>
+                                        </apex:outputText>
+                                       
+                                        <apex:outputText rendered="{!ta.Accommodation.Status__c == 'PR' || ta.Accommodation.Status__c == 'CON' || ta.Accommodation.Status__c == 'CN'}">
+                                            <div Class="ui-icon ui-icon ui-icon-locked"/>
+                                        </apex:outputText>
+                                        -->
+                                        <!--
+                                        <apex:outputText rendered="{!!ta.isEdit}">
+                                            
+                                            <a href="javascript:;">
+                                                <apex:outputPanel styleClass="ui-icon ui-icon  {!IF(ta.enableRcall, 'ui-icon-arrowreturnthick-1-n', 'ui-icon-locked')}" >
+                                                    <apex:actionSupport rendered="{!ta.enableRcall}" event="onclick"   action="{!ta.Recall}"   rerender="tdAction , tdStatus"   />
+                                                </apex:outputPanel>
+                                            </a>
+                                            
+                                        </apex:outputText>
+                                        -->
+                                        
+                                        <apex:outputText rendered="{!!ta.isEdit}">
+                                            <apex:variable var="isAdminCheckBox" value="0"  />
+                                            <apex:variable var="isAdminCheckBox" value="1"  rendered="{!ta.accommodation.Status__c == 'PR' && isAdmin && ta.Accommodation.Accommodation_By__c == 'Site Admin'}"/>
+                                            <!--
+                                            <apex:inputCheckbox value="{!ta.adminArrange }" styleclass="adminCheckBox" rendered="{!isAdminCheckBox == '1'}"/>
+                                            --> 
+                                            <apex:outputText rendered="{!ta.Accommodation.Accommodation_By__c == 'Travel Agency' || !ta.adminArrange}"></apex:outputText>
+                                                <!--
+                                                div Class="ui-icon ui-icon ui-icon-locked" />
+                                                -->
+                                                <apex:outputPanel id="accAction">
+                                                    <apex:outputText rendered="{!(ta.Accommodation.Status__c == 'CN' || ta.Accommodation.Status__c == 'CON')}">
+                                                        <div Class="ui-icon ui-icon ui-icon-locked" />
+                                                    </apex:outputText>
+                                                    <apex:outputText rendered="{!(ta.Accommodation.Status__c == 'PR' || ta.Accommodation.Status__c == 'PAC') && isMySelf}">
+                                                        <a href="javascript:;">
+                                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-close actionIcon" >
+                                                                <apex:actionSupport event="onclick"  immediate="false" action="{!ta.cancelRow}" rerender="accAction , accStatus" />
+                                                            </apex:outputPanel> 
+                                                        </a>
+                                                    </apex:outputText>
+                                                </apex:outputPanel>
+                                                
+                                            </apex:outputText>
+                                        
+                                    </div>
+                                    
+                                </td>
+                                <td>
+                                    <!--onChange="changeAccommodationBy(this, '{!counter}')"-->
+                                    <apex:outputText rendered="{!isTaEdit}">  
+                                    </apex:outputText>
+                                    
+                                    <apex:outputText rendered="{!isTaEdit}">
+                                       <div class="verticalLine1 , {!if(ta.checkAccommodationBy , '', 'errorAlert')}">
+                                           <apex:selectList size="1" value="{!ta.Accommodation.Tech_Site_and_Arrage_By__c}" styleclass="js-basic-single" style="width:125px;"  >
+                                               <apex:selectOptions value="{!accommodationBySelectionList}"> </apex:selectOptions>  
+                                           </apex:selectList>
+                                           <!--
+                                           {!ta.Accommodation.Accommodation_By__c }
+                                           {!ta.Accommodation.Site__r.name}
+                                           -->
+                                       </div>
+                                    </apex:outputText>
+                                   
+                                    <apex:outputText rendered="{!!isTaEdit}">
+                                       <span class='tal-simulate-disabled-input' style ="width:125px;" >
+                                           <apex:outputText value="{!ta.Accommodation.Site__r.name + ' ' +ta.Accommodation.Accommodation_By__c}"   ></apex:outputText>
+                                           <BR/>
+                                       </span>
+                                    </apex:outputText>
+                                   
+                               </td>
+                               <td>
+                                   <div style= "display:none;">
+                                       <apex:inputField value="{!ta.Accommodation.Budget_per_Night__c}"  styleClass="budgetPerNight{!counter}"   />
+                                       <apex:inputField value="{!ta.Accommodation.Currency__c}" styleClass="budgetcurrency{!counter}"  />
+                                   </div>
+                                   <apex:outputText rendered="{!isTaEdit}">
+                                       <div class="verticalLine1 , {!if(ta.checkLocation, '', 'errorAlert')}">
+                                           <!--
+                                           <apex:selectList size="1"  multiselect="false"   styleclass="js-basic-single travelLocation{!counter}"  value="{!ta.Accommodation.Location__c}" style="width : 280px" onchange="changeBudget(this.value, '{!travelApplication.On_Behalf_of__c}', '{!counter}', 'a');"> 
+                                                <apex:selectOptions value="{!travelLocationSelectionList}"/>
+                                           </apex:selectList>
+                                           style="display:none"
+                                           width : 280px;
+                                           -->
+                                           
+                                           
+                                           
+                                           <apex:inputText value="{!ta.Accommodation.Location__c}"  styleClass="alocation{!counter}" style="display:none" />
+                                           <apex:inputText value="{!ta.LocationName}" styleClass="alocationName{!counter}" style="display:none" />
+                                           <div  id="acclocation{!counter}" >
+                                               <select size = "1" id="sacclocation{!counter}" class="js-basic-single-destination travelLocation{!counter}" style="width : 280px" onchange="changeBudget(this.value, '{!travelApplication.On_Behalf_of__c}', '{!counter}', 'a');locationChange(this , 'alocation', {!counter})">
+                                                   <apex:repeat value="{!travelLocationMap}" var="key">
+                                                       <apex:outputText rendered="{!key == ta.Accommodation.Location__c}">
+                                                           <option value="{!key}">{!travelLocationMap[key].Name}</option>
+                                                       </apex:outputText>
+                                                   </apex:repeat>
+                                               </select>
+                                           </div>
+                                           
+                                           
+                                           
+                                           
+                                           <!--
+                                           <div  id="accsitelocation{!counter}" style="display:none">
+                                               <select size = "1" id="saccsitelocation{!counter}"   class="js-basic-single "  style=" width : 280px;" onchange="changeBudget(this.value, '{!travelApplication.On_Behalf_of__c}', '{!counter}', 'a');locationChange(this , 'alocation', {!counter})">
+                                                   <option value=""></option>
+                                                   <apex:repeat value="{!loactionSitMap}" var="key">
+                                                       <apex:outputText rendered="{!key == ta.Accommodation.Location__c}"> 
+                                                           <option value="{!key}" selected="selected" >{!loactionSitMap[key].Name}</option>
+                                                       </apex:outputText>
+                                                       <apex:outputText rendered="{!key != ta.Accommodation.Location__c}"> 
+                                                           <option value="{!key}" >{!loactionSitMap[key].Name}</option>
+                                                       </apex:outputText>
+                                                       
+                                                   </apex:repeat>
+                                               </select>
+                                           </div>
+                                           -->
+                                       </div>
+                                   </apex:outputText>
+                                   <apex:outputText rendered="{!!isTaEdit}">
+                                        <span class='tal-simulate-disabled-input' style ="width : 280px;" >
+                                           <apex:outputText >{!travelLocationMap[ta.Accommodation.Location__c].Name}</apex:outputText>
+                                       </span>
+                                   </apex:outputText>
+                                   
+                                   
+                               </td>
+                               <td>
+                                   <apex:outputText rendered="{!isTaEdit}">
+                                       <div class="verticalLine1">
+                                           <apex:input value="{!ta.checkInDate}" style="width : 110px" styleclass="datepicker , inputClass , {!if(ta.checkCheckIn, '', 'errorAlert')}"  />
+                                       </div>
+                                   </apex:outputText>
+                                   <span class='tal-simulate-disabled-input' style ="width : 110px;{!IF(!isTaEdit, '', 'display:none')}" >
+                                       <apex:outputText value="{!ta.checkInDate}"   ></apex:outputText>
+                                       <BR/>
+                                   </span>
+                               </td>
+                               <td>
+                                   <apex:outputText rendered="{!isTaEdit}">
+                                       <div class="verticalLine1">
+                                           <apex:input value="{!ta.checkOutDate}" style="width : 110px" styleclass="datepicker , inputClass , {!if(ta.checkCheckOut, '', 'errorAlert')}" />
+                                       </div>
+                                   </apex:outputText>
+                                   <span class='tal-simulate-disabled-input' style ="width : 110px;{!IF(!isTaEdit, '', 'display:none')}" >
+                                       <apex:outputText value="{!ta.checkOutDate}"   ></apex:outputText>
+                                       <BR/>
+                                   </span>
+                               </td>
+                               <td style="text-align:center"> 
+                                   <div id = "accommodationBudget{!counter}" Class="inputClass">
+                                       <apex:outputLabel rendered="{!and(ta.Accommodation.Currency__r.name == '' , ta.Accommodation.Budget_per_Night__c == null)}">-</apex:outputLabel>
+                                       <apex:outputLabel >{!shortCurrencySelectionMap[ta.Accommodation.Currency__c].label} {!ta.Accommodation.Budget_per_Night__c}  </apex:outputLabel>                                    
+                                   </div>
+                                   
+                               </td>
+                               <td>
+                                   <!-- <apex:inputField value="{!ta.Accommodation.Remarks__c}" rendered="{!isApplicantMode || (isAdmin && ta.Accommodation.Accommodation_By__c == 'Site Admin' && ta.Accommodation.Status__c == 'PR' && ta.adminArrange)}" style="width : 250px" styleClass="inputClass" /> -->
+                                   <apex:inputField value="{!ta.Accommodation.Remarks__c}" rendered="{!isTaEdit}" style="width : 250px" styleClass="inputClass" />
+                                   <!--
+                                   <apex:outputText rendered="{!(!isApplicantMode && !(isAdmin && ta.Accommodation.Accommodation_By__c == 'Site Admin' && ta.Accommodation.Status__c == 'PR' && ta.adminArrange))}" >
+                                   -->
+                                   <apex:outputText rendered="{!!isTaEdit}">
+                                       <apex:inputTextarea value="{!ta.Accommodation.Remarks__c}" style="width : 250px" disabled="true" />
+                                       <!--
+                                       <span class='tal-simulate-disabled-input' style="width : 250px" >
+                                           <apex:outputText value="{!ta.Accommodation.Remarks__c}"   ></apex:outputText>
+                                           <BR/>
+                                       </span>
+                                       -->
+                                   </apex:outputText>
+                                   
+                               </td> 
+                               <td>
+                                   <apex:outputPanel id="accStatus">
+                                       <Label><apex:outputField value="{!ta.Accommodation.Status__c}" style="width : 110px"/></Label>
+                                   </apex:outputPanel>
+                               </td>
+                            </tr>
+                        </apex:repeat> 
+                        </tbody>
+                    </table>
+                </apex:outputPanel>
+            </div>
+            </div>            
+            <div id="tabs-3">
+                <apex:variable var="tostatus" value=""/>
+                <apex:variable var="counter" value="{!0}"/>
+                <apex:repeat value="{!airtravelOptionList}" var="to">
+                    <apex:variable var="tostatus" value="{!to.travelOption.Status__c}" rendered="{!to.travelOption.Status__c == 'PSE' || to.travelOption.Status__c == 'PR' || to.travelOption.Status__c == 'PAC' || to.travelOption.Status__c == 'CON'}"/>
+                    <apex:variable var="counter" value="{!1}" rendered="{!to.iseditable}"/>
+                </apex:repeat>
+                
+                <div width = "100%">
+                    <table border = "0" width="100%" style="margin-top: -5px;margin-bottom:-10px;">
+                    <apex:outputText style="padding-top:0px;" rendered="{!((tostatus == 'PR' && isTravelAgent ) || (tostatus == 'PAC' || tostatus == 'CON'))}">
+                        <tr>
+                            <td>
+                                 
+                                 <span style="color:SteelBlue ;font-weight:bold;font-size:14px;">
+                                 &nbsp;<span style="color:red;font-weight:bold; font-size: 10pt" >*</span><u>Confirm Before:</u>
+                                 </span>
+                                 &nbsp;&nbsp;
+                                 <apex:input value="{!deadline}" styleclass="{!IF((tostatus == 'PAC' || tostatus == 'CON'), '' , 'datepicker')} , {!if(checkDeadline , '', 'errorAlert')}" style="width : 180px;"  disabled="{!(tostatus == 'PAC' || tostatus == 'CON')}"  /> <!--  {!IF((tostatus == 'PAC' || tostatus == 'CON'),'', 'border-color:SteelBlue ;')} -->
+                                 &nbsp;&nbsp;
+                            </td>
+                        </tr>
+                    </apex:outputText>
+                    <!--
+                    <tr>
+                        <td width="15%" height="30px">
+                            <label class="alertlabel" style="padding-right: 30px;padding-left: 30px;">Air Ticket</label>
+                        </td>
+                    </tr>
+                    -->
+                    </table>
+                </div>
+                <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                <div  id = "tab3">                
+                <apex:outputPanel id="airTicketOptResult">
+                <!--
+                <apex:variable var="tostatus" value=""/>
+                <apex:variable var="counter" value="{!0}"/>
+                <apex:repeat value="{!airtravelOptionList}" var="to">
+                    <apex:variable var="tostatus" value="{!to.travelOption.Status__c}" rendered="{!to.travelOption.Status__c == 'PSE' || to.travelOption.Status__c == 'PR' || to.travelOption.Status__c == 'PAC' || to.travelOption.Status__c == 'CON'}"/>
+                    <apex:variable var="counter" value="{!1}" rendered="{!to.iseditable}"/>
+                </apex:repeat>
+                
+                
+                <div width = "100%" style ="text-align:center">
+                    
+                    <apex:outputText style="padding-top:0px" rendered="{!((tostatus == 'PR' && isTravelAgent ) || (tostatus == 'PAC' || tostatus == 'CON'))}">
+                         <span style="color:blue;font-weight: 3;">
+                             Confirm Before Deadline
+                         </span>
+                         &nbsp;&nbsp;
+                         <apex:input value="{!deadline}" styleclass="{!IF((tostatus == 'PAC' || tostatus == 'CON'), '' , 'datepicker')} , {!if(checkDeadline , '', 'errorAlert')}" style="width : 80px; {!IF((tostatus == 'PAC' || tostatus == 'CON'),'', 'border-color:blue;')}"  disabled="{!(tostatus == 'PAC' || tostatus == 'CON')}"  />
+                         &nbsp;&nbsp;
+                         
+                    </apex:outputText>
+                </div>
+                -->
+                <apex:inputCheckbox value="{!travelApplication.Selected_Option_1__c}" styleClass="selectedopt1" style="display:none"/>
+                <apex:inputCheckbox value="{!travelApplication.Selected_Option_2__c}" styleClass="selectedopt2" style="display:none"/>
+                <apex:inputCheckbox value="{!travelApplication.Selected_Option_3__c}" styleClass="selectedopt3" style="display:none"/>
+                <table id="airTicketOpt" class="display nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <!--
+                        <tr>
+                            <th height="0">&nbsp;</th>
+                            <th>&nbsp;</th> 
+                            <th>&nbsp;</th> 
+                        
+                            <th>&nbsp;</th> 
+                            <th>&nbsp;</th> 
+                            <th>&nbsp;</th> 
+                            <th>&nbsp;</th> 
+                        </tr>
+                        -->
+                        <tr>
+                            
+                            <th height="30"><apex:outputText rendered="{!counter != 0}">Action</apex:outputText></th>
+                            <!--
+                            <th>From</th>
+                            <th>To</th>
+                            -->
+                            <th>
+                                <label class="infoLabel" style="padding-right: 30px;padding-left: 30px;">Air Ticket</label>
+                            </th>
+                            <th>Departure Date</th>
+                            <!--disabled="{!isTravelAgent || (tostatus != 'PSE' && tostatus != 'PAC')}"> onclick="optselection(1)"-->                            
+                            <th><apex:inputCheckbox styleClass="opt1 , {!if(checkSelectedOption1, '', 'errorAlert')}"  value="{!selectedOption1}" rendered="{!(tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')|| (tostatus == 'PSE' && !isTravelAgent) }" disabled="{!isTravelAgent || (tostatus != 'PSE' )}" onclick="optselection(1)" />
+                                Option 1: 
+                                    <span style = "padding-top:5px; padding-bottom:8px" class="{!if(checkOptionEstimatedCurrency, '', 'errorAlert')}">
+                                        <!--
+                                        <apex:selectList size="1"  disabled="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PSE' || tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}" value="{!travelApplication.Option_Estimated_Currency__c}" multiselect="false"  styleclass="js-basic-single-short" style="width :77px;" rendered="{!!(!isTravelAgent || (isTravelAgent && (tostatus == 'PSE' || tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')))}"  >
+                                        -->
+                                        <apex:selectList size="1"  disabled="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}" value="{!travelApplication.Option_Estimated_Currency__c}" multiselect="false"  styleclass="js-basic-single-short" style="width :77px;" rendered="{!!(!isTravelAgent || (isTravelAgent && ( tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')))}"  >
+                                            <apex:selectOptions value="{!shortCurrencySelectionList}"/>
+                                        </apex:selectList>
+                                    </span>
+                                    <apex:inputField value="{!travelApplication.Option_Estimated_Price1__c}" style="width :107px;" rendered="{!isTravelAgent && (tostatus != 'PR' && tostatus != 'PAC' && tostatus != 'CON')}" styleClass="{!if(checkOptionEstimatedPrice1, '', 'errorAlert')}" />
+                                    <apex:outputText rendered="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}">
+                                            <apex:outputtext rendered="{!!isblank(travelApplication.Option_Estimated_Price1__c)}">
+                                                <span>
+                                                    <apex:outputtext value="{!travelApplication.Option_Estimated_Currency__r.Name}" />
+                                                </span>
+                                                <apex:outputField value="{!travelApplication.Option_Estimated_Price1__c}"    />
+                                            </apex:outputtext>
+                                            <apex:outputtext rendered="{!isblank(travelApplication.Option_Estimated_Price1__c)}">
+                                                <span>
+                                                    <apex:outputtext value="N/A" />
+                                                </span>
+                                            </apex:outputtext>
+                                    </apex:outputText>
+                            </th>
+                            <th><apex:inputCheckbox styleClass="opt2 , {!if(checkSelectedOption2, '', 'errorAlert')}"  value="{!selectedOption2}" rendered="{!(tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')|| (tostatus == 'PSE' && !isTravelAgent) }" disabled="{!isTravelAgent || (tostatus != 'PSE' )}" onclick="optselection(2)" />
+                                Option 2:
+                                    <span style = "padding-top:5px; padding-bottom:8px" class="{!if(checkOptionEstimatedCurrency2, '', 'errorAlert')}">
+                                        <apex:selectList size="1"  disabled="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}" value="{!travelApplication.Option_Estimated_Currency2__c}" multiselect="false"  styleclass="js-basic-single-short" style="width :77px;" rendered="{!!(!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')))}"  >
+                                            <apex:selectOptions value="{!shortCurrencySelectionList}"/>
+                                        </apex:selectList>
+                                    </span>
+                                    <apex:inputField value="{!travelApplication.Option_Estimated_Price2__c}" style="width :107px;" rendered="{!isTravelAgent && (tostatus != 'PR' && tostatus != 'PAC' && tostatus != 'CON')}" styleClass="{!if(checkOptionEstimatedPrice2, '', 'errorAlert')}" />
+                                    <apex:outputText rendered="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}">
+                                            <apex:outputtext rendered="{!!isblank(travelApplication.Option_Estimated_Price2__c)}">
+                                                <span>
+                                                    <apex:outputtext value="{!travelApplication.Option_Estimated_Currency2__r.Name}" />
+                                                </span>
+                                                <apex:outputField value="{!travelApplication.Option_Estimated_Price2__c}"    />
+                                            </apex:outputtext>
+                                            <apex:outputtext rendered="{!isblank(travelApplication.Option_Estimated_Price2__c)}">
+                                                <span>
+                                                    <apex:outputtext value="N/A" />
+                                                </span>
+                                            </apex:outputtext>
+                                    </apex:outputText>
+                            </th>
+                            <th><apex:inputCheckbox styleClass="opt3 , {!if(checkSelectedOption3, '', 'errorAlert')}"  value="{!selectedOption3}" rendered="{!(tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')|| (tostatus == 'PSE' && !isTravelAgent) }" disabled="{!isTravelAgent || (tostatus != 'PSE'  )}" onclick="optselection(3)" />
+                                Option 3:
+                                    <span style = "padding-top:5px; padding-bottom:8px" class="{!if(checkOptionEstimatedCurrency3, '', 'errorAlert')}">
+                                        <apex:selectList size="1"  disabled="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}" value="{!travelApplication.Option_Estimated_Currency3__c}" multiselect="false"  styleclass="js-basic-single-short" style="width :77px;" rendered="{!!(!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON')))}"  >
+                                            <apex:selectOptions value="{!shortCurrencySelectionList}"/>
+                                        </apex:selectList>
+                                    </span>
+                                    <apex:inputField value="{!travelApplication.Option_Estimated_Price3__c}" style="width :107px;" rendered="{!isTravelAgent && (tostatus != 'PR' && tostatus != 'PAC' && tostatus != 'CON')}" styleClass="{!if(checkOptionEstimatedPrice3, '', 'errorAlert')}" />
+                                    <apex:outputText rendered="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}">
+                                            <apex:outputtext rendered="{!!isblank(travelApplication.Option_Estimated_Price3__c)}">
+                                                <span>
+                                                    <apex:outputtext value="{!travelApplication.Option_Estimated_Currency3__r.Name}" />
+                                                </span>
+                                                <apex:outputField value="{!travelApplication.Option_Estimated_Price3__c}" />
+                                            </apex:outputtext>
+                                            <apex:outputtext rendered="{!isblank(travelApplication.Option_Estimated_Price3__c)}">
+                                                <span>
+                                                    <apex:outputtext value="N/A" />
+                                                </span>
+                                            </apex:outputtext>
+                                    </apex:outputText>
+                            </th>
+                        </tr>
+                    </thead>
+                    <!--
+                    <tfoot>
+                        <tr>
+                            <td  colspan="2">
+                            </td>
+                            
+                            <td  colspan="2" >
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            Estimated Price
+                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                            &nbsp;&nbsp;&nbsp;
+                                            <span style = "padding-top:5px; padding-bottom:8px" class="{!if(checkOptionEstimatedCurrency, '', 'errorAlert')}">
+                                            <apex:selectList size="1"  disabled="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PSE' || tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}" value="{!travelApplication.Option_Estimated_Currency__c}" multiselect="false"  styleclass="js-basic-single" style="width : 230px;"   >
+                                                <apex:selectOptions value="{!currencySelectionList}"/>
+                                            </apex:selectList>
+                                            </span>
+                                            
+                                                                           
+                                
+                                           
+                            </td >
+                            <td style="padding-left: 15px;"  >
+                                <apex:inputField value="{!travelApplication.Option_Estimated_Price1__c}" style="width : 100%" rendered="{!isTravelAgent && (tostatus != 'PSE' && tostatus != 'PR' && tostatus != 'PAC' && tostatus != 'CON')}" styleClass="{!if(checkOptionEstimatedPrice1, '', 'errorAlert')}" />
+                                <apex:outputText rendered="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PSE' || tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}">
+                                   
+                                    <span class='tal-simulate-disabled-input' style ="width : 100%; max-width: 240px;" >
+                                        <apex:outputField value="{!travelApplication.Option_Estimated_Price1__c}"    />
+                                    </span>
+                                </apex:outputText>
+                                
+                                
+                            </td>
+                            <td style="padding-left: 15px">
+                                <apex:inputField value="{!travelApplication.Option_Estimated_Price2__c}" style="width : 100%" rendered="{!isTravelAgent && (tostatus != 'PSE' && tostatus != 'PR' && tostatus != 'PAC' && tostatus != 'CON')}" styleClass="{!if(checkOptionEstimatedPrice2, '', 'errorAlert')}"/>
+                                <apex:outputText rendered="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PSE' || tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}">
+                                    
+                                    <span class='tal-simulate-disabled-input' style ="width :100%; max-width: 240px;" >
+                                        <apex:outputField value="{!travelApplication.Option_Estimated_Price2__c}"    />
+                                    </span>
+                                </apex:outputText>
+                                
+                            </td>
+                            
+                            <td style="padding-left: 15px" >
+                                <apex:inputField value="{!travelApplication.Option_Estimated_Price3__c}" style="width : 100%" rendered="{!isTravelAgent && (tostatus != 'PSE' && tostatus != 'PR' && tostatus != 'PAC' && tostatus != 'CON')}" styleClass="{!if(checkOptionEstimatedPrice3, '', 'errorAlert')}"/>
+                                <apex:outputText rendered="{!!isTravelAgent || (isTravelAgent && (tostatus == 'PSE' || tostatus == 'PR' || tostatus == 'PAC' || tostatus == 'CON'))}">
+                                    
+                                    <span class='tal-simulate-disabled-input' style ="width : 100; max-width: 240px;" >
+                                        <apex:outputField value="{!travelApplication.Option_Estimated_Price3__c}"    />
+                                    </span>
+                                </apex:outputText>
+                                
+                            </td>
+                        </tr>
+                    </tfoot>
+                    -->
+                    <tbody>
+                        <apex:variable var="counter" value="{!0}"/>
+                        <apex:repeat value="{!airtravelOptionList}" var="to">
+                            <apex:variable var="counter" value="{!(counter+1)}"/>
+                            <tr>
+                                <td align = "center" valign="top">
+                                    <div  class="inputClass" >
+                                    <apex:outputText rendered="{!to.iseditable}">
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon"  > 
+                                                <apex:actionSupport event="onclick" action="{!to.addRow}" immediate="false"  rerender="airTicketOptResult, Result1" oncomplete="tabAction('3.1', 'A');" onsubmit="tabAction('3.1', 'D');" />
+                                            </apex:outputPanel> 
+                                        </a>
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon"  > 
+                                                <apex:actionSupport event="onclick" action="{!to.RemoveRow}" immediate="false"  rerender="airTicketOptResult, Result1" oncomplete="tabAction('3.1', 'A');" onsubmit="tabAction('3.1', 'D');" />
+                                            </apex:outputPanel> 
+                                        </a>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!!to.iseditable}">
+                                        <div Class="ui-icon ui-icon ui-icon-locked"/>
+                                    </apex:outputText>
+                                    </div>
+                                </td>
+                                <td valign="top">
+                                    <div class="{!if(to.checkFrom, '', 'errorAlert')}">
+                                        <!--
+                                        <apex:selectList size="1"  multiselect="false" styleclass="js-basic-single"  value="{!to.travelOption.From__c}" style="width : 270px" rendered="{!isTravelAgent && to.isedit}" >
+                                            <apex:selectOptions value="{!travelLocationSelectionList}"/>
+                                        </apex:selectList>
+                                        -->
+                                        <apex:inputText value="{!to.travelOption.From__c}"  styleClass="optfrom{!counter}" style="display:none"/>
+                                        <apex:inputText value="{!to.FromName}" styleClass="optfromName{!counter}" style="display:none"/>
+                                        <apex:outputText rendered="{!isTravelAgent && to.isedit}">
+                                            <select size = "1" class="js-basic-single-destination" style="width : 270px" onchange="locationChange(this , 'optfrom', {!counter})">
+                                               <apex:repeat value="{!travelLocationMap}" var="key">
+                                                   <apex:outputText rendered="{!key == to.travelOption.From__c}">
+                                                       <option value="{!key}">{!travelLocationMap[key].Name}</option>
+                                                   </apex:outputText>
+                                               </apex:repeat>
+                                           </select>
+                                       </apex:outputText>
+                                    </div>
+                                    
+                                    <apex:repeat value="{!travelLocationMap}" var="key">
+                                        <apex:outputText rendered="{!key == to.travelOption.From__c}">
+                                            <apex:input value="{!travelLocationMap[to.travelOption.From__c].Name}" style="width : 270px"  disabled="true"  rendered="{!(!isApplicantMode && to.travelOption.To__c != '' && !isTravelAgent)  || (isTravelAgent && !to.isedit)}" styleClass="inputClass" />
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                    <!--
+                                    <apex:input value="{!travelLocationMap[to.travelOption.From__c].Name}" style="width : 270px"  disabled="true"  rendered="{!(!isApplicantMode && to.travelOption.From__c!= '' && !isTravelAgent) || (isTravelAgent && !to.isedit)}" styleClass="inputClass"/>
+                                    -->
+                                    <BR/>
+                                    <div class="{!if(to.checkTo, '', 'errorAlert')}">
+                                        <!--
+                                        <apex:selectList size="1"  multiselect="false" styleclass="js-basic-single"  value="{!to.travelOption.To__c}" style="width : 270px"  rendered="{!isTravelAgent && to.isedit}">
+                                            <apex:selectOptions value="{!travelLocationSelectionList}"/>
+                                        </apex:selectList>
+                                        -->
+                                        <apex:inputText value="{!to.travelOption.To__c}"  styleClass="optTo{!counter}" style="display:none"/>
+                                        <apex:inputText value="{!to.ToName}" styleClass="optToName{!counter}" style="display:none"/>
+                                        <apex:outputText rendered="{!isTravelAgent && to.isedit}">
+                                            <select size = "1" class="js-basic-single-destination" style="width : 270px" onchange="locationChange(this , 'optTo', {!counter})">
+                                               <apex:repeat value="{!travelLocationMap}" var="key">
+                                                   <apex:outputText rendered="{!key == to.travelOption.To__c}">
+                                                       <option value="{!key}">{!travelLocationMap[key].Name}</option>
+                                                   </apex:outputText>
+                                               </apex:repeat>
+                                           </select>
+                                       </apex:outputText>
+                                    </div>
+                                    <apex:repeat value="{!travelLocationMap}" var="key">
+                                        <apex:outputText rendered="{!key == to.travelOption.To__c}">
+                                            <apex:input value="{!travelLocationMap[to.travelOption.To__c].Name}" style="width : 270px"  disabled="true"  rendered="{!(!isApplicantMode && to.travelOption.To__c != '' && !isTravelAgent)  || (isTravelAgent && !to.isedit)}" styleClass="inputClass" />
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </td>
+                                <!--
+                                <td>
+                                    <div class="{!if(to.checkTo, '', 'errorAlert')}">
+                                        <apex:selectList size="1"  multiselect="false" styleclass="js-basic-single"  value="{!to.travelOption.To__c}" style="width : 270px"  rendered="{!isTravelAgent && to.isedit}">
+                                            <apex:selectOptions value="{!travelLocationSelectionList}"/>
+                                        </apex:selectList>
+                                    </div>                                    
+                                    <apex:input value="{!travelLocationMap[to.travelOption.To__c].Name}" style="width : 270px"  disabled="true"  rendered="{!(!isApplicantMode && to.travelOption.To__c != '' && !isTravelAgent)  || (isTravelAgent && !to.isedit)}" styleClass="inputClass" />
+                                </td>
+                                -->
+                                <td valign="top">
+                                    <apex:input value="{!to.DepartureDate}" style="width : 110px" styleclass="{!IF(((!isApplicantMode && !isTravelAgent)|| (isTravelAgent && !to.isedit)), '' , 'datepicker')} , inputClass , {!if(to.checkDepartureDate, '', 'errorAlert')}" disabled="{!(!isApplicantMode && !isTravelAgent)|| (isTravelAgent && !to.isedit)}" />
+                                    <apex:outputText rendered="{!to.travelOption.Travel_Detail__c != '' && (isTravelAgent && to.isedit)}">
+                                        <BR/>
+                                        <apex:outputLabel value="Preferred Time :"/>
+                                        <BR/>
+                                        <apex:outputLabel rendered="{!to.travelOption.travel_detail__r.Origin_Site__c == to.travelOption.From__c}">
+                                             {!to.travelOption.Preferred_Departure_Time__c}
+                                        </apex:outputLabel>
+                                        <apex:outputLabel rendered="{!to.travelOption.travel_detail__r.Destination__c== to.travelOption.From__c}">
+                                            {!to.travelOption.Preferred_Return_Time__c}
+                                        </apex:outputLabel>
+                                    </apex:outputText>
+                                </td>
+                                <td>
+                                    <apex:inputField value="{!to.travelOption.Option1__c}" rendered="{!isTravelAgent && to.isedit}" style="width : 250px;height: 100px;" styleClass="{!if(to.checkOpt1, '', 'errorAlert')}"/>
+                                    <!--
+                                    <apex:inputTextarea value="{!to.travelOption.Option1__c}"  rendered="{!isTravelAgent && (to.travelOption.Status__c == 'PSE')}" style="width : 250px"  readonly="true"  disabled="true"  rows="3"/> 
+                                    -->
+                                    <apex:inputText value="{!to.travelOption.Selected_Option1_Display__c}" rendered="{!isTravelAgent && (to.travelOption.Status__c = 'PR' || to.travelOption.Status__c = 'PAC' || to.travelOption.Status__c = 'CON')}" style="width : 250px"  styleclass="inputClass"   disabled="true" />
+                                    <apex:selectList size="1"  value="{!to.travelOption.Selected_Option1__c}" multiselect="false" styleclass="js-basic-single , optSelection1"   style="width : 250px"  rendered="{!ismyself || isAdmin}" disabled="{!(to.travelOption.Status__c != 'PSE')}" >
+                                        <apex:selectOptions value="{!to.opt1SelectionList}" />
+                                    </apex:selectList>
+                                </td>
+                                <td>
+                                    <apex:inputField value="{!to.travelOption.Option2__c}" rendered="{!isTravelAgent && to.isedit}" style="width : 250px;height: 100px;" />
+                                    <!--
+                                    <apex:inputTextarea value="{!to.travelOption.Option2__c}"  rendered="{!isTravelAgent && (to.travelOption.Status__c == 'PSE')}" style="width : 250px"  readonly="true"  disabled="true"  rows="3"/> 
+                                    -->
+                                    <apex:inputText value="{!to.travelOption.Selected_Option2_Display__c}" rendered="{!isTravelAgent && (to.travelOption.Status__c = 'PR' || to.travelOption.Status__c = 'PAC' || to.travelOption.Status__c = 'CON')}" style="width : 250px" styleclass="inputClass"    disabled="true" />
+                                    <apex:selectList size="1"  value="{!to.travelOption.Selected_Option2__c}" multiselect="false" styleclass="js-basic-single , optSelection2"   style="width : 250px"  rendered="{!ismyself || isAdmin}" disabled="{!(to.travelOption.Status__c != 'PSE')}" >
+                                        <apex:selectOptions value="{!to.opt2SelectionList}" />
+                                    </apex:selectList>
+                                </td>
+                                <td>
+                                    <apex:inputField value="{!to.travelOption.Option3__c}" rendered="{!isTravelAgent && to.isedit}" style="width : 250px;height: 100px;"/>
+                                    <!--
+                                    <apex:inputTextarea value="{!to.travelOption.Option3__c}"  rendered="{!isTravelAgent && (to.travelOption.Status__c == 'PSE')}" style="width : 250px"  readonly="true"  disabled="true"  rows="3"/> 
+                                    -->
+                                    <apex:inputText value="{!to.travelOption.Selected_Option3_Display__c}" rendered="{!isTravelAgent && (to.travelOption.Status__c = 'PR' || to.travelOption.Status__c = 'PAC' || to.travelOption.Status__c = 'CON')}" style="width : 250px"  styleclass="inputClass"   disabled="true" />
+                                    <apex:selectList size="1"  value="{!to.travelOption.Selected_Option3__c}" multiselect="false" styleclass="js-basic-single , optSelection3"   style="width : 250px"  rendered="{!ismyself || isAdmin}" disabled="{!(to.travelOption.Status__c != 'PSE')}" >
+                                        <apex:selectOptions value="{!to.opt3SelectionList}" />
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>                        
+                </table>
+                </apex:outputPanel>
+                </div>
+                <!--
+                <div  id="hotelLabel" style="margin-top:15px;">
+                    <label class="alertlabel" style="padding-right: 44px;padding-left: 44px;">Hotel</label>
+                </div>
+                -->
+                <div class="progressbar1" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                <apex:outputPanel id="HotelOptResult">                    
+                    <apex:variable var="counter" value="{!0}" />
+                    <apex:repeat value="{!hotelTravelOptionList}" var="to">
+                        <apex:variable var="tostatus" value="{!to.travelOption.Status__c}" rendered="{!to.travelOption.Status__c == 'PSE' || to.travelOption.Status__c == 'PR' || to.travelOption.Status__c == 'PAC' || to.travelOption.Status__c == 'CON'}"/>
+                        <apex:variable var="counter" value="{!1}" rendered="{!to.iseditable}"/>
+                    </apex:repeat>
+                    <div  id = "tab3_1">
+                    <table id="hotelOpt" class="display nowrap" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th height="30"><apex:outputText rendered="{!counter != 0}">Action</apex:outputText><apex:outputText rendered="{!counter = 0}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputText></th>
+                                <th><label class="hotelLabel" style="padding-right: 43px;padding-left: 43px;">Hotel</label></th>
+                                <th>Check-in Date</th>
+                                <th>Check-out Date</th>
+                                <th>Hotel Option(s)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:variable value="{!0}" var="counter"/>
+                            <apex:repeat value="{!hotelTravelOptionList}" var="to">
+                                <apex:variable value="{!(counter + 1)}" var="counter"/>
+                                <tr>
+                                    <td>
+                                        <div  class="inputClass">
+                                        <apex:outputText rendered="{!to.iseditable}">
+                                            <a href="javascript:;">
+                                                <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon"  style="margin-bottom:17px;"> 
+                                                    <apex:actionSupport event="onclick" action="{!to.addRow}" immediate="false"  rerender="HotelOptResult" oncomplete="tabAction('3.2', 'A');" onsubmit="tabAction('3.2', 'D');" />
+                                                </apex:outputPanel> 
+                                            </a>
+                                            <a href="javascript:;">
+                                                <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" style="margin-bottom:17px;"> 
+                                                    <apex:actionSupport event="onclick" action="{!to.removeRow}" immediate="false"  rerender="HotelOptResult" oncomplete="tabAction('3.2', 'A');" onsubmit="tabAction('3.2', 'D');" />
+                                                </apex:outputPanel>
+                                            </a>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!!to.iseditable}">
+                                            <div Class="ui-icon ui-icon ui-icon-locked"/>
+                                        </apex:outputText>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style= "display:none;">
+                                           <apex:inputField value="{!to.travelOption.Budget_per_Night__c}"  styleClass="optbudgetPerNight{!counter}"   />
+                                           <apex:inputField value="{!to.travelOption.Budget_Currency__c}" styleClass="optbudgetcurrency{!counter}"  />
+                                       </div>
+                                        <apex:outputText rendered="{!isTravelAgent && to.isedit}">
+                                            <div class="{!if(to.checkDestination, '', 'errorAlert')}">                                            
+                                                <!--
+                                                <apex:selectList size="1"  multiselect="false" value="{!to.travelOption.Destination__c}" styleclass="js-basic-single" style="width : 270px" onchange="changeBudget(this.value, '{!travelApplication.On_Behalf_of__c}', '{!counter}' , 'o');">
+                                                    <apex:selectOptions value="{!travelLocationSelectionList}"/>
+                                                </apex:selectList>
+                                                -->
+                                                <apex:inputText value="{!to.travelOption.Destination__c}"  styleClass="optDestination{!counter}" style="display:none"/>
+                                                <apex:inputText value="{!to.DestinationName}" styleClass="optDestinationName{!counter}" style="display:none"/>
+                                               
+                                                <select size = "1" class="js-basic-single-destination" style="width : 270px" onchange="locationChange(this , 'optDestination', {!counter})">
+                                                   <apex:repeat value="{!travelLocationMap}" var="key">
+                                                       <apex:outputText rendered="{!key == to.travelOption.Destination__c}">
+                                                           <option value="{!key}">{!travelLocationMap[key].Name}</option>
+                                                       </apex:outputText>
+                                                   </apex:repeat>
+                                               </select>
+                                            </div>
+                                            <apex:outputLabel value="Budget/Night:"/>
+                                            <span id = "optaccommodationBudget{!counter}" >
+                                                <apex:outputLabel rendered="{!and(to.travelOption.Budget_Currency__r.name == '' , to.travelOption.Budget_per_Night__c == null)}">-</apex:outputLabel>
+                                                <apex:outputLabel value="{!to.travelOption.Budget_Currency__r.name} {!to.travelOption.Budget_per_Night__c}" />
+                                            </span>
+                                        </apex:outputText>                                        
+                                        <apex:input value="{!travelLocationMap[to.travelOption.Destination__c].Name}" style="width : 270px"  disabled="true"  rendered="{!((!isTravelAgent) || (isTravelAgent && !to.isedit)) && to.travelOption.Destination__c!= ''}" styleClass="inputClass"/>
+                                    </td>
+                                    <td>
+                                        <apex:input value="{!to.CheckInDate}" style="width : 100px; {!IF((!isTravelAgent) || (isTravelAgent && !to.isedit), '', 'margin-bottom:17px;')}" styleclass="{!IF(((!isTravelAgent) || (isTravelAgent && !to.isedit)), '' , 'datepicker')} , inputClass , {!if(to.checkCheckInDate, '', 'errorAlert')}"  disabled="{!(!isTravelAgent) || (isTravelAgent && !to.isedit)}"/>
+                                    </td>
+                                    <td>
+                                        <apex:input value="{!to.CheckoutDate}" style="width : 100px; {!IF((!isTravelAgent) || (isTravelAgent && !to.isedit), '', 'margin-bottom:17px;')}" styleclass="{!IF(((!isTravelAgent) || (isTravelAgent && !to.isedit)), '' , 'datepicker')} , inputClass , {!if(to.checkCheckOutDate, '', 'errorAlert')}" disabled="{!(!isTravelAgent) || (isTravelAgent && !to.isedit)}" />
+                                    </td>
+                                    <td>
+                                        <apex:inputField value="{!to.travelOption.Option1__c}" rendered="{!isTravelAgent && to.isedit}" style="width : 450px;height: 100px;" styleClass="{!if(to.checkHotelOpt1, '', 'errorAlert')}"/>
+                                        <!--
+                                        <apex:inputTextarea value="{!to.travelOption.Option1__c}"  rendered="{!isTravelAgent && (to.travelOption.Status__c == 'PSE')}" style="width : 450px"  readonly="true"  disabled="true"  rows="3"/> 
+                                        -->
+                                        <apex:inputText value="{!to.travelOption.Selected_Option1_Display__c}" rendered="{!isTravelAgent && (to.travelOption.Status__c = 'PR' || to.travelOption.Status__c = 'PAC' || to.travelOption.Status__c = 'CON')}" style="width : 450px"  styleclass="inputClass"   disabled="true" />
+                                        <apex:selectList size="1"  value="{!to.travelOption.Selected_Option1__c}" multiselect="false" styleclass="js-basic-single"   style="width : 450px"  rendered="{!ismyself || isAdmin}" disabled="{!(to.travelOption.Status__c != 'PSE')}" >
+                                            <apex:selectOptions value="{!to.opt1SelectionList}" />
+                                        </apex:selectList>                                  
+
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                    </div>
+                </apex:outputPanel>            
+            </div>
+            <div id="tabs-4">
+                <div class="ca_progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                <div  id = "tab4">
+                <apex:outputPanel id="cashAdvanceResult" rendered="{!!isTravelAgent}">
+                <apex:variable var="counter" value="{!0}"/>
+                <apex:repeat value="{!cashAdvanceList}" var="ca">
+                    <apex:variable var="counter" value="{!1}" rendered="{!ca.isedit}"/>
+                </apex:repeat>
+                
+                <table id="cashadvancetable" class="display nowrap" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th><apex:outputText rendered="{!counter == 1}">Action</apex:outputText></th>
+                        <th>Currency</th>
+                        <th>Amount</th>
+                        <th>Expected Collection Date</th>
+                        <th>Remarks</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <apex:variable value="{!0}" var="counter"/>
+                    <apex:repeat value="{!cashAdvanceList}" var="ca">
+                        <apex:variable value="{!(counter + 1)}" var="counter"/>
+                        <tr>
+                            <td align = "center" >
+                                <div  class="inputClass" >
+                                <a href="javascript:;">
+                                    <apex:outputText rendered="{!ca.isNewCashAdvance}">
+                                        <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon" >
+                                            <apex:actionSupport event="onclick"  immediate="false" action="{!ca.addRow}"  rerender="cashAdvanceResult" oncomplete="tabAction('4', 'A')" onsubmit="tabAction('4', 'D');" />
+                                        </apex:outputPanel> 
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!ca.isDelete}">
+                                        <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" >
+                                            <apex:actionSupport event="onclick"  immediate="false" action="{!ca.RemoveRow}"  rerender="cashAdvanceResult" oncomplete="tabAction('4', 'A')" onsubmit="tabAction('4', 'D');" />
+                                        </apex:outputPanel>
+                                    </apex:outputText>
+                                </a>
+                                <apex:outputText rendered="{!!ca.isEdit && !ca.isDelete && !ca.isNewCashAdvance}">
+                                    <div Class="ui-icon ui-icon ui-icon-locked"/>
+                                </apex:outputText>
+                                </div>
+                            </td>
+                            <td>
+                                <!-- value="{!travelApplication.Option_Estimated_Currency__c}" -->
+                                <apex:outputText rendered="{!ca.isEdit}">
+                                       <div class="verticalLine1 , {!if(ca.checkCurrency, '', 'errorAlert')}">
+                                            <apex:selectList size="1"  rendered="{!ca.isEdit}" value="{!ca.cashAdvance.Currency__c}"  multiselect="false" styleclass="js-basic-single" style="width : 250px" >
+                                                <apex:selectOptions value="{!currencySelectionList}"/>
+                                            </apex:selectList>
+                                        </div>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!!ca.isEdit}" >
+                                    <span class='tal-simulate-disabled-input' style ="width : 250px;" >
+                                        <apex:outputText value="{!ca.cashAdvance.Currency__r.Description__c} ({!ca.cashAdvance.Currency__r.Name})"   ></apex:outputText>
+                                    </span>
+                                </apex:outputText>
+                                <!--
+                                <span class='tal-simulate-disabled-input' style ="width : 95%;{!IF(!isApplicantMode, '', 'display:none')}" >
+                                   <apex:outputText value="{!ta.Accommodation.Accommodation_By__c}"   ></apex:outputText>
+                                   <BR/>
+                               </span>
+                               -->
+                            </td>
+                            <td>
+                                <apex:outputText rendered="{!ca.isEdit}">
+                                    <div class="verticalLine1 , {!if(ca.checkAmount, '', 'errorAlert')}">
+                                        <apex:outputText rendered="{!ca.isEdit}" >
+                                            <apex:inputField value="{!ca.cashAdvance.Amount__c}" styleClass="inputClass" style="width : 100px;" />
+                                        </apex:outputText>
+                                        </div>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!!ca.isEdit}" >
+                                    <span class='tal-simulate-disabled-input' style ="width : 100px;" >
+                                        <apex:outputfield value="{!ca.cashAdvance.Amount__c}"   ></apex:outputfield>
+                                    </span>
+                                </apex:outputText>
+                                <!--
+                                <apex:inputField value="{!ta.Accommodation.Remarks__c}" rendered="{!isApplicantMode || (isAdmin && ta.Accommodation.Accommodation_By__c == 'Site Admin' && ta.Accommodation.Status__c == 'PR')}" style="width : 95%" />
+                                <apex:outputText rendered="{!(!isApplicantMode && !(isAdmin && ta.Accommodation.Accommodation_By__c == 'Site Admin' && ta.Accommodation.Status__c == 'PR'))}" >
+                                   <span class='tal-simulate-disabled-input' style="width : 95%" >
+                                       <apex:outputText value="{!ta.Accommodation.Remarks__c}"   ></apex:outputText>
+                                       <BR/>
+                                   </span>
+                                </apex:outputText>
+                                -->
+                           </td> 
+                           <td>
+                               <apex:outputText rendered="{!ca.isEdit}">
+                                    <div class="verticalLine1">
+                                       <apex:outputText rendered="{!ca.isEdit}" >
+                                            <apex:input value="{!ca.collectionDate}"  styleclass="datepicker , inputClass , {!if(ca.checkCollectionDate, '', 'errorAlert')}" style="width : 180px;"   />
+                                        </apex:outputText>
+                                    </div>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!!ca.isEdit}" >
+                                    <span class='tal-simulate-disabled-input' style ="width : 180px;" >
+                                        <apex:outputText value="{!ca.collectionDate}"   ></apex:outputText>
+                                    </span>
+                                </apex:outputText>
+                                
+                               
+                           </td>
+                           <td>
+                               <apex:inputField value="{!ca.cashAdvance.Remarks__c}" rendered="{!ca.isEdit}" style="width : 230px" styleClass="inputClass" />
+                                   
+                               <apex:outputText rendered="{!!ca.isEdit}" >
+                                   <span class='tal-simulate-disabled-input' style="width : 230px" >
+                                       <apex:outputText value="{!ca.cashAdvance.Remarks__c}"   ></apex:outputText>
+                                       <BR/>
+                                   </span>
+                               </apex:outputText>
+                           </td>
+                           <td>
+                               <div Class="inputClass">
+                                   <Label><apex:outputField value="{!ca.cashAdvance.Status__c}"  /></Label>
+                               </div>
+                           </td>
+                        </tr>
+                    </apex:repeat> 
+                    </tbody>                
+                </table>
+                </apex:outputPanel>
+                </div>
+            </div>
+            <div id="tabs-5"  >
+
+             <!--  <apex:outputText rendered="{!AND(isTravelAgent, travelApplication.Status__c == 'CON')}" >   Comment by DTT Support-->
+             <apex:outputText rendered="{!isTravelAgent}">
+                <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+                <div  id = "tab5">
+                    <apex:outputPanel id="AirfareResult">
+                    <!--
+                    <apex:variable value="{!0}" var="counter"/>
+                    
+                    <apex:repeat value="{!travelPriceList}" var="tp">
+                        <apex:variable value="{!1}" var="counter" rendered="{!tp.isedit}"/>
+                    </apex:repeat>
+                    -->
+                    <div >
+                        <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!savePriceAction}" disabled="{!!isTravelAgent}" 
+                        style="padding-left: 16px; padding-right: 16px;text-align: center;vertical-align: middle;border: 1px solid #d8dde6; background-color: white; /* border: none; */ border-radius: 4px; color: #0070d2; float: right;margin-right: 50px; /* float: right; */ margin-top: 10px; font-size: inherit;"
+                         />  
+
+                        <div style='clear:both;width: 0;height:0;display:hidden;'></div>
+                    </div>  
+
+                    <table id="airfare" class="display nowrap" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Invoice No</th>
+                                <th>Invoice Date</th>
+                                <th>Type</th>
+                                <th>Currency</th>
+                                <th>Total Amount</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!travelPriceList}" var="tp">
+                                <tr>
+                                    <td>
+                                        <div  class="inputClass" >
+                                        <apex:outputText rendered="{!tp.isedit}" >
+                                            <!--  rendered="{!tp.isedit}" -->
+                                            <a href="javascript:;" title="Add a new row">
+                                                <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon" style="margin-left:0px;"> 
+                                                    <apex:actionSupport event="onclick" action="{!tp.addRow}" immediate="false"  rerender="AirfareResult"   oncomplete="tabAction('5', 'A');" onsubmit="tabAction('5', 'D');" />
+                                                </apex:outputPanel> 
+                                            </a>
+                                            <a href="javascript:;" title="Delete this row">
+                                                <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" style="margin-left:0px;"> 
+                                                    <apex:actionSupport event="onclick" action="{!tp.removeRow}" immediate="false"  rerender="AirfareResult" oncomplete="tabAction('5', 'A');" onsubmit="tabAction('5', 'D');" />
+                                                </apex:outputPanel> 
+                                            </a> 
+
+                                        </apex:outputText>
+                                          
+                                          <apex:outputText rendered="{!!tp.isedit}" >
+                                             <div Class="ui-icon ui-icon ui-icon-locked actionIcon"  style="margin-left: 15px"/>
+                                         </apex:outputText>
+                                          <!---->
+                                            <a href="javascript:;" title="Copy to below">
+                                                <apex:outputPanel styleClass="ui-icon ui-icon-arrowreturnthick-1-e actionIcon" style="margin-right:-12px;margin-left:0px;"> 
+                                                    <apex:actionSupport event="onclick" action="{!tp.duplicateRow}" immediate="false"  rerender="AirfareResult" oncomplete="tabAction('5', 'A');" onsubmit="tabAction('5', 'D');" />
+                                                </apex:outputPanel> 
+                                            </a>
+                                        
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- disabled="{!!tp.isedit}" -->
+                                        <apex:inputText value="{!tp.travelPrice.Invoice_No__c}"  styleclass="inputClass , {!if(tp.checkInvoiceNo, '', 'errorAlert')}"    style="width : 110px;"  disabled="{!!tp.isedit}" />
+                                    </td>
+                                    <td>
+                                        <apex:input value="{!tp.invoiceDate}"  styleclass="{!if((tp.isedit),'datepicker', '' )} , inputClass , {!if(tp.checkBookingDate, '', 'errorAlert')}" style="width : 90px;"  disabled="{!!tp.isedit}"/>
+                                    </td>
+                                    <td>
+                                        <div class="{!if(tp.checkType, '', 'errorAlert')}">
+                                            <apex:selectList size="1" value="{!tp.travelPrice.Type__c}" multiselect="false"  styleclass="js-basic-single"    style="width : 150px"  disabled="{!!tp.isedit}" >
+                                                <apex:selectOptions value="{!airfareTypeSelectionList}"/>
+                                            </apex:selectList>
+                                        </div>
+                                      
+                                    </td>
+                                    <td>
+                                        <div class=" {!if(tp.checkCurrency, '', 'errorAlert')}">
+                                            <apex:selectList size="1"  value="{!tp.travelPrice.Currency__c}" multiselect="false" styleclass="js-basic-single" style="width : 200px"  disabled="{!!tp.isedit}" >
+                                                <apex:selectOptions value="{!currencySelectionList}"/>
+                                            </apex:selectList>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <apex:inputText value="{!tp.travelPrice.Amount__c}" styleClass="inputClass ,  {!if(tp.checkAmount, '', 'errorAlert')}"  style="width : 110px;" rendered="{!tp.isedit}"  />
+                                        <apex:outputText rendered="{!!tp.isedit}" >
+                                            <input value="{!tp.travelPrice.Amount__c}" Class="inputClass" style="width : 110px;"  disabled="disabled" />
+                                        </apex:outputText>
+                                        
+                                    </td>
+                                    <td>
+                                        <apex:inputText value="{!tp.travelPrice.Remark__c}" styleClass="inputClass" style="width:480px;"  disabled="{!!tp.isedit}"/>
+                                        
+                                    </td>
+                                </tr>
+
+                                   
+                            </apex:repeat>
+                        </tbody>
+
+                    </table>
+                    <!-- <apex:actionFunction name="init" action="{!initial}"/>     -->
+                  
+
+                </apex:outputPanel>
+            </div>
+            </apex:outputText>
+            </div>
+        </div>                                        
+    </apex:form>
+    </div>        
+</apex:page>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>38.0</apiVersion>
+    <availableInTouch>false</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <description>used in uat v0.3
+after update
+1.filter by different catalog will remove checked checkbox
+2.pr dependent picklist
+3. create pr and add to existing pr button</description>
+    <label>IDPShoppingCartVFP</label>
+</ApexPage>

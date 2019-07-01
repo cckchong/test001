@@ -1,0 +1,144 @@
+<apex:page standardController="Survey_Assignment__c" extensions="SurveyAssignmentController" showHeader="true" sidebar="true" id="surveyAssignmentDisplayPage" action="{!checkAccessRight}" docType="html-5.0">
+    
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />   
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+    <style>
+        /* Added by Connie. Remove border-top in pPageBlock */
+        .bPageBlock {
+            border-top: 4px solid #eaeaea !important;
+        }
+    </style>
+    <script>
+        function checkAll(){
+            $('.delcheckbox').prop('checked', $('#checkboxAll').prop('checked'));   
+        }
+        
+        function delAll(){
+            return confirm('{!$Label.LABS_SF_Del}');
+        }
+    </script>
+    
+    <div class="bs container">
+        <apex:form id="theForm">
+            <apex:pageBlock id="surveyAssignmentPageBlock">
+                <apex:pageBlockButtons >
+                    <apex:commandButton action="{!showAddSharing}" id="btnShowAddSharing" value="{!$Label.LABS_SF_Add}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Add}" />
+                    <apex:commandButton action="{!deleteAllSurveyAssignment}" id="btnShowDelSharing" value="Delete" styleClass="bs btn btn-default btn-sm" title="Delete" onclick="return delAll();" />
+                    <!--
+                    <apex:actionFunction name="deleteAll" id ="deleteAll"/> -->
+                     
+                    <apex:commandButton action="{!back}" id="btnBack" value="{!$Label.LABS_SF_Back}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Back}" />
+                </apex:pageBlockButtons>                
+                <apex:outputLabel value="{!$Label.LABS_SF_User_Sharing}" rendered="{!mode == 'admin'}" />
+                
+                <apex:outputLabel value="{!$Label.LABS_SF_User_Group_Sharing} " rendered="{!mode == 'taker'}" />
+                
+                <apex:variable var="counter"  value="{!1}"/>
+
+
+             
+
+                <table width = "100%"  id="theTable"  Class="bs table-striped table-bordered table-hover">
+                    <tr>
+                        <th width = "5%"><input type="checkbox" id="checkboxAll" onclick="checkAll()"/></th>
+                        <th width = "10%">{!$Label.LABS_SF_Assigned_Type}</th>
+                        <th width = "20%">{!$Label.LABS_SF_Name}</th>
+                        <th width = "20%">Email</th>
+                        <th width = "45%">{!$Label.LABS_SF_Remark}</th>
+                        
+                    </tr>
+
+              <!--   <apex:repeat value="{!selectedSurveyAssignments}" var="row">
+                    <tr>
+                        <td>
+                            <apex:inputCheckbox styleclass="delcheckbox" value="{!selectedItem[row.id]}"/>
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.Type}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.UserOrGroupName}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.Email}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.Reason}" />
+                        </td>
+                    </tr>
+                </apex:repeat>  -->
+
+                <apex:repeat value="{!selectedSurveySubList1}" var="row">
+                    <tr>
+                        <td>
+                            <apex:inputCheckbox styleclass="delcheckbox" value="{!selectedItem[row.id]}"/>
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.Type}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.UserOrGroupName}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.Email}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row.Reason}" />
+                        </td>
+                    </tr>
+                </apex:repeat> 
+
+                 <apex:repeat value="{!selectedSurveySubList2}" var="row1">
+                    <tr>
+                        <td>
+                            <apex:inputCheckbox styleclass="delcheckbox" value="{!selectedItem[row1.id]}"/>
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row1.Type}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row1.UserOrGroupName}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row1.Email}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!row1.Reason}" />
+                        </td>
+                    </tr>
+                </apex:repeat> 
+                
+                </table>
+                <!-----------------------------------------------------------------------------------------------------
+                <apex:pageMessages />
+                <apex:pageBlockSection columns="1" id="assignmentSection">
+                    <apex:outputLabel value="{!$Label.LABS_SF_User_Sharing}" rendered="{!mode == 'admin'}" />
+                     <apex:outputLabel value="{!$Label.LABS_SF_User_Group_Sharing} " rendered="{!mode == 'taker'}" />
+                     <apex:pageBlockSectionItem labelStyle="width: 1%;">
+                       <apex:outputLabel value="" />
+                       <apex:dataTable value="{!selectedSurveyAssignments}" var="row" id="theTable" styleClass="bs table-striped table-bordered table-hover"> 
+                            <apex:column headerValue="Select All"  width="8%" > 
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.LABS_SF_Action}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                               <apex:commandLink value="Delete" onclick="return win dow.confirm('Are you sure?')" action="{!deleteSurveyAssignment}" rendered="{! row.UserId != surveyOwnerId && row.hasDeleteAccess }" >
+
+                                    <apex:param name="assignmentId" value="{!row.Id}" assignTo="{!selectedSurveyAssignmentId}" />
+                                </apex:commandLink>
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Type}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.Type}" />
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.LABS_SF_Name}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.UserOrGroupName}" />
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.LABS_SF_Remark}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.Reason}" />
+                            </apex:column>
+                        </apex:dataTable>
+                     </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                -->
+            </apex:pageBlock>
+        </apex:form>
+    </div>
+</apex:page>

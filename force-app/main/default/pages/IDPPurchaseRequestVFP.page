@@ -1,0 +1,2114 @@
+<apex:page controller="IDPPurchaseRequestCtrl" tabStyle="Purchase_Request__c" >
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />   
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    <!--
+    <apex:stylesheet value="{!URLFOR($Resource.datetimepicker, 'jquery.datetimepicker.css')}" />  
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    -->
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />
+    <!--  
+    <apex:includeScript value="{!URLFOR($Resource.FixedColumns, 'js/dataTables.fixedColumns.min.js')}" />
+    -->
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <apex:stylesheet value="{!$Resource.jQuery_qtip_css}" /> 
+    <apex:includeScript value="{!$Resource.jQuery_qtip_js}" />
+    <apex:includeScript value="/soap/ajax/32.0/connection.js"/>
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.5/dist/loadingoverlay.min.js"></script>
+
+            
+<!----c:IDPPurchaseRequestComponent  contents's are moved to the page because of the state size is exceeded 135KB---------------->
+    <!--
+    <c:IDPPurchaseRequestComponent pid="{!pid}" />
+    -->
+<!-- 
+    <style>
+        table.dataTable::before{
+          content:"";
+          position:absolute;
+          top:10px;
+          left:0;
+          bottom:0;
+          border-left:1px solid #111
+        }
+    </style> -->
+
+    <script>
+        var $feed= null;
+        var $accordion = null;
+        //var $PRTable = null;        
+        var $dateFormat = null;
+        var $currencyOriginal = null;
+        var $currencyLocal = null;
+        var $singleSelect = null;
+        var $content = null;
+        var $estorig = null;
+        var $estlocal = null;
+        var $posnum = null;
+        var $tab1 = null;
+        var $progressbar = null;
+        var $approvalDialog = null;
+        var $confirmApproval = null;
+        var $confirmRejection = null;
+        var $ccMultiSelect = null;
+        var $overBudget = null;
+        var totalPRPrice = 0;
+        var usedBudgetWithoutCurrentPR = 0;
+        var yearUsedBudgetWithoutCurrentPR = 0;
+        //var PRTableInit = null;
+    </script>
+    
+    <script>
+        $(function() {initVariable();init();
+            // budgetHighLight();
+            /*
+            var allTableTr = $('#tabs-1 #PRTable1 tbody tr');
+            allTableTr.each(function(i, v) {
+                highLightAndCheckboxStatus_R(v);
+            });
+            */
+        });
+
+        function initVariable(){
+            $feed = $("#feed");
+            $accordion = $(".accordion");
+            //$PRTable = $("#PRTable");
+            $tabs = $("#tabs");
+            $dateFormat = $(".dateFormat");
+            $currencyOriginal = $(".original");
+            $currencyLocal = $(".local");
+            $singleSelect = $(".singleSelect");
+            $singleSupplierSelect = $(".singleSupplierSelect");
+            $content = $("#content");
+            $estorig = $(".estorig");
+            $estlocal = $(".estlocal");
+            $posnum = $(".posnum");
+            $tab1 = $("#tab1");
+            $progressbar = $(".progressbar");   
+            $approvalDialog = $("#approvalDialog");         
+            $confirmApproval = $("#confirmApproval");
+            $confirmRejection = $("#confirmRejection");
+            $ccMultiSelect = $(".ccMultiSelect");
+            $overBudget = $("#OverBudget");
+        }
+
+        // function budgetHighLight() {
+        //     var usedPriceMonthStr = document.querySelector('[id$=usedPriceMonth]').textContent;
+        //     var usedPriceMonth = parseFloat(usedPriceMonthStr.split("(")[0].replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+        //     var budgetPriceMoth = parseFloat(document.querySelector('[id$=budgetPriceMonth]')
+        //                     .textContent.replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+
+        //     var usedPriceYearStr = document.querySelector('[id$=usedPriceYear]').textContent;
+        //     var usedPriceYear = parseFloat(usedPriceMonthStr.split("(")[0].replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+        //     var budgetPriceYear = parseFloat(document.querySelector('[id$=budgetPriceYear]')
+        //                     .textContent.replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+            
+        //     if (budgetPriceMoth < usedPriceMonth) {
+        //         document.querySelector('[id$=usedPriceMonth]').style.backgroundColor = "yellow";
+        //     }
+
+        //     if (budgetPriceYear < usedPriceYear) {
+        //         document.querySelector('[id$=usedPriceYear]').style.backgroundColor = "yellow";
+        //     }
+        // }
+        /* 
+        function highLightAndCheckboxStatus_R(ele) {
+            var priPrice = parseFloat($(ele).find('[id$=priPrice]')
+                            .text().replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+            var bestPrice = parseFloat($(ele).find('[id$=bestPrice]')
+                            .text().replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+            // var localPrice = parseFloat($(ele).find('[id$=localPrice]')
+            //                 .text().replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+            var amountPrice = parseFloat($(ele).find('[id$=amountPrice]')
+                            .text().replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+            var localAmountPrice = parseFloat($(ele).find('[id$=localAmountPrice]')
+                            .text().replace(/[a-zA-Z]/g,'').replace(/\,/g,''));
+
+            // console.log("priPrice:" + priPrice+"bestPrice:"+bestPrice+"amountPrice:"+amountPrice
+            //     +"localAmountPrice:"+localAmountPrice);
+            if (priPrice > bestPrice) {
+                $(ele).find('[id$=priPrice]').css('background',"yellow");
+                $(ele).find('[id$=localPrice]').css('background',"yellow");
+            }
+
+            if ($(ele).find('[id$=directFulfillmentCheckBox]').prop('checked')) {
+                $(ele).find('[id$=amountPrice]').text('0');
+                $(ele).find('[id$=localAmountPrice]').text('0');
+                $(ele).find('[id$=localPrice]').text('0');
+                $(ele).find('[id$=priPrice]').text('0');
+                $(ele).find('[id$=amountPriceUSD]').text('0');
+            }
+            
+        }
+        */
+        function init(){
+            
+            $tabs.tabs();             
+            //PRTableInit = dataTableInitSetting();
+            //$PRTable.DataTable(PRTableInit);
+            $dateFormat.fadeOut(0);
+            $currencyLocal.fadeOut(0);
+            ccEmailListInit();
+            $singleSelect.select2({placeholder: "Select"});
+            $ccMultiSelect.select2({allowClear: false,  maximumSelectionLength: 10});            
+            /*
+            sforce.connection.sessionId = "{!$Api.Session_ID}";
+            var query = "select id, Name,  Currency__c, Currency__r.Name, Tax__c  from Supplier__c where  status__c = 'ACT' order by Name"; 
+            var result = sforce.connection.query(query); 
+            var queryMore = true;
+            var resultArray = [];
+            while (queryMore) {
+                var records = result.getArray("records");
+                for (var i = 0; i < records.length; i++) {
+                    resultArray.push({ "id" : records[i]['Id'], "text" : records[i]['Name'] + " (Tax: "+records[i]['Tax__c']+"%)"});
+                }
+                if (result.getBoolean("done")) {
+                    queryMore = false;
+                } else {
+                    result = sforce.connection.queryMore(result.queryLocator);
+                }
+             }
+            
+            
+             var sampleArray = [{'text': 'Other Unspecified Sources',  'children': resultArray }];
+             //$(".singleSelect11").select2({allowClear: false,placeholder: "Select", data: sampleArray});
+            $singleSupplierSelect.select2({placeholder: "Select", data: sampleArray});
+            */
+            
+            $content.fadeIn(0);
+            $accordion.accordion({ 
+                collapsible: true,
+                autoHeight: false,
+                fillSpace: true, 
+                clearStyle: true
+            });
+            $feed.accordion({ 
+                collapsible: true,
+                active: false
+            });
+            posNumInput();
+            
+            $approvalDialog.dialog({
+                autoOpen: false,
+                height: 280,
+                width: 500
+            });
+            yearUsedBudgetWithoutCurrentPR = parseFloat("{!yearUsedBudgetWithoutCurrentPR }");
+            usedBudgetWithoutCurrentPR = parseFloat("{!usedBudgetWithoutCurrentPR }");
+            totalPrice();
+        }
+        
+        function posNumInput(){
+            $(".posnum").keydown(function (e) {
+                // Allow: backspace, delete, tab, escape, enter and .
+                if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+                     // Allow: Ctrl+A
+                    (e.keyCode == 65 && e.ctrlKey === true) ||
+                     // Allow: Ctrl+C
+                    (e.keyCode == 67 && e.ctrlKey === true) ||
+                     // Allow: Ctrl+X
+                    (e.keyCode == 88 && e.ctrlKey === true) ||
+                     // Allow: home, end, left, right
+                    (e.keyCode >= 35 && e.keyCode <= 39)) {
+                         // let it happen, don not do anything
+                         return;
+                }
+                // Ensure that it is a number and stop the keypress
+                if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        function dataTableInitSetting(){
+            return {                
+                "scrollY": 265,                
+                "scrollX": true,
+                "scrollCollapse": true,
+                "paging": false,
+                "bFilter": false, 
+                "bInfo": false,
+                "bSort" : false
+            };
+       }
+        function selectAll(cb){
+            var checkItems = document.getElementById('tabs-1').getElementsByTagName('input');
+            for (var i = 1; i < checkItems.length; i++) {
+            if(checkItems[i].id.indexOf('RepeatPurchase')!=-1){
+            checkItems[i].checked = cb.checked;
+            }
+            }
+        }        
+       
+       function ccEmailListInit() {
+            $('.emaillist option[value={!pr.Copy_to_1__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_2__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_3__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_4__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_5__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_6__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_7__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_8__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_9__c}]').attr('selected','selected');
+            $('.emaillist option[value={!pr.Copy_to_10__c}]').attr('selected','selected');
+       }
+       function changeCurrency(val){
+           $currencyLocal.fadeOut(0);
+           $currencyOriginal.fadeOut(0);
+           if(val == 'o'){
+               $currencyOriginal.fadeIn(0);               
+           }
+           if(val == 'l'){
+               $currencyLocal.fadeIn(0);
+           }
+       }
+       
+       function detailAction(action){
+           initVariable();
+           //$singleSelect.select2();
+           $singleSelect.select2({placeholder: "Select"});
+           posNumInput();
+           if(action == 'A'){
+               changeCurrency('o')
+           }
+           if(action == 'D'){
+               changeCurrency('o')
+           }
+       }
+       
+       function changeSupplier(obj, val){
+           //alert(obj);
+           //alert(val.value);
+           
+           $("."+obj).val(val.value); 
+       }
+
+       function changePCSupplier(obj, val){
+           $("."+obj).val(val.value).change();
+       }       
+       function changeSTDExchangeRate(val){
+           $estorig.fadeOut(0);
+           $estlocal.fadeOut(0);
+           if(val == 'estorig'){
+               $estorig.fadeIn(0);
+           }
+           if(val == 'estlocal'){
+               $estlocal.fadeIn(0);
+           }
+       }
+       
+       function directFullfillmentAction(obj) {
+            $(".supplier_select_"+obj).change();
+            InitialdirectFullfillmentAction(obj);
+            detailAction('D');
+       }       
+       function InitialdirectFullfillmentAction(obj) {
+            
+           var isDisable = $(".IsDirectFullfillment_"+obj).prop("checked");
+           $(".currency_"+obj).select2({placeholder: "Select"});
+           $(".supplier_select_"+obj).select2({placeholder: "Select"});
+           //$(".supplier_select_"+obj).change();
+           $(".currency_"+obj).prop("disabled", isDisable); 
+           $(".price_"+obj).prop("disabled", isDisable); 
+           $(".supplier_select_"+obj).prop("disabled", isDisable);
+       }
+       
+       function deleteLineAction(action) {
+           if(action == "CL") {
+                $tab1.hide();
+                $progressbar.show();      
+           }
+           if(action == "CP") {
+                $tab1.show();
+                $progressbar.hide();      
+           }
+       }
+    </script>
+    <script>
+        function saveReceivedOnComplete(pIsDisplayedMessage) {
+            if(pIsDisplayedMessage) {
+                return false;
+            }
+            else {
+                window.location = "/apex/IDPPurchaseRequestVFP?prid="+ "{!pid}"+"&mode="+ "v";
+            }
+        }
+        
+        function displayApprovalCommentOnClick(mode) {
+            if(mode == 'A') {
+                $confirmApproval.fadeIn(0);
+                $confirmRejection.fadeOut(0);
+                
+            }
+            else if(mode == 'R') {
+                $confirmApproval.fadeOut(0);
+                $confirmRejection.fadeIn(0);
+                
+            }
+            $approvalDialog.dialog("open");
+        }
+        
+        function hideApprovalCommentOnClick() {
+            $approvalDialog.dialog("close");
+        }        
+
+        function enableApproveBtn(elem)  {
+            $("#approvalDialog").find(".slds-button").prop("disabled", false);
+        }
+
+        function disableApproveBtn(elem) {
+            $("#approvalDialog").find(".slds-button").prop("disabled", true);
+        }
+
+        function OnBehalfOfOnChange(){
+            
+            if(!$('.needByDate').val()) {
+                $('.needByDate').val('1/1/1990');
+            }
+            
+            
+            updateEmployeeFunction();
+
+            if($('.needByDate').val() == '1/1/1990') {
+                $('.needByDate').val('');
+            }
+
+        }
+
+        function deliverySiteOnChange() {
+            if(!$('.needByDate').val()) {
+                $('.needByDate').val('1/1/1990');
+            }
+
+            changeSite();
+
+            if($('.needByDate').val() == '1/1/1990') {
+                $('.needByDate').val('');
+            }
+        }
+
+        function totalPrice(){
+            totalPRPrice = 0;
+            $AllUSDPrice= $(".USDPrice");
+            $AllUSDPrice.each(function() {
+              totalPRPrice  += parseFloat($(this).text().replace(/,/g, ""));
+            });
+            $overBudget.fadeOut(0); 
+            if(yearUsedBudgetWithoutCurrentPR - totalPRPrice  < 0 || usedBudgetWithoutCurrentPR - totalPRPrice  < 0){
+                $overBudget.fadeIn(0) 
+            }
+        }
+    </script>
+    
+    <script type="text/javascript">
+        $.LoadingOverlaySetup({
+            imageColor      : "#01A9DB",
+            imageAnimation : "4000ms"
+        });
+    </script>
+
+    
+    <style type="text/css" class="init">
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        /*
+        .select2-dropdown {
+           //margin-left: 0px;
+           width: 999px;
+        }
+        .select2-selection__rendered{
+            margin-top: 99px;
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .select2-search--inline{
+            margin-left: 0px;
+            margin-top: 2px;
+        }
+        */
+        table.dataTable thead th, table.dataTable thead td{
+          padding-bottom: 0px;
+          //padding-left: 10px;
+          //padding-right: 10px;
+          padding-left: 10px;
+          padding-right: 0px;
+          border-bottom: 1px solid #111;
+        }
+        
+        table.dataTable tfoot th{
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        
+        table.dataTable tbody td{
+          padding-left: 10px;
+          padding-right: 0px;
+          padding-top: 10px;
+          padding-bottom: 5px;
+        }    
+        .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td {
+            vertical-align: middle;
+           padding-top:5px; 
+        }
+        .dataTables_wrapper{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        } 
+        table.dataTable input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        label{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .accordion table tr td {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        
+        .verticalLine{
+             border-left: medium solid #c00;             
+        }
+        .inputClass{
+            //margin-top:4px;
+            margin-top:0px;
+        }
+        .errorAlert{
+            border:1px solid red;
+            outline: 2px solid #F00;
+        }
+        .ui-autocomplete {
+            max-height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .ui-tabs-anchor{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+         }
+       
+        .ui-state-focus:focus { outline:none }
+         
+        .ui-state-default{
+          background-color: #dfeffc;
+          background-image: none;
+         }
+         
+         .prheaderlabel{
+             text-align: right !important;
+             width:160px;
+         }
+         .prheaderval{             
+             padding-left: 10px !important;
+             width:290px;
+         }
+         
+         .costItemEmptySpace {
+            float: left;
+            padding-left: 16px;
+            padding-top: 16px;
+         }
+         .actionIcon{
+            float:left;
+            margin-left:5px;
+         }         
+        .select2-results__option{
+            padding-left: 5px;
+            margin-left: 5px;
+         }
+         table.dataTable input {
+            //height: 20px;
+         }
+         table.dataTable textarea {
+            height: 23px;
+         }
+         
+         .alertlabel {
+          background-color: #f0ad4e;
+          color: black;   
+          padding: 4px;
+          border-radius:10px;
+          -moz-border-radius:10px;
+          font-family: Verdana, Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+          color : #FFFFFF;
+        }
+        
+        .errorMsg{
+            display:none !important;
+        }
+
+        .progressbar {
+            position: relative; 
+            left: 50%;
+            margin-top : 50px;
+            margin-bottom : 50px;
+        }   
+                 
+        input[type="text"].error{
+            border: 1px solid rgb(169, 169, 169) !important;
+        }         
+        .isNegVal-true {
+            color: red;
+            /*background-color: yellow;*/
+        } 
+        .isOverBudget-true {
+          background-color: yellow;
+        }
+        /*.ui-accordion .ui-accordion-content {padding: 1em 0;}*/
+    </style>
+    
+    
+    <style>
+        /* to hide submit for approval button */
+        input.btn[name="piSubmit"] {
+            display: none;
+        } 
+        /* to hide recall button */
+        input.btn[name="piRemove"] {
+               display: none;
+        }
+        input.btn[name="newNote"] {
+               display: none;
+        }
+        input.btn[name="attachFile"] {
+               display: none;
+        }
+    </style>
+    <!--
+    isSave {!isSave}
+     <br/>
+    isSubmitted {!isSubmitted}
+    <br/>
+    isCatalogOwner {!isCatalogOwner}
+    <br/>
+    isPurchaser {!isPurchaser}
+    <br/>
+    isMySelf {!isMySelf}
+    
+    <br/>
+    {!isSaveReceived}
+    {!isEditReceived}
+    mode {!mode}
+    -->
+    <!--
+    <apex:outputPanel id="messagePanel">
+        <apex:pagemessages />
+    </apex:outputPanel>
+    -->
+    <!--     <apex:messages /> -->
+    <div id="content" style="display:none">
+    <div id="feed">
+        <h3>Chatter Feed</h3>
+        <div>
+            <div style="margin-bottom:3px; font-family: Salesforce Sans, Arial, sans-serif;font-size: 8.5pt;Padding-left: 30px;">
+               <chatter:feed id="feedid" entityId="{!pid}" onComplete="refreshPRAttachment()"/>
+            </div>
+        </div>
+    </div>
+    <apex:form >  
+
+        <apex:actionFunction name="refreshPRAttachment" action="{!refreshPRAttachment}" reRender="PRAttachDetail"/>
+
+        <apex:actionFunction name="deletePRAttachment" action="{!deletePRAttachment}" reRender="PRAttachDetail" immediate="true">
+            <apex:param name="attId" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="updateEmployeeFunction" action="{!updateEmployee}" reRender="requesterSite, requesterFunction, requesterDepartment, requesterSection"/>
+        <apex:actionFunction name="changeSite" action="{!changeSite}" reRender="PRDeliveryAddress"/>    
+        <input type="file" name="file" multiple="true" id="filesInput" onchange= "prepareFileUploads(this);" style="display:none" />
+        <div class="slds">
+            <div class="slds-page-header" role="banner" >
+                <div class="slds-grid">
+                    <div class="slds-media__body">              
+                        <h1 class="slds-text-heading--medium">Purchase Request</h1>                
+                    </div>
+                    <apex:repeat var="airTravelOptionList" >
+                    </apex:repeat>
+                    <div class="slds-col slds-no-flex slds-align-middle">
+                        <div class="slds-button-group" role="group">
+                            <apex:outputText rendered="{!!isSave}">
+                                 <!-- <a href="javascript:;" onclick="$('#filesInput').click();" class="actionbtn" style="padding-right: 1px;" > -->
+
+                                 <a href="javascript:;" onclick="$('#RFLNewFile').click();" class="actionbtn" style="padding-right: 1px;" >
+                                    <apex:outputPanel styleClass="slds-button slds-button--neutral"  style="margin-left:-4px"> 
+                                        <span >
+                                            <apex:image value="{!URLFOR($Resource.upload_icon, '')}" width="15px" height="15px" style="position: relative;top: -2px;" />
+                                        </span>
+                                        Attachment(s)
+                                    </apex:outputPanel>
+                                </a>
+                            </apex:outputText>
+                            <apex:outputPanel id="buttonPanel">
+                                <!--
+                                <apex:commandButton value="Save Debug" styleClass="slds-button slds-button--neutral" action="{!saveReceivedAction}" rendered="{!isSaveReceived}" reRender="buttonPanel, messagePanel, receivedQty" oncomplete="saveReceivedOnComplete({!isDisplayedMessage});"/>
+                                <apex:commandButton value="Edit Debug" styleClass="slds-button slds-button--neutral" action="{!editReceivedAction}" rendered="{!isEditReceived}"/>
+                                -->
+                                <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!saveAction}" rendered="{!isSave}" reRender="messagePanel"/>
+                                <apex:commandButton value="Edit" styleClass="slds-button slds-button--neutral" action="{!editAction}" rendered="{!isEdit}" immediate="true" html-formnovalidate="formnovalidate"/>
+                                <apex:commandButton value="Submit" styleClass="slds-button slds-button--neutral" action="{!submitAction}" rendered="{!isSubmit}" reRender="messagePanel" onclick="$.LoadingOverlay('show');" oncomplete="$.LoadingOverlay('hide');" />
+                                <apex:commandButton value="Recall" styleClass="slds-button slds-button--neutral" action="{!recallAction}" rendered="{!isRecall}"/>
+                                <apex:commandButton value="Approve" styleClass="slds-button slds-button--neutral" onclick="displayApprovalCommentOnClick('A');" rendered="{!isApproval && isCurrentApprover}" oncomplete="return false;"/>
+                                <apex:commandButton value="Reject" styleClass="slds-button slds-button--neutral"  onclick="displayApprovalCommentOnClick('R');" rendered="{!isApproval && isCurrentApprover}" oncomplete="return false;"/>
+                                <!--
+                                <apex:commandButton value="Approve" styleClass="slds-button slds-button--neutral" action="{!approveAction}" rendered="{!isApproval && isCurrentApprover}" reRender="messagePanel, PRDetail" oncomplete="detailAction('A');return {!if(isDisplayedMessage,'false', '')};"/>
+                                <apex:commandButton value="Reject" styleClass="slds-button slds-button--neutral" action="{!rejectAction}" rendered="{!isApproval && isCurrentApprover}" immediate="true" html-formnovalidate="formnovalidate"/>
+                                -->
+                                <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" action="{!cancelAction}" rendered="{!isSave || isSaveReceived}" immediate="true" html-formnovalidate="formnovalidate"/>
+                                <apex:commandButton value="Clone" styleClass="slds-button slds-button--neutral" action="{!cloneAction}" immediate="true" html-formnovalidate="formnovalidate" rendered="{!!isSave && pr.Status__c == $Label.IDP_Purchase_Request_Status_Rejected && isMySelf}"/>
+                                <apex:commandButton value="Back" styleClass="slds-button slds-button--neutral" action="{!backAction}" immediate="true" html-formnovalidate="formnovalidate"/>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+ 
+            <div class="accordion">
+                <h3>Progress Flow</h3>
+                <div style="padding-left:0px; padding-right:0px;">
+                    
+                    <iframe   src="/apex/IDPPurchaseRequestProgressBarVFP?prId={!pr}" width="98%" height="110px" id="iframe1" frameBorder="0" style="overflow:hidden;" scrolling="no"/>
+                    
+                </div>
+            </div>
+            
+            <div class="accordion">
+              <h3>Purchase Request</h3>
+              <div style="padding-bottom: 0px;" >
+                  <apex:pageBlock mode="maindetail" id="headerBlockHeader">
+                      <table border = "0" style="width:100%" id="prheader">
+                          <tr>
+                              <td class = "prheaderlabel">Purchase Request:</td>
+                              <td class = "prheaderval">{!pr.Name}</td>
+                              
+                              <td class = "prheaderlabel">Requester Site:</td>
+                              <td class = "prheaderval"><apex:outputText id="requesterSite" value="{!emp.Site__r.Name}"/></td>
+                              
+                              <td class = "prheaderlabel">Apply Date:</td>
+                              <td class = "prheaderval">
+                                  <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                                      <apex:param value="{!ApplyDate}" />
+                                  </apex:outputText>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td class = "prheaderlabel">Applicant:</td>
+                              <td class = "prheaderval">
+                                  <apex:selectList StyleClass="singleSelect" value="{!pr.On_Behalf_of__c}" size="1" rendered="{!isSave && isSubmit}" onchange="OnBehalfOfOnChange();" style="width:99%">
+                                      <apex:selectOptions value="{!applicantOptList}"></apex:selectOptions>
+                                  </apex:selectList>
+                                  <apex:outputText rendered="{!isView || !isSubmit}">
+                                      {!pr.On_Behalf_of__r.Name}
+                                  </apex:outputText>
+                              </td>
+                              <td  class = "prheaderlabel">Requester Function:</td>
+                              <td class = "prheaderval">
+                                  <apex:outputText id="requesterFunction" value="{!IF(ISBLANK(emp.Function__c),'--', emp.Function__c)}"/>
+                              </td>
+                              <td class = "prheaderlabel">Created By:</td>
+                              <td class = "prheaderval">
+                                  {!pr.CreatedBy.Name}
+                              </td>
+                          </tr>
+                          <tr>
+                            <td  class ="prheaderlabel">Project Name:</td>                        
+                            <td class ="prheaderval">
+                                <div style="margin-top:3px">
+                                        <apex:outputPanel id="PRBudgetForecast">
+                                            <apex:inputField StyleClass="singleSelect" value="{!pr.Project_Name__c}" rendered="{!isSave && !isSubmitted}" style="width:99%"/>
+                                        </apex:outputPanel>                                                        
+                                        <apex:outputField value="{!pr.Project_Name__c}" rendered="{!isView || isSubmitted}"/>
+                                </div>
+                            </td>
+                            <td  class = "prheaderlabel">Requester Department:</td>
+                            <td class = "prheaderval">
+                                <apex:outputText id="requesterDepartment" value="{!IF(ISBLANK(emp.Department__c),'--', emp.Department__c)}"/>
+                            </td>   
+                            <td  class = "prheaderlabel">Status:</td>
+                            <td class = "prheaderval">
+                                <apex:outputField value="{!pr.Status__c}"/>
+                                <apex:outputPanel rendered="{!pr.Prev_Purchase_Request__c != null}">
+                                    (Re-submission of #{!pr.Prev_Purchase_Request__r.Name})
+                                </apex:outputPanel>
+                            </td>
+                          </tr>
+                          <tr>
+                             <td class = "prheaderlabel">Reason of Request:</td>                          
+                             <td  class = "prheaderval">
+                                 <apex:inputField StyleClass="singleSelect" value="{!pr.Reason_of_Request__c}" rendered="{!!isApproval && isSave}" style="width:99%"/>
+                                 <apex:outputField value="{!pr.Reason_of_Request__c}" rendered="{!isApproval || !isSave}"/>
+                             </td>
+                             <td  class = "prheaderlabel">Requester Section:</td>
+                             <td class = "prheaderval">
+                                 <apex:outputText id="requesterSection" value="{!IF(ISBLANK(emp.Section__c),'--', emp.Section__c)}"/>
+                             </td>
+                             <td class = "prheaderlabel">Need-by Date:</td>
+                             <td class = "prheaderval">
+                                 <apex:outputpanel rendered="{!isSave && isSubmit}">
+                                     <div class="requiredInput">
+                                         <div class="requiredBlock"></div>                                     
+                                         <apex:inputField styleClass="needByDate" value="{!pr.Need_by_Date__c}"  style="width:130px" rendered="{!isSave && isSubmit}" required="true"/>
+                                     </div>
+                                 </apex:outputpanel> 
+                                 
+                                 <apex:outputText value="{0, date, dd MMMM','  yyyy}" rendered="{!isView || !isSubmit}">
+                                     <apex:param value="{!pr.Need_by_Date__c}" />
+                                     <div class="requiredInput">
+                                         <div class="requiredBlock"></div> 
+                                         <apex:inputField value="{!pr.Need_by_Date__c}" rendered="{!isView || !isSubmit}" required="true" style="display:none;"/>
+                                     </div>
+                                 </apex:outputText>
+                             </td>
+                          </tr>
+                          
+                          <tr>
+                              <td class = "prheaderlabel">Budget:</td>
+                              <td class = "prheaderval">
+                                  <apex:outputPanel id="PRBudgetForecast1">
+                                      <apex:inputField StyleClass="singleSelect" value="{!pr.Budget_Forecast__c}"  style="width:99%" rendered="{!isSave && !isSubmitted}"/>
+                                  </apex:outputPanel>                                                        
+                                  <apex:outputField value="{!pr.Budget_Forecast__c}" rendered="{!isView || isSubmitted}"/>
+                              </td>
+                              <td class = "prheaderlabel">Catalog:</td>
+                              <td class = "prheaderval">
+                                  <a target="_blank" href="/{!pr.Catalog__r.Id}">{!pr.Catalog__r.Catalog_Name__c} ({!pr.Catalog__r.Name})</a>
+                              </td>
+                              <td class = "prheaderlabel">Competitive Quote:</td>
+                              <td class = "prheaderval">
+                                 <apex:inputCheckbox style="margin-top:3px" value="{!pr.Quote__c}" disabled="{!!isSave||!isCatalogOwner}"/>
+                                 <apex:outputLabel rendered="{!!isCatalogOwner && !pr.Quote__c && isApproval}">
+                                     <br/>{!$Label.IDP_No_competitive_quotes_obtained}
+                                 </apex:outputLabel>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td  class = "prheaderlabel">Delivery Site:</td>
+                              <td class = "prheaderval">
+                                  <apex:selectList StyleClass="singleSelect" value="{!pr.Delivery_Site__c}" size="1" style="width:99%" rendered="{!isSave && isSubmit}" onchange="deliverySiteOnChange()">
+                                      <apex:selectOptions value="{!deliverySiteOptList}"></apex:selectOptions>
+                                  </apex:selectList>
+                                  <apex:outputText value="{!pr.Delivery_Site__r.Name}" rendered="{!isView || !isSubmit}"/>
+                              </td>
+                              
+                              <td class = "prheaderlabel">Delivery Address:</td>
+                              <td  class = "prheaderval">
+                                  <apex:outputPanel id="PRDeliveryAddress">
+                                      <apex:outputField value="{!pr.Delivery_To__c}" rendered="{!isSave && isSubmit}"/>
+                                  </apex:outputPanel>                                                        
+                                  <apex:outputField value="{!pr.Delivery_To__c}" rendered="{!isView || !isSubmit}"/>
+                              </td>
+                              <td class = "prheaderlabel"><apex:outputLabel >Assign to Local Purchaser:</apex:outputLabel></td>
+                              <td class = "prheaderval"> 
+                                  <apex:inputCheckBox style="margin-top:10px"  value="{!pr.Assign_to_Local_Purchaser__c}" disabled="{!!isSave||!isCatalogOwner}"/>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td  class ="prheaderlabel">CC E-Mail List:</td>
+                              <td colspan="5" class = "prheaderval">
+                                  <div style="margin-top:3px" >
+                                      <apex:selectList size="1" disabled="{!isSubmitted || isView}" multiselect="true" value="{!emailList}"  StyleClass="ccMultiSelect emaillist"   style="width:97.5%">
+                                          <apex:selectOptions value="{!userSelectionList}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList1}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList2}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList3}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList4}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList5}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList6}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList7}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList8}"></apex:selectOptions>
+                                          <apex:selectOptions value="{!userSelectionList9}"></apex:selectOptions>
+                                      </apex:selectList> 
+                                  </div>
+                              </td>
+                          </tr>
+                      </table>
+                  </apex:pageBlock>
+              </div>
+            </div>
+        </div>
+        
+        <apex:outputPanel id="messagePanel">
+            <apex:pagemessages />
+            <div id="OverBudget" style= "display:none">
+                <apex:pageMessage escape="0" summary="Overbudget: Insufficient budget for procurement" severity="warning" strength="1" rendered="{!!ISNULL(IDPbudget)}" />
+            </div>
+            <apex:pageMessage escape="0" summary="Budget data is not provided." severity="warning" strength="1" rendered="{!ISNULL(IDPbudget)}" />
+        </apex:outputPanel>
+        
+        <div id="tabs">
+          <ul>
+            <li><a href="#tabs-1">Detail</a></li>
+            <apex:outputText rendered="{!isView && isSubmitted && (isApprover || isCatalogOwner || isPurchaser)}">
+                <li><a href="#tabs-2">Budget Summary</a></li>
+            </apex:outputText>   
+          </ul>
+          
+          <div id="tabs-1">
+            <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+            <div id="tab1">
+                <apex:outputPanel id="PRDetail">
+                     <apex:pageBlock mode="maindetail" id="headerBlock">
+                         <table id="PRTable1" class="display dataTable no-footer" cellspacing="0" style='width:100%'>
+                          
+                            <thead>
+                               <tr>
+                                  <th style="width:30px">
+                                      <apex:outputText rendered="{!isView}">No.</apex:outputText>
+                                      <apex:outputText rendered="{!isSave}">Action</apex:outputText>
+                                  </th>
+                                  <th style="width:120px" >Sub-Catalog</th>    
+                                  <th style="width:250px" >
+                                      Name
+                                 <!-- Add by Miles for IDP project 10/07/2018 end-->
+                                  </th>
+                                  <th style="width:120px" >                                      
+                                      Repeat <br/>Purchase
+                                      <apex:inputCheckbox disabled="{!!isSave}"  onclick="selectAll(this)"/>   
+                                  </th> 
+                                  <th style="width:60px">
+                                      <!--
+                                       <div class="requiredInput">
+                                           <div class="requiredBlock"></div>  
+                                       </div>
+                                       -->                           
+                                       <apex:outputText rendered="{!isView}">
+                                           <select onchange = "changeCurrency(this.value)">
+                                               <option value = "o">Original</option>
+                                               <option value = "l">Local</option>
+                                           </select>
+                                       </apex:outputText>
+                                       <apex:outputText rendered="{!!isView}">
+                                           Currency
+                                       </apex:outputText>
+                                       
+                                   </th>
+                                  <th style="width:110px">
+                                      <div class="requiredInput">
+                                          <apex:outputPanel styleClass="requiredBlock" rendered="{!pr.Status__c == $Label.IDP_Purchase_Request_Status_Pending_Purchase_Confirmation && isPurchaser}"></apex:outputPanel>                              
+                                          <apex:outputText rendered="{!isView}">
+                                              Price/Unit
+                                          </apex:outputText>
+                                          <apex:outputText rendered="{!!isView}">
+                                              Price/Unit
+                                          </apex:outputText>     
+                                      </div>
+                                      
+                                  </th>
+                                  <th style="width:110px">
+                                      Best Price
+                                  </th>
+                                  <th style="width:40px">UOM</th>
+
+                                  <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser)}">
+                                        <th style="width:40px">MOQ</th>
+                                  </apex:outputText>
+
+                                  <th style="width:40px">
+                                        <div class="requiredInput">
+                                            <apex:outputPanel styleClass="requiredBlock" rendered="{!pr.Status__c == $Label.IDP_Purchase_Request_Status_Draft || pr.Status__c == $Label.IDP_Purchase_Request_Status_Not_Submitted}"/>
+                                            <!--
+                                             (pr.Status__c == $Label.IDP_Purchase_Request_Status_Pending_Purchase_Confirmation && isPurchaser)}"></apex:outputPanel>  
+                                             -->                            
+                                              Qty
+                                        </div>
+                                  </th>
+                                  <!--
+                                  <apex:outputText rendered="{!isShowStatus}">
+                                      <th style="width:220px">
+                                          PR Total<br/>
+                                          Received Qty 
+                                      </th>
+                                  </apex:outputText>
+                                  
+                                 
+                                  -->
+                                  
+                                  <!-- MOQ Icon Column -->
+                                   <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser)}">
+                                        <th style="width:20px"></th>
+                                  </apex:outputText>
+
+
+                                  <th style="width:100px">Amount</th>
+                                  <!--
+                                  <apex:outputText rendered="{!pr.Status__c != 'DF' && pr.Status__c != 'PPC' && pr.Status__c != 'RJ' && pr.Status__c != 'NS'}">
+                                      <th style="width:100px">Amount<BR/>(USD) </th>
+                                  </apex:outputText>
+                                  -->
+                                  <th style="width:100px">Amount<BR/>(USD)</th>
+                                  <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser)}">
+                                      <!-- <th style="width:80px">Tax (%)</th> -->
+                                      <th style="width:30px" >Direct<BR/>Fulfillment</th>
+                                      <th style="width:200px" >
+                                          <div class="requiredInput">
+                                              <apex:outputPanel styleClass="requiredBlock" rendered="{!pr.Status__c == $Label.IDP_Purchase_Request_Status_Pending_Purchase_Confirmation}"></apex:outputPanel>                              
+                                                  Supplier
+                                          </div>
+                                      </th>
+                                      <th style="width:20px"></th>
+                                      <th style="width:200px;">Remark</th>
+                                  </apex:outputText>
+                                  
+                                 <apex:outputText rendered="{!isShowStatus}">
+                                      <th style="width:150px"> 
+                                          Status
+                                      </th>
+                                      <th style="width:150px"> 
+                                          Purchase Order
+                                      </th>
+                                      <th style="width:50px">
+                                          PO Received<BR/>Status
+                                      </th>                                  
+                                 </apex:outputText>
+                                  
+                              </tr>
+                            </thead>
+                            <apex:outputText rendered="{!isView }">
+                                <tfoot>
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th>Total Est. Price</th >
+                                        <th></th>
+                                        <th>
+                                            <select style="width:100%" onchange="changeSTDExchangeRate(this.value)">
+                                                <option value = "estorig">USD</option>
+                                                <option value = "estlocal">{!emp.expense_policy__r.local_Currency__r.Name}</option>
+                                            </select>
+                                        </th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser)}">
+                                            <th></th>
+                                        </apex:outputText>
+                                        <th></th>       
+                                        <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser)}">
+                                            <th></th>
+                                        </apex:outputText>                                 
+                                        <th></th>
+                                        <th>
+                                            <div class = "estorig">
+                                                <apex:outputText value="{0, number,###,###,###,##0.00}">
+                                                    <apex:param value="{!pr.Estimated_Total_Price__c}" />
+                                                </apex:outputText>
+                                            </div>
+                                            <div class = "estlocal" style="display:none" >
+                                                <apex:outputText value="{0, number,###,###,###,##0.00}">
+                                                    <apex:param value="{!pr.Estimated_Local_Total_Price__c}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser)}">
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!isShowStatus}">
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                        </apex:outputText>                                
+                                    </tr>
+                                </tfoot>
+                            </apex:outputText>
+                            <tbody>
+                                <apex:actionFunction name="changeSupplierFunction" action="{!changeSupplierAction}" reRender="currencyPanel,supplierTaxPanel,moqPanel,lessThanMOQIcon,leadTimeInfo,stdprice" oncomplete="deleteLineAction('CP');totalPrice();">
+                                    <apex:param name="PRItemID" value=""/>
+                                    <apex:param name="SupplierID" value=""/>
+                                </apex:actionFunction>
+                                <apex:repeat var="prl" value="{!PRLineList}">
+                                    <!--
+                                    <apex:variable var="isDisplayReceived" value="false"/> 
+                                    -->
+                                    <apex:variable var="isCurrencyRequired" value="false"/> 
+                                    <apex:variable var="isPriceRequired" value="false"/> 
+                                    <apex:variable var="isQuantityRequired" value="false"/> 
+                                    <apex:variable var="isSupplierRequired" value="false"/>     
+                                    <apex:repeat value="{!pripcIdFieldNameIsBlankMessageMap}" var="key">
+                                          
+                                        <apex:variable rendered="{!key == prl.pri.id}" var="isCurrencyReq-red" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Currency]}"/> 
+                                        <apex:variable rendered="{!key == prl.pri.id}" var="isPriceRequired" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Price]}"/> 
+                                        <apex:variable rendered="{!key == prl.pri.id}" var="isQuantityRequired" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Quantity]}"/> 
+                                        <apex:variable rendered="{!key == prl.pri.id}" var="isSupplierRequired" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Supplier]}"/> 
+                                        
+                                        <apex:variable rendered="{!key == prl.pc.id}" var="isCurrencyRequired" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Currency]}"/> 
+                                        <apex:variable rendered="{!key == prl.pc.id}" var="isPriceRequired" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Price]}"/> 
+                                        <apex:variable rendered="{!key == prl.pc.id}" var="isSupplierRequired" value="{!pripcIdFieldNameIsBlankMessageMap[key][$Label.IDP_Purchase_Request_Validation_Supplier]}"/> 
+    
+                                    </apex:repeat>
+                                   
+                                        <apex:variable var="isCurrencyRequired" value="{!If(ISBLANK(isCurrencyRequired), false, isCurrencyRequired)}"/> 
+                                        <apex:variable var="isPriceRequired" value="{!If(ISBLANK(isPriceRequired), false, isPriceRequired)}"/> 
+                                        <apex:variable var="isQuantityRequired" value="{!If(ISBLANK(isQuantityRequired), false, isQuantityRequired)}"/> 
+                                        <apex:variable var="isSupplierRequired" value="{!If(ISBLANK(isSupplierRequired), false, isSupplierRequired)}"/> 
+                                        <!--
+                                        <apex:variable var="isDisplayReceived" value="{!prl.pri.Status__c == 'PD' || prl.pri.Status__c == 'ORD'}"/> 
+                                        -->   
+                                  <tr>
+                                      
+                                      <td valign="middle"> 
+                                          <apex:outputText rendered="{!isView}">
+                                              {!prl.pri.Number__c}
+                                         </apex:outputText>
+                                          <apex:outputText rendered="{!isSave}">
+                                              <apex:outputText rendered="{!prl.isAddAction}">
+                                                  
+                                                  <apex:outputText rendered="{!prl.isCostItem || (!prl.isCostItem &&prl.pri.Is_Direct_fulfillment__c)}" styleClass="costItemEmptySpace" >
+                                                  </apex:outputText>
+                                                  
+                                                  <apex:outputText rendered="{!!prl.isCostItem && !prl.pri.Is_Direct_fulfillment__c}">
+                                                      <a href="javascript:;" title="Add a new line">
+                                                          <apex:outputPanel styleClass="ui-icon  ui-icon-circle-plus actionIcon" style="margin-left:-1px; padding-right:0px" >
+                                                              <apex:actionSupport event="onclick"  onSubmit="deleteLineAction('CL');" action="{!prl.addRow}"  rerender="PRDetail" oncomplete="detailAction('A');deleteLineAction('CP');"/>
+                                                          </apex:outputPanel>
+                                                      </a>
+                                                  </apex:outputText>
+                                              </apex:outputText>
+                                              <apex:outputText rendered="{!prl.isDelAction}">
+                                                  <a href="javascript:;" title="Delete this line">
+                                                      <apex:outputPanel rendered="{!prl.isCostItem && pr.Status__c != $Label.IDP_Purchase_Request_Status_Not_Submitted}" styleClass="ui-icon  ui-icon-circle-minus actionIcon" style="margin-left:-2px;" >
+                                                          <apex:actionSupport event="onclick"  action="{!prl.delPCRow}" onSubmit="deleteLineAction('CL');" rerender="PRDetail" oncomplete="detailAction('D');deleteLineAction('CP');"/>
+                                                      </apex:outputPanel> 
+
+                                                      <apex:outputPanel rendered="{!!prl.isCostItem && !isSubmitted}" styleClass="ui-icon  ui-icon-circle-minus actionIcon" style="margin-left:-2px;" >
+                                                          <apex:actionSupport event="onclick"  action="{!prl.delRow}" onSubmit="deleteLineAction('CL');" rerender="PRDetail" oncomplete="detailAction('D');deleteLineAction('CP');" immediate="true"/>
+                                                      </apex:outputPanel> 
+                                                  </a>
+                                              </apex:outputText>
+                                          </apex:outputText>
+                                      </td>
+                                      <td>
+                                          <apex:outputText rendered="{!!prl.isCostItem}">
+                                              <a target="_blank" href="/{!prl.pri.Catalog_Item__r.Catalog__r.Id}">{!prl.pri.Catalog_Item__r.Catalog__r.Catalog_Name__c}</a>
+                                              <!--
+                                              {!prl.pri.Catalog_Item__r.Catalog__r.Catalog_Name__c}
+                                              -->
+                                          </apex:outputText>
+                                          <apex:outputText rendered="{!prl.isCostItem && isview}">
+                                              --
+                                          </apex:outputText>
+                                      </td>
+                                      <td>
+                                
+                                          <apex:outputText rendered="{!prl.isCostItem}">
+                                              <apex:outputText rendered="{!isview || pr.Status__c == $Label.IDP_Purchase_Request_Status_Not_Submitted}">
+                                                  <apex:outputField value="{!prl.pc.Type__c}" />
+                                              </apex:outputText>
+                                              <apex:outputText rendered="{!isSave && pr.Status__c != $Label.IDP_Purchase_Request_Status_Not_Submitted}">
+                                                  <apex:selectList required="true" size="1" value="{!prl.pc.Type__c}" styleclass="singleSelect" style="width : 100%">
+                                                      <apex:selectOptions value="{!costItemOptList}"></apex:selectOptions>
+                                                      
+                                                      <apex:actionSupport event="onchange" reRender="calculateTaxButton"/>
+                                                      
+                                                  </apex:selectList>
+                                              </apex:outputText>
+                                          </apex:outputText>
+                                      
+                                          <apex:outputText rendered="{!!prl.isCostItem}">
+                                              <a target="_blank" href="/{!prl.pri.Catalog_Item__r.Id}" class="catalogItem" data-last3OrderedSupplier="{!last3OrderedSupplierMap[prl.pri.Catalog_Item__r.Id]}">{!prl.pri.Catalog_Item__r.Item_Name__c}</a>
+                                              <!--
+                                              {!prl.pri.Catalog_Item__r.Item_Name__c}
+                                              -->
+                                          </apex:outputText>
+
+                                          <script>
+                                                $(function(){
+                                                    initLast3OrderedSupplierQtip();
+                                                })
+                                          </script>
+                                       <!-- Add by Miles for IDP project 10/07/2018 end-->   
+                                      </td>
+                                   <td> 
+                                    <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                      <apex:inputCheckbox value="{!prl.pri.Repeat_Purchase__c}" disabled="{!!isSave}" id="RepeatPurchase"/> 
+                                     </apex:outputPanel>
+                                    </td>
+                                      
+                                      <td>
+                                          <div class = "original">
+                                              <apex:outputPanel id="currencyPanel">
+                                                  <!--
+                                                  1 {!prl.SupplierId} <br/>
+                                                  2 {!prl.pri.Supplier__c} <br/>
+                                                  3 {!prl.pri.Supplier__r.Currency__c} <br/>
+                                                  4 {!prl.pri.Currency__c} <br/>
+                                                  5 {!prl.pri.Currency__r.NAme} <br/>
+                                                  6 {!IF(prl.pri.Currency__c != null,currencyMap[prl.pri.Currency__c].Name, '')} <br/>
+                                                  -->                                           
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText value="{!IF(ISBLANK(prl.pc.Currency__c), $Label.IDP_Purchase_Request_Not_Available_Label, currencyMap[prl.pc.Currency__c].Name)}"/>
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:outputText value="{!IF(ISBLANK(prl.pri.Currency__c), $Label.IDP_Purchase_Request_Not_Available_Label, currencyMap[prl.pri.Currency__c].Name)}"/>
+                                                  </apex:outputPanel>
+                                              </apex:outputPanel>
+                                             <!--
+                                              <apex:outputText rendered="{!isView || !issubmitted}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText value="{!IF(ISBLANK(prl.pc.Currency__r.Name), $Label.IDP_Purchase_Request_Not_Available_Label, prl.pc.Currency__r.Name)}"/>
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:outputText value="{!IF(ISBLANK(prl.pri.Currency__r.Name), $Label.IDP_Purchase_Request_Not_Available_Label, prl.pri.Currency__r.Name)}"/>
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                             
+                                             <apex:outputPanel id="itemCurrency">                                           
+                                                  <apex:outputText rendered="{!isSave && issubmitted}">  
+                                                  <div class="requiredInput">
+                                                      <apex:outputPanel rendered="{!isCurrencyRequired}">
+                                                          <div class="requiredBlock"></div>
+                                                      </apex:outputPanel>                                                                                                  
+                                                      <apex:outputPanel rendered="{!prl.isCostItem}">                                                     
+                                                          <apex:repeat value="{!pripcIdFieldNameIsBlankMessageMap}" var="key">
+                                                          </apex:repeat>                                                        
+                                                          <apex:selectList value="{!prl.pc.Currency__c}" size="1" styleclass="singleSelect currency_{!prl.pc.id}" style="width : 100%" >
+                                                              <apex:selectOptions value="{!currencyList}"></apex:selectOptions>
+                                                          </apex:selectList>
+                                                      </apex:outputPanel>
+                                                      <apex:outputPanel rendered="{!!prl.isCostItem}">                                                   
+                                                          <apex:selectList value="{!prl.pri.Currency__c}" size="1" styleclass="singleSelect currency_{!prl.pri.id}" style="width : 100%" >
+                                                              <apex:selectOptions value="{!currencyList}"></apex:selectOptions>
+                                                          </apex:selectList>
+                                                      </apex:outputPanel>
+                                                      </div>
+                                                  </apex:outputText>
+                                              </apex:outputPanel>
+                                              -->
+                                          </div>
+                                          <div class = "local">
+                                              {!emp.expense_policy__r.local_Currency__r.Name}
+                                          </div>
+                                      </td>
+                                      
+                                      <td>
+                                          <div class = "original">
+                                              <apex:outputText rendered="{!!issubmitted || isView}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText value="{!$Label.IDP_Purchase_Request_Not_Available_Label}" rendered="{!ISBLANK(prl.pc.Price__c)}"/>
+                                                      <apex:outputText value="{0, number,###,###,###,##0.00}" rendered="{!!ISBLANK(prl.pc.Price__c)}">
+                                                          <apex:param value="{!prl.pc.Price__c}" />
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:outputText value="{!$Label.IDP_Purchase_Request_Not_Available_Label}" rendered="{!ISBLANK(prl.pri.Price__c)}"/>
+                                                      <apex:outputText id="priPrice" value="{0, number,###,###,###,##0.00}" rendered="{!!ISBLANK(prl.pri.Price__c)}">
+                                                          <apex:param value="{!prl.pri.Price__c}" />
+                                                      </apex:outputText>                                                     
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                              <!--
+                                              <apex:outputText value="{!IF(ISBLANK(prl.pri.Price__c), $Label.IDP_Purchase_Request_Not_Available_Label, '')}"/>
+                                              <apex:outputText value="{0, number,###,###,###,##0.00}" rendered="{!!issubmitted || isView}">
+                                                  <apex:param value="{!prl.pri.Price__c}" />
+        
+                                              </apex:outputText>
+                                              -->
+                                              
+                                              
+                                              <apex:outputPanel id="itemPrice">
+                                                  <apex:outputText rendered="{!issubmitted && isSave}">
+                                                      <div class="requiredInput">
+                                                          <apex:outputPanel rendered="{!isPriceRequired}">
+                                                              <div class="requiredBlock"></div>
+                                                          </apex:outputPanel>                                                
+                                                          <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                              <apex:inputField value="{!prl.pc.Price__c}"  style="width:75%" styleClass="posnum price_{!prl.pc.id}">
+                                                                  <apex:actionSupport event="onchange" reRender="stdprice, origPrice" oncomplete="totalPrice();"/>
+                                                              </apex:inputField>
+
+
+                                                              <apex:outputPanel id="calculateTaxButton">
+                                                                <!--
+                                                                <apex:outputPanel rendered="{!prl.isTax}">
+                                                                  <a href="javascript:;" title="Calculate Tax" style="float:right; width:15px; margin-top:2px;">
+                                                                    <apex:outputPanel styleClass="ui-icon  ui-icon-calculator actionIcon" style="margin-left:0px;" >
+                                                                        <apex:actionSupport event="onclick" action="{!prl.calculateTax}" rerender="itemPrice,origPrice"/>
+                                                                    </apex:outputPanel>
+                                                                  </a>
+                                                                  </apex:outputPanel>
+                                                                  -->
+                                                              </apex:outputPanel>
+                                                          </apex:outputPanel>
+                                                          <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                              <apex:inputField value="{!prl.pri.Price__c}"  style="width:100%" styleClass="posnum price_{!prl.pri.id}">
+                                                                  <apex:actionSupport event="onchange" reRender="stdprice, origPrice" oncomplete="totalPrice();"/>
+                                                              </apex:inputField>
+                                                          </apex:outputPanel>
+                                                      </div>
+                                                  </apex:outputText>
+                                              </apex:outputPanel>
+                                          </div>
+                                          <div class = "local">
+                                              <apex:variable var="exchangeRate" value="{!-1}"/>
+                                              <apex:repeat value="{!exchangeRateMap}" var="key">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!key == prl.pc.Currency__c + emp.expense_policy__r.Local_Currency__c}">
+                                                          <apex:variable var="exchangeRate" value="{!exchangeRateMap[key]}"/>
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!key == prl.pri.Currency__c + emp.expense_policy__r.Local_Currency__c}">
+                                                          <apex:variable var="exchangeRate" value="{!exchangeRateMap[key]}"/>
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>
+                                              </apex:repeat> 
+                                                                                  
+                                              <apex:outputText rendered="{!exchangeRate > 0}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!ISBLANK(prl.pc.Price__c)}">
+                                                          {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                      </apex:outputText>
+                                                      <apex:outputText rendered="{!!ISBLANK(prl.pc.Price__c)}" value="{0, number,###,###,###,##0.00}">
+                                                          <apex:param value="{!prl.pc.Price__c * exchangeRate}" />
+                                                      </apex:outputText>                                          
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!ISBLANK(prl.pri.Price__c)}">
+                                                      
+                                                          {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                      </apex:outputText>
+                                                      <apex:outputText id="localPrice" rendered="{!!ISBLANK(prl.pri.Price__c)}" value="{0, number,###,###,###,##0.00}">
+                                                          <apex:param value="{!prl.pri.Price__c * exchangeRate}" />
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                              <apex:outputText rendered="{!exchangeRate < 0}">
+                                                  {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                              </apex:outputText>                                      
+                                          </div>
+                                      </td>
+                                      <td>
+                                          
+                                          <apex:outputText id="bestPrice" value="{!prl.pri.Catalog_Item__r.Last_Supplier__r.currency__r.Name} {0, number,###,###,###,##0.00}" rendered="{!!isBlank(prl.pri.catalog_Item__r.Reference_Price__c)}">
+                                               <apex:param value="{!prl.pri.catalog_Item__r.Reference_Price__c}"/>    
+                                          </apex:outputText>
+                                      </td>
+                                      <td>
+                                          <apex:outputText rendered="{!!prl.isCostItem}">
+                                              <apex:outputField value="{!prl.pri.Unit_of_Measure__c}"/>
+                                          </apex:outputText>
+                                          <apex:outputText rendered="{!prl.isCostItem && isView}">
+                                              --
+                                          </apex:outputText>
+                                      </td>
+
+                                      <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser )}">
+                                          <td>
+                                              <apex:outputPanel id="moqPanel">
+                                                  <apex:outputText rendered="{!!prl.isCostItem && prl.moq != null && prl.moq > 0}">
+                                                      {!prl.moq}
+                                                  </apex:outputText>
+                                                  <apex:outputText rendered="{!isView && (prl.isCostItem || (prl.moq == null || prl.moq <= 0))}">
+                                                      --
+                                                  </apex:outputText>
+                                              </apex:outputPanel>
+                                          </td>
+                                      </apex:outputText>
+                                      
+                                      <td>
+                                          <apex:outputText id="itemQuantity" rendered="{!isSave}">
+                                              <apex:outputText rendered="{!!prl.isCostItem}">
+                                                  <div class="requiredInput" style="display:inline">
+                                                      <apex:outputPanel rendered="{!isQuantityRequired}">
+                                                          <div class="requiredBlock"></div>
+                                                      </apex:outputPanel>                                          
+                                                      <apex:inputField value="{!prl.pri.Quantity__c}" rendered="{!pr.Status__c == $Label.IDP_Purchase_Request_Status_Draft || pr.Status__c == $Label.IDP_Purchase_Request_Status_Not_Submitted}" styleClass="posnum quantity_{!prl.pri.id}" style="width:80%">
+                                                          <apex:actionSupport event="onchange"   reRender="stdprice, original,itemQuantity" oncomplete="totalPrice();" />
+                                                      </apex:inputField>
+                                                      <apex:outputText rendered="{!pr.Status__c != $Label.IDP_Purchase_Request_Status_Draft && pr.Status__c != $Label.IDP_Purchase_Request_Status_Not_Submitted}">
+                                                          {!prl.pri.Quantity__c}
+                                                      </apex:outputText>
+                                                  </div>
+                                              </apex:outputText>
+                                          </apex:outputText>
+
+                                          <apex:outputText rendered="{!isView}">
+                                              <apex:outputText rendered="{!!prl.isCostItem}">
+                                                  {!prl.pri.Quantity__c}
+                                              </apex:outputText>
+                                              <apex:outputText rendered="{!prl.isCostItem}">
+                                                  --
+                                              </apex:outputText>
+                                          </apex:outputText>                                     
+
+                                      </td>
+
+                                      <!-- MOQ Icon Column -->
+                                      <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser )}">
+                                          <td>
+                                              <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser )}">
+                                                  <apex:outputPanel id="lessThanMOQIcon">
+                                                      <apex:outputPanel rendered="{!!prl.isCostItem && prl.moq != null && prl.moq > 0 && prl.pri.Quantity__c < prl.moq}">
+                                                          <a href="javascript:;" style="float:left;cursor:default">
+                                                            <apex:outputPanel styleClass="ui-icon ui-icon-alert actionIcon moqIcon" style="margin-left:-17px;cursor:default" />
+                                                          </a>
+                                                      </apex:outputPanel>
+
+                                                      <script>
+                                                          $(function(){
+                                                              initMoqIconQtip();
+                                                          });
+                                                      </script>
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                          </td>
+                                      </apex:outputText>
+
+                                       <!-- 
+                                       <apex:outputText rendered="{!isShowStatus}">
+                                           <td>
+                                              <apex:outputPanel id="receivedQty">
+                                                      <apex:outputText rendered="{!prl.pri.Purchase_Order_item__r.Purchase_Order__c == null || prl.pri.Status__c == $Label.IDP_Purchase_Request_Status_Approved}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}"/>
+                                                      
+                                                      <apex:outputPanel rendered="{!prl.pri.Purchase_Order_item__r.Purchase_Order__c != null && prl.pri.Status__c != $Label.IDP_Purchase_Request_Status_Approved}">
+                                                          <apex:outputPanel rendered="{!isSaveReceived}">
+                                                              <div class="requiredInput">
+                                                                  <apex:outputPanel rendered="{!!prl.isValidReceivedQuantity}">
+                                                                      <div class="requiredBlock"></div>
+                                                                  </apex:outputPanel>
+                                                                  <apex:inputText value="{!prl.receivedQuantityString}" style="width:70%" styleClass="posnum"/> 
+                                                                 
+                                                                    &nbsp;
+        
+                                                                    <a href="javascript:;" title="Fully received" style="float:right;">
+                                                                        <apex:outputPanel styleClass="ui-icon  ui-icon-circle-check actionIcon" style="margin-left:-25px;" >
+                                                                            <apex:actionSupport event="onclick" action="{!prl.preInputReceivedQtyAction}" rerender="receivedQty"/>
+                                                                        </apex:outputPanel>                                         
+                                                                    </a>                                             
+                                                              </div>
+                                                          </apex:outputPanel>
+                                                          
+                                                          <apex:outputPanel rendered="{!(isShowStatus && isView) || isEditReceived || !isMySelf}">
+                                                              <apex:outputText value="{!prl.receivedQuantityString}"/>
+                                                          </apex:outputPanel>
+                                                      </apex:outputPanel>
+                                              </apex:outputPanel>
+                                           </td>
+                                      </apex:outputText>
+                                      -->
+                                      <!--
+                                       <apex:outputPanel rendered="{!isSaveReceived ||isEditReceived}">
+                                           <td>                                          
+                                                  <apex:outputText >
+                                                      {!prl.pri.Total_Received_Qty__c} / {!prl.pri.Total_Requested_Qty__c}
+                                                  </apex:outputText> 
+                                           </td>
+                                      </apex:outputPanel> 
+                                      -->
+                                      <td>
+                                          <div class = "original">
+                                              <apex:outputPanel id="original">
+                                                  <apex:outputPanel id="origPrice">
+                                                      <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                          <apex:outputText rendered="{!ISBLANK(prl.pc.Price__c)}">
+                                                              {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                          </apex:outputText>
+                                                          <apex:outputText value="{0, number,###,###,###,##0.00}" rendered="{!!ISBLANK(prl.pc.Price__c)}">
+                                                              <apex:param value="{!prl.pc.Price__c}" />
+                                                          </apex:outputText>
+                                                      </apex:outputpanel>                                          
+                                                  
+                                                      <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                          <apex:outputText rendered="{!ISBLANK(prl.pri.Price__c)}">
+                                                              {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                          </apex:outputText>
+                                                          <apex:outputText id="amountPrice" value="{0, number,###,###,###,##0.00}" rendered="{!!ISBLANK(prl.pri.Price__c)}">
+                                                              <apex:param value="{!prl.pri.Price__c * prl.pri.Quantity__c}" />
+                                                          </apex:outputText>
+                                                      </apex:outputpanel>
+                                                      
+                                                  </apex:outputPanel>
+                                              </apex:outputPanel>
+                                          </div>
+                                          <div class = "local">
+                                          
+                                              <apex:outputText rendered="{!exchangeRate > 0}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!ISBLANK(prl.pc.Price__c)}">
+                                                          {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                      </apex:outputText>
+                                                      <apex:outputText rendered="{!!ISBLANK(prl.pc.Price__c)}" value="{0, number,###,###,###,##0.00}">
+                                                          <apex:param value="{!prl.pc.Price__c * exchangeRate}" />
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>    
+                                                      <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                          <apex:outputText rendered="{!ISBLANK(prl.pri.Price__c)}">
+                                                              {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                          </apex:outputText>                                                          
+                                                          <apex:outputText id="localAmountPrice" rendered="{!!ISBLANK(prl.pri.Price__c)}" value="{0, number,###,###,###,##0.00}">
+                                                              <apex:param value="{!prl.pri.Price__c * exchangeRate * prl.pri.Quantity__c}" />
+                                                          </apex:outputText>
+                                                      </apex:outputPanel>
+                                              </apex:outputText>
+                                              <apex:outputText rendered="{!exchangeRate < 0}">
+                                                          {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                              </apex:outputText>  
+                                          </div>
+                                      </td>
+                                      
+                                      <td>
+                                          <apex:outputPanel id="stdprice">
+                                              <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                  <apex:outputText rendered="{!ISBLANK(prl.pc.Price__c)}">
+                                                      {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                  </apex:outputText>
+                                                  <apex:outputText value="{0, number,###,###,###,##0.00}" rendered="{!!ISBLANK(prl.pc.Price__c)}" styleClass="USDPrice">
+                                                      <apex:param value="{!prl.pc.Price__c * IF((prl.currencyId != prl.pc.Currency__c || ISNULL(prl.pc.Standard_Exchange_Rate__c) ),IF(ISNULL(prl.pc.Currency__c), 0,exRateMap[prl.pc.Currency__c].rate__c), prl.pc.Standard_Exchange_Rate__c)}" />
+                                                  </apex:outputText>
+                                              </apex:outputpanel>                                          
+                                              
+                                              <apex:outputPanel rendered="{!!prl.isCostItem}"  >
+                                                  <apex:outputText rendered="{!ISBLANK(prl.pri.Price__c)}" >
+                                                      {!$Label.IDP_Purchase_Request_Not_Available_Label}
+                                                  </apex:outputText>
+                                                  <apex:outputText id="amountPriceUSD" value="{0, number,###,###,###,##0.00}" rendered="{!!ISBLANK(prl.pri.Price__c)}" styleClass="USDPrice">
+                                                      <apex:param value="{!prl.pri.Price__c * prl.pri.Quantity__c * IF((prl.currencyId != prl.pri.Currency__c) || (ISNULL(prl.pri.Used_Standard_Exchange_Rate__c)),IF(ISNULL(prl.pri.Currency__c), 0,exRateMap[prl.pri.Currency__c].rate__c), prl.pri.Used_Standard_Exchange_Rate__c)}" />
+                                                  </apex:outputText>
+                                              </apex:outputpanel>
+                                          </apex:outputpanel>
+                                      </td>      
+                                      
+                                      <apex:outputText rendered="{!!isSubmit && (isApprover || isCatalogOwner || isPurchaser )}">
+                                          <td>
+                                              <apex:outputPanel rendered="{!isView}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      &nbsp;--
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:inputCheckbox id="directFulfillmentCheckBox" value="{!prl.pri.Is_Direct_fulfillment__c}" disabled="true" styleClass="IsDirectFullfillment_{!prl.pri.id}"/>
+                                                  </apex:outputPanel>                                              
+                                              </apex:outputPanel>
+                                              <apex:outputPanel rendered="{!isSave}">
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:inputCheckbox value="{!prl.pri.Is_Direct_fulfillment__c}" disabled="{!isview || prl.isCostItem}" styleClass="IsDirectFullfillment_{!prl.pri.id}">
+                                                          <apex:actionSupport event="onclick" action="{!prl.changefulfillment}" onSubmit="deleteLineAction('CL');" oncomplete="directFullfillmentAction('{!prl.pri.id}');deleteLineAction('CP');" reRender="PRDetail"  />
+                                                      </apex:inputCheckbox>
+                                                  </apex:outputPanel>
+                                              </apex:outputPanel>
+                                          </td>
+                                          
+                                          <td>
+                                              <apex:outputPanel id="itemSupplier1">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">                                          
+                                                      <apex:inputText value="{!prl.pc.Supplier__c}"  styleClass="supplier_{!prl.PCID}" style="display:none;"/>
+                                                  </apex:outputPanel>                                      
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">                                               
+                                                      <apex:inputText value="{!prl.pri.Supplier__c}"  styleClass="supplier_{!prl.pri.id}" style="display:none;"/>
+                                                  </apex:outputPanel>
+                                              </apex:outputPanel>
+                                              <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                  <script>
+                                                      $(".supplier_"+'{!prl.pc.id}').val('{!prl.Supplierid}');
+                                                  </script>    
+                                              </apex:outputPanel>
+                                              <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                              <script>        
+                                                      $(".supplier_"+'{!prl.pri.id}').val('{!prl.Supplierid}');
+                                              </script>
+                                              </apex:outputPanel>
+                                              <apex:outputText rendered="{!isView}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!prl.pc.Supplier__c == null}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}" />
+                                                      
+                                                      <apex:outputText rendered="{!prl.pc.Supplier__c != null}">
+                                                          <a target="_blank" href="/{!prl.pc.Supplier__r.Id}">{!prl.pc.Supplier__r.Name} <br/>(Tax: {!prl.pc.Purchase_Request_Item__r.Supplier__r.Tax__c}%)</a>
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <apex:outputText rendered="{!ISBLANK(prl.pri.Supplier__r.Id)}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}" />
+                                                      <apex:outputText rendered="{!!ISBLANK(prl.pri.Supplier__r.Id)}">
+                                                          <a target="_blank" href="/{!prl.pri.Supplier__r.Id}">{!prl.pri.Supplier__r.Name} <br/>(Tax: {!prl.pri.Supplier__r.Tax__c}%)</a>
+                                                      </apex:outputText>
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                              
+                                              <apex:outputPanel id="itemSupplier2">
+                                                  <apex:outputText rendered="{!isSave}"> 
+                                                      <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                          <select disabled="disabled" class="singleSelect   supplier_select_PC_{!prl.PRItemID}"  onchange = "changeSupplier('supplier_{!prl.PCID}', this);" style="width:100%">
+                                                              <option value="" ></option>
+                                                              <apex:outputText rendered="{!!isBlank(prl.supppliertList) && prl.supppliertList.size > 0}">                                              
+                                                                  <optgroup label="Designated Supplier Sources">
+                                                                        <apex:repeat value="{!prl.supppliertList}" var="supplier">
+                                                                          <apex:outputText rendered="{!supplier.value == prl.supplierId}">
+                                                                              <option value="{!supplier.value}" selected="selected" >{!supplier.label}</option>
+                                                                          </apex:outputText>
+                                                                          <apex:outputText rendered="{!supplier.value != prl.supplierId}">
+                                                                              <option value="{!supplier.value}">{!supplier.label}</option>
+                                                                          </apex:outputText>
+                                                                      </apex:repeat>
+                                                                  </optgroup>
+                                                              </apex:outputText>
+                                                              <!--
+                                                              <optgroup label="Other Unspecified Sources">
+                                                                   <apex:repeat value="{!supplierMap}" var="supplierMasterKey">
+                                                                      <apex:variable value="{!0}" var="isExistingSupplier"/>
+                                                                      <apex:repeat value="{!prl.supppliertList}" var="supplier">
+                                                                          <apex:outputText rendered="{!supplier.value == supplierMasterKey}">
+                                                                              <apex:variable value="{!1}" var="isExistingSupplier"/>
+                                                                          </apex:outputText>
+                                                                      </apex:repeat>
+                                                                      <apex:outputText rendered="{!isExistingSupplier == 0}">
+                                                                          <apex:outputText rendered="{!supplierMasterKey == prl.supplierId}">
+                                                                              <option value="{!supplierMasterKey}" selected="selected" >{!supplierMap[supplierMasterKey].name} (Tax: {!supplierMap[supplierMasterKey].Tax__c}%)</option>
+                                                                          </apex:outputText>
+                                                                          <apex:outputText rendered="{!supplierMasterKey != prl.supplierId}">
+                                                                              <option value="{!supplierMasterKey}">{!supplierMap[supplierMasterKey].name} (Tax: {!supplierMap[supplierMasterKey].Tax__c}%)</option>
+                                                                          </apex:outputText>
+                                                                      </apex:outputText>
+                                                                  </apex:repeat>
+                                                              </optgroup>
+                                                              -->
+                                                          </select>
+                                                      </apex:outputPanel>                                          
+                                                      <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                          <div class="requiredInput">
+                                                              <apex:outputPanel rendered="{!isSupplierRequired}">
+                                                                  <div class="requiredBlock"></div>
+                                                              </apex:outputPanel>
+                                                                  <select class="singleSupplierSelect supplier_select_{!prl.pri.id}"  onchange ="deleteLineAction('CL');changeSupplier('supplier_{!prl.pri.id}', this);changePCSupplier('supplier_select_PC_{!prl.pri.id}', this);changeSupplierFunction('{!prl.pri.Id}', this.value);" style="width:100%">
+                                                                      <option value="" ></option>
+                                                                      <apex:outputText rendered="{!!isBlank(prl.supppliertList) && prl.supppliertList.size > 0}">                                              
+                                                                          <optgroup label="Designated Supplier Sources">
+                                                                                <apex:repeat value="{!prl.supppliertList}" var="supplier">
+                                                                                  <apex:outputText rendered="{!supplier.value == prl.supplierId}">
+                                                                                      <option value="{!supplier.value}" selected="selected" >{!supplier.label}</option>
+                                                                                  </apex:outputText>
+                                                                                  <apex:outputText rendered="{!supplier.value != prl.supplierId}">
+                                                                                      <option value="{!supplier.value}">{!supplier.label}</option>
+                                                                                  </apex:outputText>
+                                                                              </apex:repeat>
+                                                                          </optgroup>
+                                                                      </apex:outputText>
+                                                                      <!--
+                                                                      <optgroup label="Other Unspecified Sources">
+                                                                            <apex:repeat value="{!supplierMap}" var="supplierMasterKey">
+                                                                              <apex:variable value="{!0}" var="isExistingSupplier"/>
+                                                                              <apex:repeat value="{!prl.supppliertList}" var="supplier">
+                                                                                  <apex:outputText rendered="{!supplier.value == supplierMasterKey}">
+                                                                                      <apex:variable value="{!1}" var="isExistingSupplier"/>
+                                                                                  </apex:outputText>
+                                                                              </apex:repeat>
+                                                                              <apex:outputText rendered="{!isExistingSupplier == 0}">
+                                                                                  <apex:outputText rendered="{!supplierMasterKey == prl.supplierId}">
+                                                                                      <option value="{!supplierMasterKey}" selected="selected" >{!supplierMap[supplierMasterKey].name} (Tax: {!supplierMap[supplierMasterKey].Tax__c}%)</option>
+                                                                                  </apex:outputText>
+                                                                                  <apex:outputText rendered="{!supplierMasterKey != prl.supplierId}">
+                                                                                      <option value="{!supplierMasterKey}">{!supplierMap[supplierMasterKey].name} (Tax: {!supplierMap[supplierMasterKey].Tax__c}%)</option>
+                                                                                  </apex:outputText>
+                                                                              </apex:outputText>
+                                                                          </apex:repeat>
+                                                                      </optgroup>
+                                                                      -->
+                                                                </select>
+                                                            </div>
+                                                        </apex:outputPanel>
+                                                    </apex:outputText>
+                                                </apex:outputPanel>
+                                              <script>
+                                                 InitialdirectFullfillmentAction('{!prl.pri.id}');
+                                                  
+                                              </script>
+                                          </td>
+
+                                          <!-- Lead Time Info Column -->
+                                          <td>
+                                                <apex:outputPanel id="leadTimeInfo" rendered="{!!prl.isCostItem}">
+                                                    <apex:outputPanel >
+                                                        <a href="javascript:;" style="float:right;cursor:default" data-leadTimeInfo="{!prl.leadTime}">
+                                                            <apex:outputPanel styleClass="ui-icon ui-icon-info actionIcon leadTimeIcon" style="margin-left:-18px;cursor:default" />
+                                                        </a>
+                                                    </apex:outputPanel>  
+
+                                                    <script>
+                                                        $(function(){
+                                                            initLeadTimeQtip();
+                                                        })
+                                                    </script>                                               
+                                                </apex:outputPanel>
+                                          </td>
+
+
+                                          <td>
+                                              <apex:outputText rendered="{!issave}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <apex:inputField value="{!prl.pc.Remark__c}" style="width:100%"  />
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                  <apex:inputField value="{!prl.pri.Remark__c}" style="width:100%"  />
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                              <apex:outputText rendered="{!isview}">
+                                                  <apex:outputPanel rendered="{!prl.isCostItem}">
+                                                      <!--
+                                                      <apex:outputText rendered="{!ISBLANK(prl.pc.Remark__c)}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}"/>
+                                                      rendered="{!!ISBLANK(prl.pc.Remark__c)}"
+                                                      -->
+                                                      <apex:inputTextarea disabled="true" value="{!prl.pc.Remark__c}"/>
+                                                      
+                                                  </apex:outputPanel>
+                                                  <apex:outputPanel rendered="{!!prl.isCostItem}">
+                                                      <!--
+                                                      <apex:outputText rendered="{!ISBLANK(prl.pri.Remark__c)}" value="{!$Label.IDP_Field_Empty_Label}"/>
+                                                       rendered="{!!ISBLANK(prl.pri.Remark__c)}" 
+                                                      -->
+                                                      <apex:inputTextarea disabled="true" value="{!prl.pri.Remark__c}"/>
+                                                  </apex:outputPanel>
+                                              </apex:outputText>
+                                          </td>
+                                      </apex:outputText>
+                                      
+                                      <apex:outputText rendered="{!isShowStatus}">
+                                          <td>
+                                              <!-- <apex:outputfield value="{!prl.pri.Status__c}"/> -->
+                                              <apex:outputText rendered="{!prl.pri.Status__c == null}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}"/>                                          
+                                              <apex:outputfield rendered="{!prl.pri.Status__c != null}" value="{!prl.pri.Status__c}"/>
+                                          </td>
+                                          <td>
+                                              <apex:outputText rendered="{!prl.pri.Purchase_Order_item__r.Purchase_Order__c == null}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}"/>
+                                              <apex:outputText rendered="{!prl.pri.Purchase_Order_item__r.Purchase_Order__c != null}">
+                                                  <a target="_blank" href="/{!prl.pri.Purchase_Order_item__r.Purchase_Order__c}">
+                                                      {!prl.pri.Purchase_Order_item__r.Purchase_Order__r.Name}
+                                                  </a>
+                                              </apex:outputText>
+                                          </td>
+                                          <td>
+                                            <apex:outputText rendered="{!prl.pri.Purchase_Order_item__r.Purchase_Order__c == null}" value="{!$Label.IDP_Purchase_Request_Not_Available_Label}"/>                                          
+                                            <apex:outputText rendered="{!prl.pri.Purchase_Order_item__r.Purchase_Order__c != null}">
+                                                {!prl.pri.Total_Received_Qty__c} / {!prl.pri.Total_Requested_Qty__c}
+                                            </apex:outputText> 
+                                          </td>
+                                                                                
+                                      </apex:outputText>
+                                          
+                                  </tr>
+                                </apex:repeat>
+                            </tbody>
+                         </table>
+                     </apex:pageBlock>
+                  </apex:outputPanel>
+              </div>
+          </div>
+          <apex:outputText rendered="{!isView && isSubmitted && (isApprover || isCatalogOwner || isPurchaser)}">
+          <div id="tabs-2">
+              <apex:outputPanel id="cost">
+                 <div style='font-size:150%;margin:10px 0px 10px 0px'> Supplier </div>
+                 <table id="PRTable1" class="display dataTable no-footer" cellspacing="0" width="100%">
+                     <thead>
+                         <tr>
+                             <th>Supplier</th>
+                             <th>Currency</th>
+                             <th>Amount</th>
+                             <th>Tax</th>
+                             <th>Shipping</th>
+                             <th>Others</th>
+                             <th>Total</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <apex:repeat var="supplierkey" value="{!supplierCost}">
+                             <apex:repeat var="amountkey" value="{!supplierCost[supplierkey]}">
+                                 <apex:outputText rendered="{!!ISBLANK(supplierkey)}">
+                                 <tr>
+                                     <td>
+                                         {!supplierMap[supplierkey].Name}
+                                         <!--
+                                         <apex:outputText value="{!IF(!isBlank(supplierkey), supplierMap[supplierkey].Name, $Label.IDP_Purchase_Request_Not_Available_Label)}"/>
+                                         -->
+                                     </td>
+                                     <td>
+                                         <apex:variable var="isExisting" value="{!0}"/>
+                                         <apex:repeat value="{!currencyList}" var="currencyKey">
+                                             <apex:outputText rendered="{!currencyKey.value == amountkey}">
+                                                 <apex:variable var="isExisting" value="{!1}"/>
+                                                 {!currencyKey.label}
+                                             </apex:outputText>
+                                         </apex:repeat>
+                                         <apex:outputText value="{!IF(isExisting == 0, $Label.IDP_Purchase_Request_Not_Available_Label, '')}" /> 
+                                     </td>
+                                     <td>{!supplierCost[supplierkey][amountkey]}</td>
+                                     <td><apex:outputText value="{0, number,###,###,###,##0.00}">
+                                        <apex:param value="{!supplierTaxShipOtherCost[supplierkey]['TAX']}" />
+                                    </apex:outputText></td>
+                                     <td><apex:outputText value="{0, number,###,###,###,##0.00}">
+                                        <apex:param value="{!supplierTaxShipOtherCost[supplierkey]['SHIP']}" />
+                                    </apex:outputText></td>
+                                     <td><apex:outputText value="{0, number,###,###,###,##0.00}">
+                                        <apex:param value="{!supplierTaxShipOtherCost[supplierkey]['OTHERS']}" />
+                                    </apex:outputText></td>
+                                     <td><apex:outputText value="{0, number,###,###,###,##0.00}">
+                                        <apex:param value="{!supplierCost[supplierkey][amountkey] + supplierTaxShipOtherCost[supplierkey]['TAX'] + supplierTaxShipOtherCost[supplierkey]['SHIP'] + supplierTaxShipOtherCost[supplierkey]['OTHERS']}" />
+                                    </apex:outputText></td>
+                                 </tr>
+                                 </apex:outputText>
+                             </apex:repeat>
+                         </apex:repeat>
+                     </tbody>
+                 </table>
+                 
+                <div style='Margin:30px 0px 10px 0px;font-size:150%'>
+                    <apex:outputText rendered="{!ISNULL(IDPbudget)}">
+                        Budget data is not provided.
+                    </apex:outputText>
+                    <apex:outputText rendered="{!!ISNULL(IDPbudget)}">
+                        Budget
+                    </apex:outputText>
+                </div>
+                <apex:outputText rendered="{!!ISNULL(IDPbudget)}">
+                <table width="100%" border = "0">
+                     <tr>
+                         <td>
+                             <table class="display dataTable no-footer" cellspacing="0" width="100%">
+                                 <thead>
+                                     <tr>
+                                         <th>Information</th>
+                                         <th></th>
+                                     </tr>
+                                 </thead>
+                                 <tbody>
+                                     <tr>
+                                         <td>Function Code</td>
+                                         <td>
+                                            {!displayedBudget.functionCode}
+                                         </td>
+                                     </tr>
+                                     <tr>
+                                         <td>Department Code</td>
+                                         <td>
+                                            {!displayedBudget.departmentCode}
+                                         </td>
+                                     </tr>                                     
+                                     <tr>
+                                         <td>Section Code</td>
+                                         <td>
+                                            {!displayedBudget.sectionCode}
+                                         </td>
+                                     </tr>       
+                                     <tr>
+                                         <td>Currency</td>
+                                         <td>
+                                            {!displayedBudget.currencyName}
+                                         </td>
+                                     </tr>
+                                     <tr>
+                                         <td>Catalog Name</td>
+                                         <td>
+                                            <apex:outputText value="{!displayedBudget.expenseCategoryName}" />
+                                         </td>
+                                     </tr>                                        
+                                 </tbody>
+                             </table>
+                         </td>
+                         <td width="30px"></td>
+                         <td>
+                             <table class="display dataTable no-footer" cellspacing="0" width="100%">
+                                 <thead>
+                                     <tr>
+                                        <th>{!displayedBudget.month}</th>
+                                        <th></th>
+                                     </tr>
+                                 </thead>
+                                 <tbody> 
+                                     <tr>
+                                         <td>Budget</td>
+                                         <td> 
+                                             <apex:outputText id="budgetPriceMonth" rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.budget<0}" value="{0, number,###,###,###,##0.00}">
+                                                 <apex:param value="{!displayedBudget.budget}" />
+                                             </apex:outputText>  
+                                         </td>
+                                     </tr>                                     
+                                     <tr>
+                                         <td>Pending PR</td>
+                                         <td>
+                                             <apex:outputText rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.withheld<0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                    <apex:param value="{!displayedBudget.PendingPR}" />
+                                                    <apex:param value="{!displayedBudget.PendingPR/displayedBudget.budget*100}"/>
+
+                                              </apex:outputText>
+                                         </td>
+                                     </tr>  
+                                     <tr>
+                                         <td>Reserve</td>
+                                         <td>
+                                             <apex:outputText rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.withheld<0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                    <apex:param value="{!displayedBudget.withheld}" />
+                                                    <apex:param value="{!displayedBudget.withheld/displayedBudget.budget*100}"/>
+
+                                              </apex:outputText>
+                                         </td>
+                                     </tr>
+                                     <tr>
+                                         <td>Used</td>
+                                         <td> 
+                                             <apex:outputText id="usedPriceMonth" rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.used<0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                 <apex:param value="{!displayedBudget.used}" />
+                                                 <apex:param value="{!displayedBudget.used/displayedBudget.budget*100}"/>
+                                             </apex:outputText> 
+                                         </td>
+                                     </tr>                                        
+                                     <tr>
+                                         <td>Unused</td>
+                                         <td>
+                                             <apex:outputText rendered="{!displayedBudget.budget != null}" styleClass="isOverBudget-{!displayedBudget.unused < 0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                    <apex:param value="{!displayedBudget.unused}" />
+                                                    <apex:param value="{!displayedBudget.unused/displayedBudget.budget*100}"/>
+                                              </apex:outputText>
+                                         </td>
+                                     </tr>
+                                                                                                     
+                                 </tbody>                            
+                             </table> 
+                         </td>
+
+                         <td>                            
+                             <table class="display dataTable no-footer" cellspacing="0" width="100%">
+                                 <thead>
+                                     <tr>
+                                        <th>Year-{!displayedBudget.year}</th>
+                                        <th></th>
+                                     </tr>
+                                 </thead>
+                                 <tbody>
+                                     <tr>
+                                         <td>Budget</td>
+                                         <td> 
+                                             <apex:outputText id="budgetPriceYear" rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.budget<0}" value="{0, number,###,###,###,##0.00}">
+                                                 <apex:param value="{!displayedBudget.yearBudget}" />
+                                             </apex:outputText>  
+                                         </td>
+                                     </tr>                                     
+                                     <tr>
+                                         <td>Pending PR </td>
+                                         <td> 
+                                             <apex:outputText rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.withheld<0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                    <apex:param value="{!displayedBudget.yearPendingPR}" />
+                                                    <apex:param value="{!displayedBudget.yearPendingPR/displayedBudget.budget*100}"/>
+
+                                              </apex:outputText>
+                                         </td>
+                                     </tr>  
+                                     <tr>
+                                         <td>Reserve</td>
+                                         <td>
+                                             <apex:outputText rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.withheld<0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                    <apex:param value="{!displayedBudget.yearWithheld}" />
+                                                    <apex:param value="{!displayedBudget.yearWithheld/displayedBudget.yearBudget*100}"/>
+
+                                              </apex:outputText>
+                                         </td>
+                                     </tr>
+                                     <tr>
+                                         <td>Used</td>
+                                         <td> 
+                                             <apex:outputText id="usedPriceYear" rendered="{!displayedBudget.budget != null}" styleClass="isNegVal-{!displayedBudget.yearUsed<0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                 <apex:param value="{!displayedBudget.yearUsed}" />
+                                                 <apex:param value="{!displayedBudget.yearUsed/displayedBudget.yearBudget*100}"/>
+                                             </apex:outputText> 
+                                         </td>
+                                     </tr>                                          
+                                     <tr>
+                                         <td>Unused</td>
+                                         <td>
+                                             <apex:outputText rendered="{!displayedBudget.budget != null}" styleClass="isOverBudget-{!displayedBudget.yearUnused < 0}" value="{0, number,###,###,###,##0.00} ({1,number,##0.00}%)">
+                                                    <apex:param value="{!displayedBudget.yearUnused}" />
+                                                    <apex:param value="{!displayedBudget.yearUnused/displayedBudget.yearBudget*100}"/>
+                                              </apex:outputText>
+                                         </td>
+                                     </tr>                                                           
+                                 </tbody>                            
+                             </table> 
+                         </td>                                                   
+                     </tr>    
+                 </table>              
+                 </apex:outputText>
+              </apex:outputPanel>
+          </div>
+          </apex:outputText> 
+        </div>
+
+        <apex:outputText rendered="{!isView || isSubmitted}">
+            <apex:outputText rendered="{!!isBlank(pr.comment__c)}">            
+                <div class="accordion">
+                      <h3>Comment</h3>
+                      <div>{!pr.comment__c}</div>
+                </div>
+            </apex:outputText>
+        </apex:outputText>
+
+        <apex:outputText rendered="{!isSave && !isSubmitted}">
+                <div class="accordion">
+                      <h3>Comment</h3>
+                      <div><apex:inputField value="{!pr.comment__c}" style="width:99%"/></div>
+                </div>
+        </apex:outputText>
+
+
+
+        <div id="tabs2">
+            <ul>
+                <li><a href="#tabs-2">PR Attachment</a></li>
+            </ul>         
+                
+                <div id="tabs-2">
+                     <apex:pageBlock mode="maindetail">
+                     <apex:outputPanel id="PRAttachDetail">
+                         
+                         <table class="display dataTable no-footer" cellspacing="0" width="100%">
+                            
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Attachment Title</th>
+                                    <th>Last Modified</th>
+                                    <th>Created By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <apex:repeat value="{!attachmentList}" var="attachment">
+                                
+                                <apex:variable var="isExistAttachment" value="{!attachment != null}"/>
+                                
+                                <apex:variable var="prId" value="{!attachment.parentId}" rendered="{!isExistAttachment}"/>
+                                
+                                <tr>
+                                     <td>
+                                        <a href="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!attachment.LatestPublishedVersionId}&operationContext=CHATTER" target="_blank" class="actionLink">View</a>
+                                        |
+                                        <a href="/sfc/servlet.shepherd/version/download/{!attachment.LatestPublishedVersionId}?asPdf=false&operationContext=CHATTER" target="_blank" class="actionLink">Download</a>
+
+                                        <apex:outputText rendered="{!$User.Id == attachment.CreatedById}">
+                                            |
+                                            <a href="javascript:;" onclick="deletePRAttachment('{!attachment.Id}');">
+                                                Delete
+                                            </a>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!attachment.Title}</td>
+                                    <td>
+                                        <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                                            <apex:param value="{!attachment.LastModifiedDate}" />
+                                        </apex:outputText>                                      
+                                    </td>               
+                                    <td><apex:outputField value="{!attachment.CreatedById}" /></td> 
+                                </tr> 
+                                                                             
+                                </apex:repeat> 
+                             </tbody> 
+                         </table>
+
+                            
+                            
+                         </apex:outputPanel>
+                     </apex:pageBlock>
+              </div>                                            
+       </div>
+
+
+        <div id="approvalDialog" title="Comments">
+        
+            <div class="slds" style="text-align:center;">
+            <apex:inputtextarea onkeyup="$('.hiddenApprovalComment').val($(this).val())" style="width:400px;height:180px;"/>
+            <br/>
+            <span id="confirmApproval">
+                <apex:commandButton id="btn_approve" value="Approve" styleClass="slds-button slds-button--neutral btn_approve" action="{!approveAction}" rendered="{!isApproval && isCurrentApprover}" reRender="messagePanel, PRDetail" onclick="disableApproveBtn(this)" oncomplete="hideApprovalCommentOnClick();detailAction('A');enableApproveBtn(this);return {!if(isDisplayedMessage,'false', '')};"/>
+            </span>
+            <span id="confirmRejection">
+            <apex:commandButton id="btn_reject" value="Reject" styleClass="slds-button slds-button--neutral btn_reject" action="{!rejectAction}" rendered="{!isApproval && isCurrentApprover}" onclick="disableApproveBtn(this)" oncomplete="hideApprovalCommentOnClick();enableApproveBtn(this);"/>
+            </span>
+            &nbsp;
+            <apex:commandButton id="btn_back" value="Back" styleClass="slds-button slds-button--neutral btn_back" onclick="hideApprovalCommentOnClick();"/>
+            </div>
+        </div>
+        <apex:inputText styleClass="hiddenApprovalComment" value="{!approvalComment}" style="display:none;"/>   
+
+        <script>
+            $("#tabs2").tabs();
+
+            function initMoqIconQtip() {
+                $(".moqIcon").qtip({
+                    content: {
+                        text: 'Quantity is less than MOQ'
+                    }
+                });
+            }
+
+            function initLast3OrderedSupplierQtip() {
+                $(".catalogItem").each(function(){
+                    var str = "";
+                    var last3orderedsupplier = $(this).data('last3orderedsupplier');
+                    if (last3orderedsupplier.length>0) {
+                        var arr = last3orderedsupplier.replace("[","").replace("]","").split(",");
+                        for (var i in arr) {
+                           if ($.isNumeric(i))
+                                str += (parseInt(i)+1) + ": " + arr[i].trim() + "<br>";
+                        }
+                    }
+                    else {
+                        str = "No record"
+                    }
+                    $(this).qtip({
+                        content: {
+                            title: "Recently Ordered Suppliers",
+                            text: str
+                        }
+                    })
+                });
+            }
+
+            function initLeadTimeQtip() {
+                console.log('initLeadTime');
+                console.log($(".leadTimeIcon"));
+                $(".leadTimeIcon").each(function(){
+                    var leadTimeInfo = $(this).parent().data('leadtimeinfo');
+                    console.log($(this).parent());
+                    console.log('leadTimeInfo:'+leadTimeInfo);
+                    var leadTimeInfoStr = leadTimeInfo.length>0 ? leadTimeInfo : "No lead time info.";
+
+                    $(this).qtip({
+                        content: {
+                            title: "Lead Time",
+                            text: leadTimeInfoStr
+                        }
+                    });
+                });
+            }
+        </script>      
+
+        
+    </apex:form>
+    <BR/>
+     
+
+    <apex:relatedList id="processSteps" list="ProcessSteps" subject="{!pid}" ></apex:relatedList>
+    <div style="display:none">
+        <apex:relatedList id="combinedAttachments" list="AttachedContentDocuments" subject="{!pid}" />
+    </div>
+    </div>
+ 
+    
+</apex:page>

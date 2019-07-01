@@ -1,0 +1,230 @@
+<!--
+	This is the paged list of all announcements (View All Announcements).
+-->
+<apex:page controller="ACGArticleListCtrl" showHeader="false">
+
+    <style>
+        .panelClass {
+            height: 100%;
+        }
+    	table.dataTable thead .sorting {
+		  background: url("{!$Resource.sort_both}") no-repeat center right;
+		}
+		table.dataTable thead .sorting_asc {
+		  background: url("{!$Resource.sort_asc}") no-repeat center right;
+		}
+		table.dataTable thead .sorting_desc {
+		  background: url("{!$Resource.sort_desc}") no-repeat center right;
+		}		
+		.dataTables_filter {
+		     display: none;
+		}
+		.Author {
+            color: #555;
+            font-family: arial;
+            font-size: 0.8em;
+            font-style:italic;
+            word-break:keep-all;
+            align:center;
+        } 
+        .RevisedOn {
+            color: #990000;
+            font-family: arial;
+            font-size: 0.8em;
+            font-style:italic;
+            align: left;
+        }
+        .priorityStar {
+        	font-size: 10pt;
+        }
+    </style>
+    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+	<apex:includeScript value="{!$Resource.jQueryUIMin_1_10_3}" />
+	<apex:includeScript value="{!$Resource.jQueryDataTables}" />
+	<apex:stylesheet value="{!$Resource.jQueryDataTablesCSS}" />
+	<apex:includeScript value="{!$Resource.jQueryDataTables_tableTools}" />
+	<apex:stylesheet value="{!$Resource.jQueryDataTables_tableToolsCSS}" />
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <script type="text/javascript">
+    function refreshTable(){
+        $j = jQuery.noConflict();
+        $j(document).ready(function(){
+            var dataTable = $j('#activeArticlesTable').dataTable( {            
+            	"bLengthChange": false,
+            	"paging": false,
+            	"bInfo" : false,
+                "order": [[ 0, "asc" ],[ 1, "asc" ],[2, "desc"]],
+                "oLanguage": {
+						      "sSearch": "Filter:"
+						    },                
+				 "columnDefs": [ {
+				      "targets": 0,
+				      "searchable": false,
+				      "visible": false
+				    },
+				    { "targets": 1,
+				      "searchable": false,
+				      "visible": false
+				    },
+                    { "targets": 2,
+				      "searchable": false,
+				      "visible": false
+				    },
+				    { "width": "80%",
+				      "targets": 3,
+				      "searchable": true
+				    },				    
+				    { "width": "20%",
+				      "targets": 4
+				    }
+				 ],
+            } );
+            $j("#searchbox").keyup(function() {
+		        dataTable.fnFilter(this.value);
+		    });    
+        } );
+    }    
+    window.onload=refreshTable();
+    
+    </script>
+    <style>
+	    .pos_left {
+		    position: fixed;
+		        top: 25px;
+		    	left: 30px; 
+		    	z-index:1;
+		}
+        body .bPageBlock {
+        	border-top: 1px solid #eaeaea;
+        }
+        table.dataTable thead th {
+        	border-color: #EAEAEA;
+        }
+        table.dataTable.no-footer {
+        	border-color: #EAEAEA;
+        }
+        .dataTables_wrapper {
+        	margin-bottom: 10px;
+        }
+        table.dataTable tr:hover {
+        	background-color: none;
+        }
+   	</style>
+    <div class="bs wrapper">     
+    <apex:form id="theform">
+			<apex:pageBlock id="thePanel" > 
+	        <div class="bs panel-body"> 
+	        	<div class="pos_left">
+	            	<apex:outputLabel value="Show"/>&nbsp;
+                    <apex:selectList size="1" value="{!size}">     
+                    	<apex:selectOption itemValue="5" itemLabel="5"/>                   
+                        <apex:selectOption itemValue="10" itemLabel="10"/>
+                        <apex:selectOption itemValue="20" itemLabel="20"/>
+                        <apex:selectOption itemValue="50" itemLabel="50"/>
+                        <apex:selectOption itemValue="100" itemLabel="100"/>
+                        <apex:actionSupport event="onchange" oncomplete="refreshTable();parent.autoResize('iframe1');" action="{!refresh}" status="asRefresh"/>
+                    </apex:selectList>&nbsp;
+                    <apex:outputLabel value="entries"/>             
+					<apex:actionStatus id="asRefresh">
+                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}" alt="Loading..."/></apex:facet>  
+                    </apex:actionstatus>
+                    <br/>
+                    <apex:outputLabel value="Filter:"/>&nbsp;<input type="text" id="searchbox"/>
+	            </div>
+	            <br/>
+	            <table id="activeArticlesTable" class="display" cellspacing="0" width="100%">
+	                <thead>
+			        	<tr>         
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+							<th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!articleFeeds}" var="articleContent">
+                            <tr>
+                                <td>
+				                	<apex:outputText value="{!articleContent.objpc.Is_Article_Priority_Active__c}"/>
+				                </td>
+                            	<td>
+				                	<apex:outputText value="{!articleContent.objpc.Article_Priority__c}"/>
+				                </td>
+				                <td>
+                                    <apex:outputText value="{0, date, yyyyMMddHHmmss}">
+									    <apex:param value="{!IF(OR( articleContent.objpc.Revised_en__c = true , 
+											    					articleContent.objpc.Revised_zhhk__c = true , 
+											    					articleContent.objpc.Revised_zhcn__c = true , 
+																	articleContent.objpc.Revised_th__c = true , 
+																	articleContent.objpc.Revised_vi__c = true , 
+																	articleContent.objpc.Revised_id__c = true),
+																articleContent.objpc.Tech_LastUpdateDate__c,
+																IF(NOT(ISNULL(articleContent.objpc.Publish_Datetime__c)),
+																	articleContent.objpc.Publish_Datetime__c, 
+																	articleContent.objpc.Tech_CreatedDate__c
+																)
+															)}" />
+									</apex:outputText>
+				                </td>
+                                <td>
+	                                <apex:outputPanel >					                	
+
+					                	<c:ACGArticleComponent Title="{!articleContent.objpc.Title__c}" 
+					                		Summary="{!articleContent.objpc.Summary__c}" 
+					                		ContentURL="{!articleDetailPageURL}&Id={!articleContent.objpc.Tech_Id__c}&title={!panelTitle}&ContentCategory={!pageContentCategory}&DistLevel={!pageDistLevel}&DistTarget={!pageDistTarget}"    
+					                		PublishDate="{!IF(NOT(ISNULL(articleContent.objpc.Publish_Datetime__c)), articleContent.objpc.Publish_Datetime__c, articleContent.objpc.Tech_CreatedDate__c)}"
+					                		LastUpdateDate="{!articleContent.objpc.LastModifiedDate}" 
+					                		PublishBy="{!articleContent.objpc.Owner.Name}" 
+					                		PublishById="{!articleContent.objpc.OwnerId}" 					                		
+					                		ImageURL="{!IF((articleContent.imageURL='' && articleContent.objpc.Article_Thumbnail__c=''), 
+				                						$Resource.DefaultPicture, 
+				                						IF(articleContent.imageURL='',
+				                							'/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId='&articleContent.objpc.Article_Thumbnail__c, 
+				                							'/servlet/servlet.FileDownload?file='&articleContent.imageURL
+				                						)
+				                					)}"
+	                						Revised="{!articleContent.objpc.Revised__c}"
+					                		Feedsize="{!articleContent.feedsize}" 
+					                		FromArticleList="true"					                		
+					                		ContentCategory="{!articleContent.objpc.Content_Category__c}"
+					                		Priority="{!articleContent.objpc.Sticky_Scale__c}"
+											isMobile="{!bSalesforceOne}"
+											FeedLikes="{!articleContent.feedlikes}"/>
+					                </apex:outputPanel>
+				                </td>
+				                <td valign="top" align="center">
+				                	<apex:outputText style="color:transparent;font-size:1px" value="{0, date, yyyyMMddHHmmss}">
+									    <apex:param value="{!IF(articleContent.objpc.Revised__c=true,articleContent.objpc.Tech_LastUpdateDateTime__c, articleContent.objpc.Tech_CreatedDate__c)}" /> 
+									</apex:outputText>
+									<apex:outputPanel rendered="{!VALUE(articleContent.objpc.Sticky_Scale__c) < 5 && articleContent.objpc.Is_Article_Priority_Active__c = 1}">
+                                        <span class="priorityStar"><span class="bs label label-warning"><span class="bs glyphicon glyphicon-star"></span> {!articleContent.objpc.Sticky_Scale__c}</span></span>
+                                        <br/>
+                                        <br/>
+                                    </apex:outputPanel>
+				                	<apex:outputText value="Published: {0, date, dd MMM yyyy}" styleClass="Author">
+									    <apex:param value="{!IF(NOT(ISNULL(articleContent.objpc.Publish_Datetime__c)), articleContent.objpc.Publish_Datetime__c, articleContent.objpc.Tech_CreatedDate__c)}" /> 
+									</apex:outputText>
+									<br/>
+									<apex:outputText rendered="{!articleContent.objpc.Revised__c}" value="Revised: {0, date, dd MMM yyyy}" styleClass="RevisedOn">
+									    <apex:param value="{!articleContent.objpc.Tech_LastUpdateDateTime__c}" /> 
+									</apex:outputText>
+                                    <br/>
+                                    <apex:outputPanel rendered="{!articleContent.objpc.Is_Article_Priority_Active__c = 2}">
+                                        <span class="bs glyphicon glyphicon-time" style="color: #EAEAEA;"></span>
+                                    </apex:outputPanel>
+				                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+            	</table>
+	           <!-- next, previous and page info -->
+	           <Strong><apex:commandLink action="{!doPrevious}" rendered="{!hasPrevious}" value="Previous" /></Strong>
+	           &nbsp;<apex:outputLabel value="(Page {!pageNumber} of {!totalPages})" />&nbsp;	
+	           <Strong><apex:commandLink action="{!doNext}" rendered="{!hasNext}" value="Next" /></Strong>
+	        </div>
+	        </apex:pageBlock> 
+	    </apex:form>
+    </div>
+</apex:page>

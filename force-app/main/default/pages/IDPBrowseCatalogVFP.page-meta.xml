@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>38.0</apiVersion>
+    <availableInTouch>true</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <description>using in uat v0.2
+1.updated company policy
+2. mass add not redirect
+3. shopping cart button with url parameter</description>
+    <label>IDPBrowseCatalogVFP</label>
+</ApexPage>

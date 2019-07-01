@@ -1,0 +1,46 @@
+<apex:page standardController="Library_Inventory__c" extensions="LibraryOneClickBorrowCtrl">
+	<apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+	<c:JavascriptUtilsComponent />
+	
+	<script>
+		$(document).ready(function() {
+
+	    	var inventoryToBorrow = '{!Library_Inventory__c.Id}';
+
+	    	Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibraryOneClickBorrowCtrl.oneClickBorrow}',
+                inventoryToBorrow,
+                function(result, event){
+                    if(event.status) {
+                        if(result != null) {
+
+							if(getIsSalesforceOne()) {
+								sforce.one.back(true);
+							} else {
+								window.location.href = '/' + inventoryToBorrow;
+							}
+						}
+                    } else if (event.type === 'exception') {
+						$('#theMessage').text(event.message);
+						$('#theButton').show();
+                    }
+                }, 
+                {escape: true}
+            );
+	    });
+	</script>
+	
+	<div class="bs container">
+		<div class="bs row">
+			<div class="bs col-sm-12">
+			<br/>
+				<div class="bs well">
+					<span id="theMessage">{!$Label.Library_Borrowing_Book} <img src="{!$Resource.loadinggif}" style="margin-left:10px;" /></span>
+					<br/><br/>
+					<a href="javascript:window.history.back();" class="bs btn btn-primary" id="theButton" style="display:none;">{!$Label.Library_Back}</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</apex:page>

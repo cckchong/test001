@@ -1,0 +1,9 @@
+<apex:page controller="TEAjaxQueryCtrl"    
+showHeader="false" 
+standardStylesheets="false"     
+sidebar="false" 
+applyHtmlTag="false" 
+applyBodyTag="false" 
+wizard="false"
+setup="false"
+contentType="text/x-JavaScript; charset=utf-8">{!result}</apex:page>

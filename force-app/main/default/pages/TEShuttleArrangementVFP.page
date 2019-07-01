@@ -1,0 +1,385 @@
+<apex:page showHeader="false" sidebar="false" standardcontroller="Car_Journey__c" extensions="TEShuttleArrangementCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+   
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+      
+    <script>
+        $(function() {
+            tableInit();
+        });
+        
+       function tableInit(){
+           unassignedTableInit = dataTableInitSetting();
+           //unassignedTableInit["scrollX"] = true;
+           unassignedTable = $('#unassignedTable').DataTable(unassignedTableInit); 
+           //assignedTableInit = assignedDataTableInitSetting();  
+           //assignedList = $('#assignedList').DataTable(assignedTableInit); 
+       }
+       
+       function dataTableInitSetting(){
+           return {
+                //"width": 100%,
+                //"scrollY": 200,
+                //"scrollX": true,
+                "paging": false,
+                "scrollCollapse": true,
+                "bFilter": true, 
+                //"bFilter": false, 
+                "bInfo": false,
+                //"bSort" : false
+                "bSort" : true,
+                "columnDefs": [ {
+                  "targets"  : 'no-sort',
+                  "orderable": false,
+                }],
+                "aaSorting": []            //disable the initial sorting
+            };
+       }
+       
+       function assignedDataTableInitSetting(){
+           return {
+                "paging": false,
+                "bFilter": false, 
+                "bInfo": false,
+                "bSort" : false    
+            };
+       }
+  
+        function checkAll(cb,cbid)
+        {
+            var inputElem = document.getElementsByTagName("input");                     
+            for(var i=0; i<inputElem.length; i++)
+            {             
+                 if(inputElem[i].id.indexOf(cbid)!=-1){                                        
+                    inputElem[i].checked = cb.checked;
+                }
+            }
+        }   
+   
+   
+       /**
+       $('#select_all_existent').change(function(){
+            var cells = table.cells( ).nodes();
+            $( cells ).find(':checkbox').prop('checked', $(this).is(':checked'));
+       });
+       
+       
+       $('#example-select-all').on('click', function(){
+          // Check/uncheck all checkboxes in the table
+          var rows = table.cells().nodes();
+          $('input[type="checkbox"]', rows).prop('checked', this.checked);
+       }); 
+       **/
+    </script>
+    
+    
+    <style type="text/css" class="init">
+    .dataTables_scroll
+    {
+        overflow:auto;
+        position:relative;
+        width:100%;
+    }
+    
+     </style>
+     
+     
+    <c:TEShuttleJourneyAssignmentCssComp />
+    <apex:form id="tal-shuttle-form">
+        <apex:actionStatus id="statusLoading" stopText="">
+            <apex:facet name="start">
+                <div>
+                    <div class="popupBackground" />
+                    <div class="PopupPanel">
+                        <table border="0" width="100%" height="100%">
+                            <tr>
+                                <td align="center"><b>{!$Label.Library_General_Wait}</b></td>
+                            </tr>
+                            <tr>
+                                <td align="center"><img src="{!$Resource.Loading_Image}"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+        <div class="bs container">
+            <apex:messages styleClass="tal-errors" />
+            <div class="bs panel" id="curr-journey-div">
+                <div class="bs panel-body">
+                    <apex:actionRegion rendered="{!isAdmin}">
+                        <!--
+                        <a href="javascript: $('#curr-journey-div').toggle();$('#add-journey-div').fadeToggle('fast');"
+                        -->
+                        <a onclick="$('#curr-journey-div').fadeOut(0);$('#add-journey-div').fadeIn('fast');"
+                                class="bs btn btn-default btn-sm" style="font-weight:bold">
+                                <span class="ui-icon ui-icon-plusthick" style="margin:-3px 0px;display:inline-block"></span>
+                                <span style="display:inline-block;color:#428bca;font-weight:bold">&nbsp;&nbsp;Add Passengers</span>
+                        </a> 
+                    </apex:actionRegion>
+                    &nbsp;
+                  <apex:commandButton onclick="this.disabled=disabled" action="{!increaseSendEmailCounter}" styleClass="{bs btn btn-primary btn-sm" style="font-weight:bold" rendered="{!isAdmin}" value="Send Email" disabled="{!IF(currCj.Company_Car__c == null,true,false)}">
+                    </apex:commandButton>  
+                    &nbsp;                  
+                    <apex:commandButton onclick="top.parent.location.href = '/{!$objectType.Travel_Detail__c.keyPrefix}?fcf={!$Label.TE_Shuttle_Request_Outstanding_List_View}';" styleClass="bs btn btn-primary btn-sm" style="font-weight:bold" rendered="{!isAdmin}" value="Done">
+                    </apex:commandButton>
+                    <div style="margin-top:15px;">
+                    <table id = "assignedList" class="bs table table-striped" border="0" style="border:1px solid #CED4DC;width:100%;">
+                        <apex:actionRegion rendered="{!!selectableJourneyList.empty}">
+                        <thead>
+                            <tr>
+                                
+
+                                <th colspan="1" style="{!IF(isAdmin, 'background:#F6F6F6;', 'display:none;')}">Action</th>
+                                <th colspan="2" style="{!IF(isAdmin, 'background:#F6F6F6;', 'display:none;')}">Send Email</th>
+                                <th colspan="1" style="background:#F6F6F6;"><strong>Assigned List</strong></th>
+                                <th colspan="{!IF(isAdmin, 6, 8)}" style="background:#F6F6F6;">Occupied Seats: {!occupied } &nbsp;&nbsp;&nbsp; Vacant Seats: {!vacant }</th>
+                            </tr>
+                            <tr>
+                                <td style = "{!IF(isAdmin, 'width : 5%;', 'display:none;')}"></td>
+                                <td align="center" style = "{!IF(isAdmin, 'width : 5%;', 'display:none;')}">
+                                        <apex:inputCheckbox style="width:20px;height:20px;" onclick="checkAll(this,'itemcheckbox')" value="{!selectAllcheckbox}" />
+                                </td>
+                                <td style = "{!IF(isAdmin, 'width : 5%;', 'display:none;')}">Frequency </td>
+                                <td style = "width : 10%;" colspan="{!IF(isAdmin, '1', '2')}">Ref. No</td>
+                                <td style = "width : 22%;">Applicant</td>
+                                <td style = "width : 10%;">Requested Date</td>
+                                <td style = "width : 13%;">Confirmed Route</td>
+                                <td style = "width : 13%;">Confirmed Pick-up</td>
+                                <td style = "width : 4%;"># ppl</td>
+                                <td style = "{!IF(isAdmin, 'width : 13%;', 'width : 28%;')}">Remarks</td>
+                            </tr>
+                        </thead>
+                        </apex:actionRegion>
+                        <tbody>
+                            <apex:actionRegion rendered="true">
+                            <apex:variable value="0" var="num"/>
+                            <apex:repeat value="{!selectableJourneyList}" var="jd">
+                                <tr>                            
+                                    <td align="center" style = "{!IF(isAdmin, 'width : 5%;', 'display:none;')}"><apex:commandLink action="{!removeThisRow}" >
+                                        <span class="ui-icon ui-icon-minusthick" style="margin:0px 0px;"/>
+                                        <apex:param name="p1" value="{!num}" assignTo="{!rowToRemove}"/>
+                                    </apex:commandLink></td>
+                                    <td align="center" style = "{!IF(isAdmin, 'width : 5%;', 'display:none;')}">
+                                        <apex:inputCheckbox value="{!jd.selected}" style="width:20px;height:20px;" id="itemcheckbox"/>
+                                    </td>                                      
+                                    <td style = "{!IF(isAdmin, 'width : 5%;', 'display:none;')}" align="center">
+                                        <apex:outputText value="{!jd.journey.Tech_Send_Email_Total_Counter__c}" />
+                                    </td>                                    
+                                    <td style = "width : 10%;" colspan="{!IF(isAdmin, '1', '2')}">
+                                        <a href ="/{!jd.journey.id}" target="_blank"><apex:outputField value="{!jd.journey.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 22%;"><apex:outputLabel value="{!jd.journey.On_Behalf_Of__c}" /></td>
+                                    <td style = "width : 10%;">
+                                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                                            <apex:param value="{!IF(jd.departure, jd.journey.Preferred_Departure_Date__c, jd.journey.Preferred_Return_Date__c)}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td style = "width : 13%;">
+                                        <a href ="/{!IF(jd.departure, jd.journey.Confirmed_Departure_Route__c, jd.journey.Confirmed_Return_Route__c)}" target="_blank">
+                                            <apex:outputText value="{!IF(jd.departure, jd.journey.Confirmed_Departure_Route__r.Name, jd.journey.Confirmed_Return_Route__r.Name)}" />
+                                        </a>
+                                    </td>
+                                    <td style = "width : 13%;">
+                                        <apex:outputText value="{!IF(jd.departure, jd.journey.Confirmed_Departure_Pick_Up__c, jd.journey.Confirmed_Return_Pick_Up__c)}" />
+                                    </td>
+                                    <td style = "width : 4%;" align="center">
+                                        <apex:outputLabel value="{!jd.journey.No_of_Seats__c}" />
+                                    </td>
+                                    <td style = "{!IF(isAdmin, 'width : 13%;', 'width : 28%;')}">
+                                        <apex:outputLabel value="{!jd.journey.Preferred_Airline__c}" />
+                                    </td>
+                                    
+                                </tr>
+                                <apex:variable var="num" value="{!VALUE(num) + 1}"/>
+                            </apex:repeat>
+                            </apex:actionRegion>
+                            <apex:actionRegion rendered="{!selectableJourneyList.empty}">
+                                <tr><th colspan="8" style="background:grey; color:white;">{!$Label.TE_Shuttle_No_One_Assigned}</th></tr>
+                            </apex:actionRegion>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="add-journey-div" style="display:none;">
+                <div class="panel-body">
+                    <div style="z-index:1;position:relative;width:400px;">
+                        <apex:commandLink action="{!addJourney}" styleClass="bs btn btn-primary btn-sm" style="font-weight:bold" rendered="{!currCj.Active__c && !unassignedSelectableJourneyList.empty}">
+                            Add Selected
+                        </apex:commandLink>
+                        <!--
+                        <a href="javascript: $('#curr-journey-div').fadeToggle('fast');$('#add-journey-div').toggle();"
+                        -->
+                        <a onclick="$('#add-journey-div').fadeOut(0);$('#curr-journey-div').fadeIn('fast');"                        
+                            class="bs btn btn-default btn-sm" style="font-weight:bold">Cancel</a>                              
+                    </div>
+                    <div style="{!IF(unassignedSelectableJourneyList.empty || !currCj.Active__c, 'margin-top:10px;', 'margin-top:-10px;')}">
+                    <table id="unassignedTable" class="display" style = "width:100%;border:1px solid #CED4DC;width:100%;" rendered="{!currCj.Active__c}" cellpadding="0" cellspacing="0" border="0">
+                        <apex:actionRegion rendered="{!currCj.Active__c && !unassignedSelectableJourneyList.empty}">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="background:#CED4DC;"><strong>Unassigned List</strong></th>
+                                <th colspan="8" style="background:#CED4DC;">Occupied Seats: {!occupied } &nbsp;&nbsp;&nbsp; Vacant Seats: {!vacant } </th>
+                            </tr>
+                            <tr>
+                            <!--
+                                <th style = "width : 3%;"></th>
+                                <th style = "width : 7%;">Ref. No</th>
+                                <th style = "width : 19%;">Applicant</th>
+                                <th style = "width : 9%;">Requested Date</th>
+                                <th style = "width : 10%;">Requested Route</th>
+                                <th style = "width : 10%;">Confirmed Route</th>
+                                <th style = "width : 12%;">Requested Pick-up</th>
+                                <th style = "width : 12%;">Confirmed Pick-up</th>
+                                <th style = "width : 8%;">Passenger(s)</th>
+                                <th style = "width : 10%;">Remarks</th>
+                            -->
+                                <th class = "no-sort dt-center">
+                                    <!-- 
+                                    <apex:inputCheckbox id="select_all_existent" style="width:20px;height:20px;" />
+                                    <input name="select_all" value="1" id="example-select-all" type="checkbox" />
+                                    -->
+                                </th>
+                                <th>Ref. No</th>
+                                <th>Applicant</th>
+                                <th>Requested <br/>
+                                    Date</th>
+                                <th>Requested <br/>
+                                    Route</th>
+                                <th>Confirmed <br/>
+                                    Route</th>
+                                <th>Requested <br/>
+                                    Pick-up</th>
+                                <th>Confirmed <br/>
+                                    Pick-up</th>
+                                <th># ppl</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        </apex:actionRegion>
+                        <tbody>
+                            <apex:actionRegion rendered="{!currCj.Active__c}">
+                            <apex:repeat value="{!unassignedSelectableJourneyList}" var="jd" rendered="{!currCj.Active__c}">
+                                <!--
+                                <tr>
+                                    <td style = "width : 3%;" align="center"><apex:inputCheckbox value="{!jd.selected}" style="width:20px;height:20px;" /></td>
+                                    <td style = "width : 7%;">
+                                        <a href="/{!jd.journey.id}" target="_blank"><apex:outputField value="{!jd.journey.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 19%;"><apex:outputLabel value="{!jd.journey.On_Behalf_Of__c}" /></td>
+                                    <td style = "width : 9%;">
+                                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                                            <apex:param value="{!IF(jd.departure, jd.journey.Preferred_Departure_Date__c, jd.journey.Preferred_Return_Date__c)}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td style = "width : 10%;">           
+                                        <a href ="/{!IF(jd.departure, jd.journey.Departure_Route__c, jd.journey.Return_Route__c)}" target="_blank">
+                                            <apex:outputText value="{!IF(jd.departure, jd.journey.Departure_Route__r.Name, jd.journey.Return_Route__r.Name)}" />
+                                        </a>
+                                    </td>
+                                    <td style = "width : 10%;">      
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Departure_Route__c}" rendered="{!jd.departure}"> 
+                                            <apex:selectOptions value="{!routes}" /> 
+                                        </apex:selectList>
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Return_Route__c}" rendered="{!!jd.departure}"> 
+                                            <apex:selectOptions value="{!routes}" /> 
+                                        </apex:selectList>
+                                    </td>
+                                    <td style = "width : 12%;">
+                                        <a href ="/{!IF(jd.departure, jd.journey.Departure_Pick_Up_Point__c, jd.journey.Return_Pick_Up_Point__c)}" target="_blank">
+                                            <apex:outputText value="{!IF(jd.departure, jd.journey.Departure_Pick_Up__c, jd.journey.Return_Pick_Up__c)}" />
+                                        </a>
+                                    </td>
+                                    <td style = "width : 12%;">      
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Departure_Pick_Up_Point__c}" rendered="{!jd.departure}"> 
+                                            <apex:selectOptions value="{!points}"/> 
+                                        </apex:selectList>
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Return_Pick_Up_Point__c}" rendered="{!!jd.departure}"> 
+                                            <apex:selectOptions value="{!points}"/> 
+                                        </apex:selectList>
+                                    </td>
+                                    
+                                    <td style = "width : 8%;">
+                                        <apex:outputLabel value="{!jd.journey.No_of_Seats__c}" />
+                                    </td>
+                                    <td style = "width : 10%;">
+                                        <apex:outputLabel value="{!jd.journey.Preferred_Airline__c}" />
+                                    </td>
+                                    
+                                </tr>
+                                -->
+                                <tr>
+                                    <td align="center"><apex:inputCheckbox value="{!jd.selected}" style="width:20px;height:20px;" /></td>
+                                    <td>
+                                        <a href="/{!jd.journey.id}" target="_blank"><apex:outputField value="{!jd.journey.Name}" /></a>
+                                    </td>
+                                    <td><apex:outputLabel value="{!jd.journey.On_Behalf_Of__c}" /></td>
+                                    <td>
+                                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                                            <apex:param value="{!IF(jd.departure, jd.journey.Preferred_Departure_Date__c, jd.journey.Preferred_Return_Date__c)}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td>           
+                                        <a href ="/{!IF(jd.departure, jd.journey.Departure_Route__c, jd.journey.Return_Route__c)}" target="_blank">
+                                            <apex:outputText value="{!IF(jd.departure, jd.journey.Departure_Route__r.Name, jd.journey.Return_Route__r.Name)}" />
+                                        </a>
+                                    </td>
+                                    <td>      
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Departure_Route__c}" rendered="{!jd.departure}"> 
+                                            <apex:selectOptions value="{!routes}" /> 
+                                        </apex:selectList>
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Return_Route__c}" rendered="{!!jd.departure}"> 
+                                            <apex:selectOptions value="{!routes}" /> 
+                                        </apex:selectList>
+                                    </td>
+                                    <td>
+                                        <!--
+                                        <a href ="/{!IF(jd.departure, jd.journey.Departure_Pick_Up_Point__c, jd.journey.Return_Pick_Up_Point__c)}" target="_blank">
+                                            <apex:outputText value="{!IF(jd.departure, jd.journey.Departure_Pick_Up__c, jd.journey.Return_Pick_Up__c)}" />
+                                        </a>
+                                        -->
+                                        <apex:outputText value="{!IF(jd.departure, jd.journey.Departure_Pick_Up__c, jd.journey.Return_Pick_Up__c)}" />
+                                    </td>
+                                    <td>      
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Departure_Pick_Up_Point__c}" rendered="{!jd.departure}"> 
+                                            <apex:selectOptions value="{!points}"/> 
+                                        </apex:selectList>
+                                        <apex:selectList size="1" style="width:100%" value="{!jd.journey.Confirmed_Return_Pick_Up_Point__c}" rendered="{!!jd.departure}"> 
+                                            <apex:selectOptions value="{!points}"/> 
+                                        </apex:selectList>
+                                    </td>
+                                    
+                                    <td class = "dt-center">
+                                        <apex:outputLabel value="{!jd.journey.No_of_Seats__c}" />
+                                    </td>
+                                    <td>
+                                        <apex:outputLabel value="{!jd.journey.Preferred_Airline__c}" />
+                                    </td>
+                                    
+                                </tr>
+                            </apex:repeat>
+                            </apex:actionRegion>
+                            <apex:actionRegion rendered="{!unassignedSelectableJourneyList.empty && currCj.Active__c}">
+                                <tr><th colspan="10" style="background:grey; color:white;">{!$Label.TE_Shuttle_No_Outstanding_Request}</th></tr>
+                            </apex:actionRegion>
+                            <apex:actionRegion rendered="{!!currCj.Active__c}">
+                                <tr><th colspan="10" style="background:grey; color:white;">{!$Label.TE_Shuttle_Cannot_Assign_To_Inactive_Shuttle}</th></tr>
+                            </apex:actionRegion>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

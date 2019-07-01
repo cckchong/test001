@@ -1,0 +1,7 @@
+<apex:page controller="ACGCtrl" sidebar="false" showHeader="false" cache="true">
+
+
+    <apex:dynamicComponent rendered="{!portalComponent[5]!=null}" componentValue="{!portalComponent[5]}"/>
+
+
+</apex:page>

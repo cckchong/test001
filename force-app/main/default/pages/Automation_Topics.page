@@ -1,0 +1,151 @@
+<apex:page controller="Topic_Controller">
+
+    <style type="text/css">
+        .bPageBlock .pbTitle {
+            width:100%;
+        }
+        header {
+            padding: 1em;
+            color:   white;
+            background-color:#411011;
+            clear:   left;
+            text-align:center;
+            font-size:27px;
+            box-shadow: 5px 10px #888888;
+        }        
+        test {
+            Times, serif;
+            color:   black;
+            font-size:12pt;
+            font-weight : bold;
+            text-align:justify;
+            margin:  0em auto;
+            text-shadow:1px 1px # 799999;            
+        }
+        .column1 {
+            float: left;
+            width: 50%;
+            padding: 60px;
+        }    
+    </style>    
+    
+    <apex:slds />
+    <div class="slds-scope">
+    
+    <div style="text-align:center;">
+        <table style="width:100%;" id='table'>
+            <apex:image url="{!$Resource.TrendTopicWordCloud}" id="theImage" width="480" height="554" rendered="{!!isMobile}"/>
+        </table>
+    </div>
+    
+    <table style="width:100%;" id='table'>
+    <td style="width:25%; padding:15px;">
+    <apex:pageBlock title="Top Customers" rendered="{!!isMobile}">
+        <apex:pageBlockTable value="{!Top_15_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <test><apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink></test>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </td>
+    
+    <td style="width:25%; padding:15px;">
+    <apex:pageBlock title="Rising Star" rendered="{!!isMobile}">
+        <apex:pageBlockTable value="{!RisingStar_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <test><apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink></test>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </td>
+    
+    <td style="width:25%; padding:15px;">
+    <apex:pageBlock title="Core Suppliers" rendered="{!!isMobile}">
+        <apex:pageBlockTable value="{!Supplier_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <test><apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink></test>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </td>
+    
+    <td style="width:25%; padding:15px;">
+    <apex:pageBlock title="Popular Innovation" rendered="{!!isMobile}">
+        <apex:pageBlockTable value="{!Innovation_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <test><apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink></test>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </td>
+    </table>
+        
+    <!--mobilee-->
+    <div style="text-align:center;">
+    <apex:image id="theImage2" url="{!$Resource.TrendTopicWordCloud}" width="390" height="460" rendered="{!isMobile}"/>
+    </div>
+    <br></br>
+    <br></br>
+    
+    <column1>
+    <apex:pageBlock title="Top Customers" rendered="{!isMobile}"> 
+        <apex:pageBlockTable value="{!Top_15_List}" var="t" id="pbtOne" align="top" style="border:none; border-style:none;">
+        <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+            <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;">
+                <test><apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink></test>
+            </div>
+            <div id="row2data" style="color:#16325C;"></div>
+        </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    <br></br>
+    </column1>
+    
+    <apex:pageBlock title="Rising Star" rendered="{!isMobile}">
+        <apex:pageBlockTable value="{!RisingStar_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <test><apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink></test>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    <br></br>
+    
+    <apex:pageBlock title="Core Suppliers" rendered="{!isMobile}">
+        <apex:pageBlockTable value="{!Supplier_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    <br></br>
+    
+    <apex:pageBlock title="Popular Innovation" rendered="{!isMobile}">
+        <apex:pageBlockTable value="{!Innovation_List}" var="t" id="pbt2" align="top" style="border:none; border-style:none;">
+            <apex:column headerValue="" style="vertical-align:top;" headerClass="colHeadr">
+                    <div id="row1data" onclick="redirect('{!t.Link__c}');" style="color:#16325C;font-weight:bold;">
+                        <apex:outputlink value="{!t.Link__c}">{!t.Customer_Name__c}</apex:outputlink>
+                    </div>
+                    <div id="row3data" style="color:#16325C;"></div>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </div>
+</apex:page>

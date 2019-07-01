@@ -1,0 +1,130 @@
+<apex:page controller="LibraryQrCodeScanUtil">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+
+    <style>
+        .TalScanMsg {
+            padding-left: 5px;
+        }
+        .TalLoaderImg, .TalMobileLoaderImg {
+            display:none;
+            padding-left:20px;
+        }
+        .bs .btn {
+            padding-top:4px;
+            padding-bottom: 4px;
+            font-size: 11px;
+        }
+        #TalInputtedValue {
+            margin-left: 20px;
+            border-bottom: 1px dashed #888;
+            color: #888;
+        }
+        .TalActionBtns .btn {
+        	white-space: normal;
+    		width: 100px;
+        	height: 40px;
+        }
+        .TalModeBtns .btn {
+        	white-space: normal;
+    		width: 100px;
+        }
+        #TalInputText {
+        	width: 100%;
+        	border: none;
+        	border-radius: 3px;
+        	padding: 8px;
+        }
+        
+        .bs .panel {
+        	border: 1px solid #ddd;
+        }
+    </style>
+    <div class="bs container">
+
+        <div class="bs row" id="TalWebUi">
+            <div class="bs col-xs-12 col-sm-12 col-md-12">
+                <div class="btn-group TalModeBtns" data-toggle="buttons">
+                        <label class="btn btn-info active" id="TalNormalMode">
+                            <input type="radio" name="options">Normal Mode</input>
+                        </label>
+                        <label class="btn btn-info" id="TalMemoryMode">
+                            <input type="radio" name="options">Memory Mode</input>
+                        </label>
+        		</div><br/><br/>
+                <div class="btn-group TalActionBtns" data-toggle="buttons" style="float:left;">
+                        <label class="btn btn-default {!IF(initialCheckInBtn,'','hidden')}" id="TalModeCheckInId">
+                            <input type="radio" name="options">{!$Label.Library_Initial_Check_In} &raquo;</input>
+                        </label>
+                        <label class="btn btn-default active {!IF(borrowBtn,'','hidden')}" id="TalModeQueryId">
+                            <input type="radio" name="options">{!$Label.Library_Borrow} &raquo;</input>
+                        </label>
+                        <label class="btn btn-default {!IF(warehouseCheckOutBtn,'','hidden')}" id="TalModeCheckoutId">
+                            <input type="radio" name="options">{!$Label.Library_Warehouse_Check_out} &raquo;</input>
+                        </label>
+                        <label class="btn btn-default {!IF(archiveCheckOutBtn,'','hidden')}" id="TalModeBBACheckoutId">
+                            <input type="radio" name="options">Archive Check Out &raquo;</input>
+                        </label>
+                        <label class="btn btn-default {!IF(MailingRoomCheckinOutBtn,'','hidden')}" id="TalModeMailRoomOId">
+                            <input type="radio" name="options">{!$Label.Library_Mailing_Room_Check_In_O} &raquo;</input>
+                        </label>
+                        <label class="btn btn-default {!IF(confirmReceivedBtn,'','hidden')}" id="TalModeConfirmId">
+                            <input type="radio" name="options">{!$Label.Library_Confirm_Received} &raquo;</input>
+                        </label>
+                        <label class="btn btn-default {!IF(MailingRoomCheckinInBtn,'','hidden')}" id="TalModeMailRoomIId">
+                            <input type="radio" name="options">{!$Label.Library_Mailing_Room_Check_In_I} &raquo;</input>
+                        </label>
+                        <label class="btn btn-default {!IF(returnBtn,'','hidden')}" id="TalModeReturnId">
+                            <input type="radio" name="options">{!$Label.Library_Return}</input>
+                        </label>
+                </div>
+                <br/><br/>
+                <div style="padding-top:10px;float:right;" class="btn-group">
+                    <button type="button" class="bs btn btn-primary" id="TalBorrowBtnId" onclick="gogogo()" style="width:100px;">{!$Label.Library_Process}</button>
+                    <button type="button" class="bs btn btn-secondary" onclick="globalReset(); this.blur();">{!$Label.Library_Reset}</button>
+                </div>
+                <div style="clear:both;"></div>
+                <br/>
+                <apex:outputPanel rendered="{!libraryOverdueItemCount>0}">
+                    <div class="bs alert alert-warning">
+                        <a href="#" class="close" data-dismiss="alert">&times;</a>
+                        <apex:outputText value="{!libraryOverdueWarningMessage}" escape="false"/>
+                    </div>
+                </apex:outputPanel>
+                
+                <div class="bs well">
+                    <h4>
+                        <span class="bs glyphicon glyphicon-exclamation-sign" style="top: 3px;"></span> <span id="TalScanMsgId" class="TalScanMsg">{!$Label.Library_Waiting_QR_Scan}</span>
+                        <span id="TalInputtedValue"></span>
+                        <img src="{!$Resource.Loading_Image}" class="TalLoaderImg"/>
+                        
+                        <a href="javascript:deleteScannedQrCodeChar();" class="bs btn btn-default" style="float: right;">Delete</a>
+                    </h4>
+                    <br/><br/>
+                    <textarea rows="1" id="TalInputText" disabled="true" />
+                </div>
+                <div class="panel panel-default" id="TalLocationPanelId" style="display:none">
+                    <div class="panel-body">
+                        <h5><span class="bs glyphicon glyphicon-map-marker"></span> <strong>{!$Label.Library_Location}:</strong><span id="TalLocationInfoId"></span></h5>
+                    </div>
+                </div>
+                <table class="bs table table-bordered" id="TalResultTableId">
+                    <thead>
+                        <tr>
+                            <th>{!$ObjectType.Library_Inventory__c.fields.Item_Name__c.label}</th>
+                            <th>{!$ObjectType.Library_Inventory__c.fields.Serial_Number__c.label}</th>
+                            <th>{!$ObjectType.Library_Inventory__c.fields.Original_Address__c.label}</th>
+                            <th>{!$ObjectType.Library_Inventory__c.fields.Lending_Status__c.label}</th>
+                            <th>{!$Label.Label_Request_Status}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="TalResultTableBodyId">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+	<c:LibraryQrCodeScanJs />
+</apex:page>

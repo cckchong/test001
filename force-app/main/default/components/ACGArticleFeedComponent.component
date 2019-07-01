@@ -1,0 +1,70 @@
+<!--
+	This is the "preview" of announcements on a landing page
+-->
+<apex:component controller="ACGArticleCtrl" layout="block">
+    <apex:attribute name="title" type="String" description="title of the Panel" assignTo="{!panelTitle}" required="true" />
+    <apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="true" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+    <apex:attribute name="childListPage" description="Child List Page" type="String" assignTo="{!articleListPage}" required="false" />
+    <apex:attribute name="childDetailPage" description="Child Detail Page" type="String" assignTo="{!articleDetailPage}" required="false" />
+    <style>
+		.panelClass {
+			height: 100%;
+		}	
+		.articlePanel {
+			overflow: visible;
+			height: 100%;
+			border-bottom: 1px Solid #D7EBFF;/*#99CCFF;*/
+		}	
+		.viewAllButton {
+			color: #555;
+			font-family: arial;
+			font-size: 1em;
+		}
+	</style>
+	
+    <div class="bs wrapper">
+	    <div class="bs panel panel-info panelClass">
+	        <div class="bs panel-heading">
+	            <h3 class="bs panel-title">{!panelTitle}</h3>
+	        </div>
+	        <div class="bs panel-body" >
+	            <apex:repeat value="{!articleFeed}" var="articleContent">
+	                <apex:outputPanel styleClass="articlePanel" layout="block">
+	                	<c:ACGArticleComponent Title="{!articleContent.objpc.Title__c}" 
+	                		Summary="{!articleContent.objpc.Summary__c}" 
+	                		ContentURL="{!articleDetailPageURL}&Id={!articleContent.objpc.Id}&title={!panelTitle}&ContentCategory={!pageContentCategory}&DistLevel={!pageDistLevel}&DistTarget={!pageDistTarget}"  
+	                		PublishDate="{!IF(NOT(ISNULL(articleContent.objpc.Publish_Datetime__c)), articleContent.objpc.Publish_Datetime__c, articleContent.objpc.CreatedDate)}"
+	                		LastUpdateDate="{!articleContent.objpc.LastModifiedDate}" 
+	                		PublishBy="{!articleContent.objpc.Owner.Name}" 
+	                		PublishById="{!articleContent.objpc.OwnerId}" 
+	                		ImageURL="{!IF((articleContent.imageURL='' && articleContent.objpc.Article_Thumbnail__c=''), 
+	                						$Resource.DefaultPicture, 
+	                						IF(articleContent.imageURL='',
+	                							'/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId='&articleContent.objpc.Article_Thumbnail__c, 
+	                							'/servlet/servlet.FileDownload?file='&articleContent.imageURL
+	                						)
+	                					)}"
+	                		
+	                		Revised="{!articleContent.objpc.Revised__c}" 
+	                		Feedsize="{!articleContent.feedsize}" 
+	                		FromArticleList="false"
+	                		ContentCategory="{!ContentCategoryLabel[articleContent.objpc.Content_Category__c]}"
+	                		Priority="{!articleContent.objpc.Sticky_Scale__c}"
+	                		isMobile="{!bSalesforceOne}"
+							FeedLikes="{!articleContent.feedlikes}"/>
+	                		
+	                </apex:outputPanel>  
+	                <br/>       
+	            </apex:repeat>
+	        </div>
+	        <div class="bs panel-footer">
+	        	<apex:outputLink value="/{!articleListPageURL}&title={!panelTitle}&{!$Label.ConnecTalTab}&ContentCategory={!pageContentCategory}&DistLevel={!pageDistLevel}&DistTarget={!pageDistTarget}" styleclass="viewAllButton">
+	        		View All<apex:outputPanel id="tabOutPan3" rendered="{!IF(iNoOfArticle>0,TRUE,FALSE)}"> <Strong>{!iNoOfArticle}</Strong> Announcements</apex:outputPanel>
+	        	</apex:outputLink>
+	            <br/>
+	            <apex:outputLink value="/{!recordID}" styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}" target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+	        </div>
+	    </div>
+    </div>
+</apex:component>

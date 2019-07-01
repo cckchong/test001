@@ -1,0 +1,441 @@
+<apex:page controller="LibraryQrCodeScanUtil">
+	<meta name="viewport" content="width=device-width, user-scalable=no" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+	<style>
+        .TalScanMsg {
+            padding-left: 5px;
+        }
+        .TalLoaderImg, .TalMobileLoaderImg {
+            display:none;
+            padding-left:20px;
+        }
+        .TalSfdcButton {
+            color: #333;
+            margin: 1px;
+            padding: 2px 3px;
+            border: 1px solid #b5b5b5;
+            border-bottom-color: #7f7f7f;
+            background: #e8e8e9 url('/img/alohaSkin/btn_sprite.png') repeat-x right top;
+            font-weight: bold;
+            font-size: .9em;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+            padding: 4px 3px;
+        }
+        .bs .btn {
+            padding-top:3px;
+            padding-bottom: 3px;
+            font-size: 12px;
+        }
+        #TalInputtedValue {
+        	margin-left: 20px;
+			border-bottom: 1px dashed #888;
+			color: #888;
+        }
+        .bs .panel {
+        	border: 1px solid #ddd;
+        }
+    </style>
+    <div class="bs container">
+
+        <div class="bs row" id="TalMobileUi" style="display:none;">
+    		
+        </div>
+        <div class="bs row" id="TalWebUi">
+            <div class="bs col-xs-12 col-sm-12 col-md-12">
+                <div class="btn-group" data-toggle="buttons" style="float:left;">
+                    <label class="btn btn-default active" id="TalModeReserveId">
+                        <input type="radio" name="options">Reserve / Check Out</input>
+                    </label>
+                    <label class="btn btn-default" id="TalModeReturnId">
+                        <input type="radio" name="options">Return</input>
+                    </label>
+                </div>
+    
+                <div style="padding-top:10px; float:right;" class="btn-group">
+                    <button type="button" class="bs btn btn-primary" id="TalBorrowBtnId" onclick="execute()" style="width:100px;">Process</button>
+                    <button type="button" class="bs btn btn-default" onclick="globalReset();this.blur();">Reset</button>
+                </div>
+                <div style="clear:both;"></div>
+        		<br/>
+				<apex:outputPanel rendered="{!libraryOverdueItemCount>0}">
+                    <div class="bs alert alert-warning">
+                        <a href="#" class="close" data-dismiss="alert">&times;</a>
+                        <apex:outputText value="{!libraryOverdueWarningMessage}" escape="false"/>
+                    </div>
+                </apex:outputPanel>
+                <div class="bs well">
+                    <h4>
+                        <span class="bs glyphicon glyphicon-exclamation-sign"></span> <span id="TalScanMsgId" class="TalScanMsg">{!$Label.Library_Waiting_QR_Scan}</span>
+                        <span id="TalInputtedValue"></span>
+                        <img src="{!$Resource.Loading_Image}" class="TalLoaderImg"/> 
+                    </h4>
+                </div>
+        		<div class="panel panel-default" id="TalEmployeePanelId" style="display:none">
+                    <div class="panel-body">
+                        <h5><span class="bs glyphicon glyphicon-user"></span> <strong>Employee:</strong><span id="TalEmployeeInfoId"></span></h5>
+                    </div>
+                </div>
+                <div class="panel panel-default" id="TalLocationPanelId" style="display:none">
+                    <div class="panel-body">
+                        <h5><span class="bs glyphicon glyphicon-map-marker"></span> <strong>{!$Label.Library_Location}:</strong><span id="TalLocationInfoId"></span></h5>
+                    </div>
+                </div>
+                <table class="bs table table-bordered" id="TalResultTableId">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Serial Number</th>
+                            <th>Home Location</th>
+                            <th>Lending Status</th>
+                            <th>Request Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="TalResultTableBodyId">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var LIBRARY_NS = {
+            jsGlobalBarcode: '',
+            mode: 'RESERVE_CHECKOUT',
+            locationId: '',
+            scannedItems: new Array(),
+            scannedMasters: new Array(),
+            UserId: '',
+            employeeId: '',
+            externalMode: false
+        };
+        
+        $(document).ready(function() {
+        	
+        	/*
+            if(getIsSalesforceOne()) {
+                $('#TalWebUi').hide();
+                $('#TalMobileUi').show();
+                
+            } else {
+            */
+            $(document).keypress(function(e) {
+        
+                var code = (e.keyCode ? e.keyCode : e.which);
+                
+                if(code==13)// Enter key hit
+                {
+                    processScan();
+                }
+                else if(code==9)// Tab key hit
+                {
+                    processScan();
+                }
+                else
+                {
+                    LIBRARY_NS.jsGlobalBarcode = LIBRARY_NS.jsGlobalBarcode+String.fromCharCode(code);
+                    $('#TalInputtedValue').text(LIBRARY_NS.jsGlobalBarcode);
+                }
+            });
+
+            initScanningFlow();
+            
+            
+            if (!Array.prototype.indexOf) {
+                Array.prototype.indexOf = function(val) {
+                    return jQuery.inArray(val, this);
+                };      
+            }
+
+        });
+        
+		function initScanningFlow() {
+            LIBRARY_NS.externalMode = true;
+            /*
+            var isExternal = '{!$CurrentPage.parameters.external}';
+            if(isExternal != '' && isExternal == 'true') {
+                LIBRARY_NS.externalMode = true;
+            }
+            */
+            $('#TalModeReserveId').click(function() {
+                LIBRARY_NS.mode = 'RESERVE_CHECKOUT';
+                globalReset();
+            });
+            
+            $('#TalModeReturnId').click(function() {
+                LIBRARY_NS.mode = 'RETURN';
+                globalReset();
+            });
+            
+            initUiToFlowState();
+        }
+
+		function getScanningFlowState() {
+            // One of "ES", "LS", "QS"
+            // Employee Scan, Location Scan, QR Code Scan
+            
+            // First is Employee Scanning
+            if(LIBRARY_NS.externalMode && LIBRARY_NS.employeeId == '') {
+            	return 'ES';
+            }else {
+            	return 'QS';
+            }
+        }
+
+		function initUiToFlowState() {
+            var state = getScanningFlowState();
+            LIBRARY_NS.jsGlobalBarcode = "";
+            $('.TalLoaderImg').hide();
+            
+			if(state == 'ES') {
+                $('#TalEmployeeInfoId').empty();
+            	$('#TalEmployeePanelId').hide();
+				$('#TalScanMsgId').text('{!$Label.Library_Scan_Staff_Card}');
+            } else if(state == 'LS') {
+                locationToggle(true);
+            } else {
+				$('#TalScanMsgId').text('{!$Label.Library_Waiting_QR_Scan}');
+            }
+        }
+
+        function globalReset() {
+            $('#TalResultTableBodyId').html('');
+            LIBRARY_NS.scannedItems = new Array();
+            LIBRARY_NS.scannedMasters = new Array();
+            locationToggle(false);
+                          
+            if(LIBRARY_NS.mode == 'RETURN') {
+                locationToggle(true);
+            }
+            LIBRARY_NS.UserId = '';
+            LIBRARY_NS.employeeId = '';
+           	initUiToFlowState();
+        }
+
+        function processScan() {
+        	$('#TalInputtedValue').text('');
+            
+            if(getScanningFlowState() == 'ES') {
+                // Do the employee thang
+                $('#TalScanMsgId').text('{!$Label.Library_Processing}: "' + LIBRARY_NS.jsGlobalBarcode + '"');
+                $('.TalLoaderImg').show();
+                authenticateExternalUser(trim(LIBRARY_NS.jsGlobalBarcode));
+				getLocation(trim('HKO-PD'));
+            } else if(getScanningFlowState() == 'LS') {
+                $('#TalScanMsgId').text('{!$Label.Library_Getting_Location}: "' + LIBRARY_NS.jsGlobalBarcode + '"');
+                $('.TalLoaderImg').show();
+                getLocation(trim(LIBRARY_NS.jsGlobalBarcode));   
+            } else {
+                $('#TalScanMsgId').text('{!$Label.Library_Processing}: "' + LIBRARY_NS.jsGlobalBarcode + '"');
+                $('.TalLoaderImg').show();
+                getLibraryItemDetail(trim(LIBRARY_NS.jsGlobalBarcode));
+            }
+        }
+
+        function waitForBarcode() {
+            //$('#TalScanMsgId').text('{!$Label.Library_Waiting_QR_Scan}');
+            //$('.TalLoaderImg').hide();
+            //LIBRARY_NS.jsGlobalBarcode = "";
+            initUiToFlowState();
+        }
+
+        function locationToggle(enable) {
+            LIBRARY_NS.locationId = '';
+            LIBRARY_NS.jsGlobalBarcode = "";
+            if(enable) {
+                $('#TalScanMsgId').text('{!$Label.Library_Scan_Location_QR_Code_Continue}');
+             
+            } else {
+                waitForBarcode();
+                $('#TalLocationInfoId').empty();
+                $('#TalLocationPanelId').fadeOut('fast');
+            }
+        }
+        function locationError() {
+            alert('{!$Label.Library_Location_Not_Found}');
+            $('.TalLoaderImg').hide();
+            locationToggle(true);
+        }
+
+		function employeeError() {
+            alert('{!$Label.Library_Employee_Not_Found}');
+            LIBRARY_NS.UserId = '';
+            LIBRARY_NS.employeeId = '';
+			initUiToFlowState();
+        }
+
+        function locationErrorParent() {
+            alert('Please scan detail location');
+            $('.TalLoaderImg').hide();
+            locationToggle(true);
+        }
+        function resetMessage() {
+            waitForBarcode();
+            alert('{!$Label.Library_Item_Not_Found}');
+        }
+        function processComplete() {
+            waitForBarcode();
+        }
+
+		function authenticateExternalUser(employeeId) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibraryQrCodeScanUtil.authenticateExternalUser}',
+                employeeId,
+                function(result, event){
+                    //console.log(event);
+                    if (event.status) {
+
+                        if(result == null) {
+                            employeeError();
+                        } else {
+                            //console.log(result);
+                            if(result.Full_Name__c != null && result.Full_Name__c != '') {
+	                            LIBRARY_NS.employeeId = result.Id;
+	                            LIBRARY_NS.UserId = result.User__c;
+	                            
+	                            var employeeData = ' <a target="_blank" href="/' + result.Id + '">' + result.Full_Name__c + '</a> (' + result.Staff_Card_ID__c + ')';
+	
+	                            $('#TalEmployeeInfoId').append(employeeData);
+	                            $('#TalEmployeePanelId').fadeIn('fast');
+	                            initUiToFlowState();
+                            }
+                        }
+                    } else if (event.type === 'exception') {
+                        employeeError();
+
+                    } else {
+                        employeeError();
+
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+
+        function getLibraryItem(barcodeNum) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibraryQrCodeScanUtil.getLibraryItem}',
+                barcodeNum, 
+                function(result, event){
+                    if (event.status) {
+
+                        if(result == '.') {
+                            resetMessage();
+                        } else {
+                            window.location.href = result;    
+                        }
+                    } else if (event.type === 'exception') {
+                        resetMessage();
+                    } else {
+                        resetMessage();
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+
+        function getLibraryItemDetail(barcodeNum) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibraryQrCodeScanUtil.getLibraryItemDetail}',
+                barcodeNum,
+                LIBRARY_NS.mode,
+                function(result, event){
+                    if (event.status) {
+
+                        if(result == null) {
+                            resetMessage();
+                        } else {
+
+                            if(LIBRARY_NS.scannedItems.indexOf(result.Id) < 0) {
+                                var tableData = '<tr><td><a target="_blank" href="/'+ result.Library_Item_Master__c + '">' + result.Library_Item_Master__r.Item_Name__c +'</a> ('+ result.Library_Item_Master__r.Item_Description__c + ')</td><td>'+ 
+                                                                    result.Serial_Number__c +'</td><td>'+ 
+                                                                    result.Original_Address__r.Name +'</td><td>'+ 
+                                    /*result.Target_Address__r.Name +'</td><td>'+ */
+                                                                    result.Lending_Status__c +'</td>';
+                                if(result.Library_Item_Requests__r != null && result.Library_Item_Requests__r.length > 0) {
+                                    tableData = tableData + '<td>'+ result.Library_Item_Requests__r[0].Requester__c + ' (' + result.Library_Item_Requests__r[0].Status__c +')<br/> Target Location: '+ result.Library_Item_Requests__r[0].Target_Location__r.Name +'</td>';
+                                } else {
+                                    tableData = tableData + '<td></td>'; 
+                                }
+                                
+                                tableData = tableData + '</tr>';
+                                $('#TalResultTableBodyId').append(tableData);
+                                LIBRARY_NS.scannedItems.push(result.Id);
+                                LIBRARY_NS.scannedMasters.push(result.Library_Item_Master__c);
+                            }
+                            processComplete();
+                        }
+                    } else if (event.type === 'exception') {
+                        resetMessage();
+                    } else {
+                        resetMessage();
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+
+        function getLocation(barcodeNum) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibraryQrCodeScanUtil.getLocation}',
+                barcodeNum,
+                function(result, event){
+                    //console.log(event);
+                    if (event.status) {
+
+                        if(result == null) {
+                            locationError();
+                        } else {
+                            //console.log(result);
+                            if(result.Parent_Location__c!=null &&result.Parent_Location__c!=''){
+	                            LIBRARY_NS.locationId = result.Id;
+	                            waitForBarcode();
+                            }else
+                            {
+                            	locationErrorParent();
+                            }
+                        }
+                    } else if (event.type === 'exception') {
+                        locationError();
+
+                    } else {
+                        locationError();
+
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+        
+        function execute() {
+            if(LIBRARY_NS.scannedItems.length > 0) {
+                if(LIBRARY_NS.mode == 'RESERVE_CHECKOUT'){
+                    
+                    var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                    window.location.href = '/apex/LibraryBookScanProcessPage?multiLibItemId=' + multiLibItemId +'&UserId='+ LIBRARY_NS.UserId;
+                }else if(LIBRARY_NS.mode == 'RETURN') {
+                    var multiLibItemId = LIBRARY_NS.scannedItems.join(';');
+                    //if(LIBRARY_NS.locationId != '') { //AN: Books, no need to scan location
+                        window.location.href = '/apex/LibraryScanBulkActionsVFPage?actionType=returnbook&redirect=apex/LibraryBookQRScanVFPage&multiLibItemId=' + multiLibItemId + '&locationId=' + LIBRARY_NS.locationId;
+                    //} else {
+                    //    alert('{!$Label.Library_Must_Scan_Location}');        
+                    //}
+                }
+            } else {
+                alert('{!$Label.Library_Must_Select_Items}');
+            }
+        }
+        
+        function getIsSalesforceOne() {
+            var result = false;
+            if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+                result = true;
+            }
+            return result;
+        }
+        
+    </script>
+</apex:page>

@@ -1,0 +1,40 @@
+<apex:component >
+<!-- <apex:component controller="ArticleListController" layout="block">
+    <apex:attribute name="feedCat" type="String" description="feed BU filter" assignTo="{!feedCategory}" required="true" />
+    <apex:attribute name="title" type="String" description="title of the Panel" assignTo="{!panelTitle}" required="true" />
+    <apex:attribute name="childListPage" description="Child List Page" type="String" assignTo="{!articleListPage}" required="false" />
+    <apex:attribute name="childDetailPage" description="Child Detail Page" type="String" assignTo="{!articleDetailPage}" required="false" />    
+    <apex:attribute name="StrCategory" type="String" description="Category" assignTo="{!Category}" required="false" />
+    <apex:attribute name="StrSubCategory" type="String" description="SubCategory" assignTo="{!SubCategory}" required="false" /> 
+ 	<apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="true" />
+ 	<apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+ 	
+    <script type="text/javascript">
+		function autoResize(id){
+		    var newheight;
+		    var newwidth;
+		    if(document.getElementById){
+		        newheight=document.getElementById(id).contentWindow.document .body.offsetHeight+10;
+		        newwidth=document.getElementById(id).contentWindow.document .body.scrollWidth;
+		    }
+		
+		    document.getElementById(id).height= (newheight) + "px";
+		    document.getElementById(id).width= (newwidth) + "px";	    
+		}
+	</script>
+    <div class="bs wrapper">    
+	    <div class="bs panel panel-info panelClass">
+	        <div class="bs panel-heading">
+	            <h3 class="bs panel-title">{!panelTitle}</h3>
+	        </div>	        
+	        <div class="bs panel-body" id="thePanelBody">
+	        	<iframe src="/apex/ArticleListPage?feedCat={!feedCategory}&category={!Category}&subcategory={!SubCategory}&department={!strDepartment}&title={!panelTitle}&articleDetailPage={!articleDetailPage}"
+	        	        width="100%" height="300px" id="iframe1"  marginheight="0" frameborder="0"  onLoad="autoResize('iframe1');"/>
+   			</div>
+   			<apex:outputLink value="/{!recordID}"
+				styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}"
+				target="_blank">{!$Label.ChangeContent}
+			</apex:outputLink>
+   		</div>
+   	</div>    -->
+</apex:component>

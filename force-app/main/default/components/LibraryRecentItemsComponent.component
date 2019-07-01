@@ -1,0 +1,68 @@
+<!-- Assumes Bootstrap is active -->
+<apex:component controller="LibraryRecentItemsComponentCtrl" >
+    <apex:attribute name="attrRtId"  
+                    type="String" 
+                    assignTo="{!recordTypeName }"
+                    description="The record type of the library item" required="false" />
+    <!--NickWu removed the attribute numItems-->             
+    <c:LibrarySearchHighlightedItemsCssComp />
+    <div class="tal-header">
+      <h5>{!$Label.Library_Recently_Added_Books}</h5>
+    </div>
+    <div class="tal-responsive-table">
+        <table class="bs table" style="margin-bottom: 0px;">
+            <tbody>
+                <tr>
+                    <apex:repeat value="{!List}" var="item">
+                        <td class="td-highlight-item" style="border:none;width:80px;">
+                            <apex:outputPanel rendered="{!itemToPhotoMap[item.Id].Id != null}">
+                                <!--if desktop version-->
+                                <apex:outputLink value="/{!item.id}" rendered="{!!isSalesforceOne}">
+                                    <div class="center-cropped">
+                                        <img src="/servlet/servlet.FileDownload?file={!itemToPhotoMap[item.Id]}" style="max-height:70px;max-width:70px;" />
+                                    </div>
+                                </apex:outputLink>
+                                
+                                <!--if mobile version-->
+                                <apex:outputLink value="javascript:sforce.one.navigateToSObject('{!item.Id}');" rendered="{!isSalesforceOne}">
+                                    <div class="center-cropped">
+                                        <img src="/servlet/servlet.FileDownload?file={!itemToPhotoMap[item.Id]}" style="max-height:70px:70px;max-width:70px;" />
+                                    </div>
+                                </apex:outputLink>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!itemToPhotoMap[item.Id].Id = null}">
+                                <!--if desktop version-->
+                                <apex:outputLink value="/{!item.id}" rendered="{!!isSalesforceOne}">
+                                    <div class="Tal-Placeholder-Img">
+                                        <span class="bs glyphicon glyphicon-picture" style="padding-top:13px;"></span>
+                                    </div>
+                                </apex:outputLink>
+                                
+                                <!--if mobile version-->
+                                <apex:outputLink value="javascript:sforce.one.navigateToSObject('{!item.Id}');" rendered="{!isSalesforceOne}">
+                                    <div class="Tal-Placeholder-Img">
+                                        <span class="bs glyphicon glyphicon-picture" style="padding-top:13px;"></span>
+                                    </div>
+                                </apex:outputLink>
+                                
+                            </apex:outputPanel>
+                            <br/>
+                            <span>
+                                <!--if desktop version-->
+                                <apex:outputLink value="/{!item.id}" rendered="{!!isSalesforceOne}">{!item.Item_Name__c} {!IF(item.Book_Author__c!='','('+item.Book_Author__c+')','')}</apex:outputLink>
+                                <!--if mobile version-->
+                                <apex:outputLink value="javascript:sforce.one.navigateToSObject('{!item.Id}');" rendered="{!isSalesforceOne}">
+                                          {!item.Item_Name__c} {!IF(item.Book_Author__c!='','('+item.Book_Author__c+')','')}</apex:outputLink>
+                            </span>
+                            
+                            <br/>
+                            <span style="color:#888;padding-top:3px;display:block;">
+                                <span class="badge" style="background-color:#DBDBDB;font-size:11px;">{!libraryItemToFeedMap[item.Id]}</span> {!IF(libraryItemToFeedMap[item.Id] == 1, "comment", "comments")}
+                            </span>
+                        </td>
+                    </apex:repeat>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</apex:component>

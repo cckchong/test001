@@ -1,0 +1,41 @@
+<apex:component >
+	<!-- <apex:attribute name="Departments" type="DepartmentWrapper[]"  description="Department Name" required="false" />
+	<apex:attribute name="Site" type="String"  description="Local Site" required="false" />
+	<apex:attribute name="Level" type="String"  description="Determine Global, Regional, Local" required="false" />
+	<style>
+		.crop {
+			max-height:90px;
+			max-width:120px;
+			overflow: hidden;
+		}
+		td.deptName {
+			word-break: keep-all;
+        	width: 165px;
+        	padding-bottom: 10px;
+        	vertical-align: top;
+		}
+	</style>
+	<div class="bs panel panel-info panelClass">
+		<div class="bs panel-heading">
+			<h3 class="bs panel-title">{!$Label.AvailableDepartmentPages}</h3>
+		</div>                          
+		<div class="bs panel-body img-responsive">
+			<apex:outputPanel id="Component_tab4" layout="block">
+				<apex:variable value="{!1}" var="counter"/>
+				<table border="0px">
+					<tr>
+						<apex:repeat value="{!Departments}" var="Dept">
+							<td>&nbsp;&nbsp;&nbsp;</td>
+							<td class="deptName" align="center" valign="top">
+								<a href="/apex/DepartmentPage?Department={!Dept.deptName}&Level={!Level}&SiteName={!Site}"> <img class="bs img-thumbnail crop" src="{!Dept.deptPicURL}"/><br/>{!Dept.deptFullName}<br/>({!Dept.deptName})</a>
+							</td>
+							<td>&nbsp;&nbsp;&nbsp;</td>
+							<apex:outputText rendered="{!AND((MOD(counter, 4) == 0), (counter < Departments.size))}" value="</tr><tr>" escape="false"/>
+							<apex:variable var="counter" value="{!counter + 1}"/>
+						</apex:repeat>
+					</tr>
+				</table>
+			</apex:outputPanel>                             
+		</div>
+	</div> -->
+</apex:component>

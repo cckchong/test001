@@ -1,0 +1,235 @@
+<apex:page controller="IDPPurchaseRequestProgressBarCtrl" showHeader="false" standardStylesheets="true" sidebar="false" applyHtmlTag="true" applyBodyTag="true">
+ 
+<head>
+<style>
+body{
+    background: white;
+    margin:0!important;
+    padding:0 10px;
+}
+.table-block{
+    min-width:1024px;
+}
+.meter {
+    height: 8px;
+    position: relative;
+    background: #ededed;
+    border-radius: 8px;
+    padding: 17px 10px;
+    /* width: 90%; */
+}
+.meter ol {
+    margin: 0;
+    padding: 0;
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    background-color: #FFF;
+    position: relative;
+    list-style: none;
+}
+.meter ol li {
+    float: left;
+    height:8px;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    width: 11.11%; /* ADJUST ME */
+    position: relative;
+}
+
+.cancel ol li {
+    width: 20%; /* ADJUST ME */
+}
+
+.meter ol li span {
+    right: 0;
+    display: block;
+    text-align: center;
+}
+.meter ol li .step {
+    top: -11px;
+    padding: 0;
+    border: 3px solid #47B4DB;
+    z-index: 99;
+    font-size: 12px;
+    color: #47B4DB;
+    width: 24px;
+    font-weight: 700;
+    position: absolute;
+    background-color: #FFF;
+    border-radius: 50%;
+    height: 24px;
+    line-height: 24px;
+}
+.meter ol li .stage {
+    color: #fff;
+    position: absolute;
+    top: -50px;
+    right: -38%;
+    width: 100%;
+}
+.meter ol li .stage p{
+    display:inline-block;
+    background:#29a4d0;
+    padding: 5px 5px;
+    border-radius: 2px;
+    font-size:11px;
+    margin:0;
+}
+.meter ol li.active {
+    height: 8px;
+    background: #47b5db;
+}
+.meter ol li.active:first-child{
+    border-radius: 10px 0 0 10px;
+}
+.meter ol li.active:last-child{
+    border-radius: 0 10px 10px 0;
+}
+.meter ol li.active span.step {
+    color: #47B4DB;
+    border: 3px solid #47b4db;
+}
+.errorTd{
+    width: 0;
+    padding: 0;
+}
+.errorTr .errorTd{
+    width: 5%;
+    text-align:center;
+}
+.errorTdTwo{
+    width: 100%;
+    position:relative;
+}
+.errorTr .errorTdTwo{
+    width: 95%;
+}
+.table-block-no-width .meter ol li .stage{
+    display:none;
+}
+.mobile-text{
+    display:none;
+}
+.table-block-no-width .mobile-text{
+    display:block;
+    position:absolute;
+    top:-35px;
+    width:100%;
+    text-align:center
+}
+.mobile-text .stage{
+    display:none;
+}
+.mobile-text .stage.active{
+    display:block;
+}
+.mobile-text .stage p{
+    display:inline-block;
+    background:#29A4D0;
+    padding:5px 5px;
+    border-radius:2px;
+    font-size:11px;
+    margin:0;
+    color:#FFF
+}
+
+
+@keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 36px; } }
+
+@-moz-keyframes progress {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 36px; } }
+
+@-webkit-keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 31px; } }
+
+@-ms-keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 36px; } }
+
+@-o-keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 55px; } }
+
+</style>
+</head>
+<body style="background:white;">
+<table width="100%" id="table-block" class="table-block">
+    <tr>
+        <td colspan="2" width="100%" style="padding:0px 0 50px;">
+        </td>
+    </tr>
+    <tr>
+
+        <td class="errorTdTwo">
+            <div class="meter {!if(pr.Status__c == 'CN', 'cancel' , '')}">
+                <ol>
+                    <li class="{!isStepActive1}">
+                        <span class="step">1</span>
+                        <span class="stage"><p>{!stepLabel1}</p></span>
+                    </li>
+                    <li class="{!isStepActive2}">
+                        <span class="step">2</span>
+                        <span class="stage"><p>{!stepLabel2}</p></span>
+                    </li>
+                    <li class="{!isStepActive3}">
+                        <span class="step">3</span>
+                        <span class="stage"><p>{!stepLabel3}</p></span>
+                    </li>
+                    <li class="{!isStepActive4}">
+                        <span class="step">4</span>
+                        <span class="stage"><p>{!stepLabel4}</p></span>
+                    </li>
+                    <apex:outputText rendered="{!pr.Status__c != 'RJ'}">
+                        <li class="{!isStepActive5}">
+                            <span class="step">5</span>
+                            <span class="stage"><p>{!stepLabel5}</p></span>
+                        </li>
+
+                        <apex:outputText rendered="{!pr.Status__c != 'CN'}">
+                            <li class="{!isStepActive6}">
+                                <span class="step">6</span>
+                                <span class="stage"><p>{!stepLabel6}</p></span>
+                            </li>
+                            <li class="{!isStepActive7}">
+                                <span class="step">7</span>
+                                <span class="stage"><p>{!stepLabel7}</p></span>
+                            </li>
+                            <li class="{!isStepActive8}">
+                                <span class="step">8</span>
+                                <span class="stage"><p>{!stepLabel8}</p></span>
+                            </li>
+                            <li class="{!isStepActive9}">
+                                <span class="step">9</span>
+                                <span class="stage"><p>{!stepLabel9}</p></span>
+                            </li> 
+                        </apex:outputText>    
+                    </apex:outputText>               
+                </ol>
+            </div>
+        </td>
+    </tr>
+</table>
+</body>
+</apex:page>

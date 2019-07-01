@@ -1,0 +1,162 @@
+<apex:component >
+    <style>
+        .bs .row {
+        	margin-left: 0px;
+        	margin-right: 0px;
+        	font-family: 'Salesforce Sans', Arial, sans-serif;
+        }
+        #receipts-header, #p-receipts {
+        	margin-left: 20px;
+        }
+        #receipts-header p {
+        	margin-bottom: 20px;
+        }
+        #p-expdetails {
+        	margin-left: 0px;
+        }
+        h1.pageType {
+        	margin-top: 0.4em;
+        	margin-bottom: 0;
+        }
+        h2.pageDescription {
+        	margin-top:0;
+        }
+        .dropped-highlight {
+            border: 2px solid blue;
+        }
+        .dropped-hover {
+            border: 2px solid red;
+        }
+        .dropped-remove {
+        	cursor: move;
+            list-style-type: none;
+            display: absolute;
+            left: 70px;
+            top: 30px;
+            width: 120px;
+            margin-left: 0;
+            margin-right: 18px;
+        	font-size: 11px;
+        }
+        #gallery {
+        	width :100%;
+        	min-height: 500px;
+        	padding-left: 0;
+            list-style-type: none;
+        	display: inline-block;
+        	padding-bottom:200px;
+        }
+        #gallery li {
+        	font-size: 12px;
+        	position: relative;
+        	display: inline-table;
+            float: left;
+            cursor: move;
+            z-index: 2;
+            width: 165px;
+        	height: 165px;
+        	left: 0;
+        	top: 0;
+        }
+        #gallery li img {
+        	max-width: 118px;
+        	max-height: 90px;
+        }
+        li.dragItem {
+        	position: relative;
+        	overflow: hidden;
+        }
+        li.drag-item .fullscreen {
+        	position: absolute;
+        	bottom:10px;
+        	right:10px;
+        	cursor:pointer;
+        }
+        #expenses > li {
+            display: inline-block;
+            width: 100%;
+            margin-left: 0;
+        }
+        #expenses > li > p {
+            margin-bottom: 10px;
+        }
+        #expenses ul {
+            padding-left: 0;
+        	min-height: 100px;
+        }
+        #expenses ul.expdetails li {
+        	position: relative;
+        	display: inline-block;
+        	float: left;
+            cursor: move;
+            z-index: 2;
+            width: 82px;
+        	height: 82px;
+        	left: 0;
+        	top: 0;
+        	padding: 3px;
+        }
+        #expenses ul.expdetails li img {
+        	max-width: 36px;
+        	max-height: 36px;
+        }
+        #expenses ul.expdetails li:hover {
+        	font-size: 12px;
+        	position: relative;
+        	display: inline-table;
+            float: left;
+            cursor: move;
+            z-index: 2;
+            width: 165px;
+        	height: 165px;
+        	left: 0;
+        	top: 0;
+        }
+        #expenses ul.expdetails li:hover img {
+        	max-width: 118px;
+        	max-height: 90px;
+        }
+        #expenses ul.expdetails li p {
+        	font-size: 8px;
+        	word-break: break-all;
+        }
+        #expenses ul.expdetails li:hover p {
+        	font-size: 12px;
+        	word-break: normal;
+        }
+        #expenses ul.expdetails li .fullscreen {
+        	font-size: 12px;
+        }
+        .te-receipt-details {
+        	padding-right: 20px;
+            position: fixed;
+            top: 197px;
+        	width: 48%;
+        	z-index: 2;
+        }
+        #p-receipts, #p-expdetails {
+        	font-size: 14px;
+        	font-weight: bold;
+        	background: #EAEAEA;
+        	padding: 8px;
+        	color: #888;
+        	border-radius: 2px;
+        }
+        .te-expense-detail-id {
+        	font-weight: bold;
+        }
+        .te-expense-detail-summary {
+        	font-size: 14px;
+        }
+        .te-divider {
+        	color: #B8D4AD;
+        	font-weight: normal;
+        }
+        .te-expense-detail-info {
+        	    background: #D1E0CA;
+                padding: 5px;
+                border-radius: 3px;
+                font-size: 11px;
+        }
+    </style>
+</apex:component>

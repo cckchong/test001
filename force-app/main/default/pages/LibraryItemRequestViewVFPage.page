@@ -1,0 +1,2 @@
+<apex:page controller="LibraryItemRequestViewCtrl" action="{!viewRequest}">
+</apex:page>

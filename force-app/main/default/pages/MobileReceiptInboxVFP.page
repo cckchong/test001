@@ -1,0 +1,117 @@
+<apex:page sidebar="false" controller="MobileReceiptInboxCtrl" title="T&E - Organize Receipts" tabStyle="Travel_Application__c">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jQuery_UI_Theme_Shortcut, 'jquery-ui-1.10.4.custom.min.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!$Resource.jQuery_BlockUI}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, 'jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.min.js')}"/>
+    
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js" />
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js" />
+    
+    <c:MobileReceiptInboxJs />
+    <c:MobileReceiptInboxCss />
+    
+    <!-- Templates -->
+    <script type="text/template" id="expense-list-template">
+    	<ul id="expenses" class="expenses">
+        	<% _.each(expenses, function(expense) { %>
+                <li class="bs alert alert-success te-expense-detail-summary" sfid="<%= expense.get('ea').Id %>">
+                    <p>
+                        <div class="te-expense-detail-info">
+                            <span class="te-expense-detail-id">
+                                Expense Application: <a href="/<%= expense.get('ea').Id %>" target="_blank"><%= expense.get('ea').Name %></a>
+                                (Created on: <%= new Date(expense.get('ea').CreatedDate).getDate() %>/<%= new Date(expense.get('ea').CreatedDate).getMonth()+1 %>/<%= new Date(expense.get('ea').CreatedDate).getFullYear() %>)
+                            </span>
+                            <br/>
+                            <strong>Remarks:</strong> <%= expense.get('ea').Remarks__c %><br/>
+                            
+							<div class="te-expense-line-item-list">
+                                <br/>
+                                <ul style="min-height: 0;">
+							<% _.each(expense.get('ea').Expense_Details__r, function(expLine) { %>
+                                <li>
+                                <a href="/<%= expLine.Id %>" target="_blank"><%= expLine.Expense_Type__r.Name %></a>
+                                    <span class="te-divider">|</span>
+                                    <%= new Date(expLine.Receipt_Date__c).getDate() %>/<%= new Date(expLine.Receipt_Date__c).getMonth()+1 %>/<%= new Date(expLine.Receipt_Date__c).getFullYear() %>
+									<span class="te-divider">|</span>
+                                    <%= expLine.Receipt_Currency__r.Name %> <%= expLine.Amount__c %>
+                                    </li>
+                            <% }); %>
+                            </ul>
+                                </div>
+                            
+                        </div>
+                        <br/>
+    
+                        <%= expense.get('Output') %> 
+                    </p>
+                </li>
+        	<% }); %>
+		</ul>
+	</script>
+    <script type="text/template" id="expensedetail-list-template">
+    	<ul class="expdetails">
+        	<% _.each(expdetails, function(expdetail) { %>
+            	<li class="drag-item bs alert alert-info dropped-remove" sfid="<%= expdetail.get('Id') %>" currpid="<%= expdetail.get('ParentId') %>">
+                    <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&versionId=<%= expdetail.get('RelatedRecordId') %>">
+                        <p><%= new Date(expdetail.get('CreatedDate')).getDate() %>/<%= new Date(expdetail.get('CreatedDate')).getMonth()+1 %>/<%= new Date(expdetail.get('CreatedDate')).getFullYear() %><br /><%= expdetail.get('Body') %></p>
+                    <div class="fullscreen">
+                        <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                    </div>
+                </li>
+            <% }); %>
+		</ul>
+	</script>
+    <script type="text/template" id="receipt-list-template">
+    	<ul id="gallery" class="gallery">
+        	<% _.each(receipts, function(receipt) { %>
+                <li class="drag-item bs alert alert-info" sfid="<%= receipt.get('Id') %>" currpid="<%= receipt.get('ParentId') %>">
+                    <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&versionId=<%= receipt.get('RelatedRecordId') %>"><br />
+                    <%= new Date(receipt.get('CreatedDate')).getDate() %>/<%= new Date(receipt.get('CreatedDate')).getMonth()+1 %>/<%= new Date(receipt.get('CreatedDate')).getFullYear() %><br /><%= receipt.get('Body') %>
+                    <div class="fullscreen">
+                        <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                    </div>
+                </li>
+        	<% }); %>
+		</ul>
+	</script>
+    
+    <!-- The HTML Content -->
+    <div class="slds">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-grid">
+                    <div class="slds-media__body">
+                        <h1 class="slds-text-heading--medium">Organize Receipts</h1> 
+                    </div>
+
+                    <div class="slds-col slds-no-flex slds-align-middle">
+                        <div class="slds-button-group" role="group" style="display: inline-block;">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-sm-6" style="height:500px;">
+            </div>
+            <div class="te-receipt-details">
+                <p id="p-receipts">Uploaded Receipts</p>
+                <div class="receipts-content">
+                </div>
+            </div>
+            <div class="bs col-sm-6" style="margin-top: 12px;">
+                <p id="p-expdetails">Latest Expense Applications (Draft or Not Submitted)</p>
+                <div class="expenses-content">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="loading" style="display:none">
+        <h1 style="font-size:18px">
+            <img src="/img/loading.gif" />&nbsp;&nbsp;Loading...
+        </h1>
+    </div>
+</apex:page>

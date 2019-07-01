@@ -1,0 +1,40 @@
+<!-- Purely for Cancel Leave button linked to Visualforce page on Page Layout -->
+<apex:page standardController="Travel_Application__c" sidebar="false" showHeader="false" extensions="TETravelApplicationCancellationCtrl"  >
+
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <c:JavascriptUtilsComponent />
+    <!--CancelAction();-->
+    <script>
+        $(document).ready(function() {
+            var validationWarningMsg = 'Are you sure to recall the Travel Application?';
+            RecallAction();
+            if(getIsSalesforceOne()) {
+              
+                var mobileRouteResult = '{!mobileRoute.navResult}';
+                var message = '{!mobileRoute.infoMessage}';
+                 if(  message != '') {
+                    alert(message);
+                }
+                
+                
+                if(mobileRouteResult == 'BACK') {
+                    //history.go(-2); // This page comes in via browser navigation, so we trigger browser back instead of Salesforce1 back
+                    sforce.one.back(true);
+                }
+            }
+            else{
+                if(confirm(validationWarningMsg)){ 
+                    RecallAction();
+                }
+                else{
+                    clearAction();
+                }
+            
+            }  
+        });
+    </script>
+    <apex:form >
+        <apex:actionfunction name="RecallAction" action="{!recall}" />
+        <apex:actionfunction name="clearAction" action="{!clear}" />
+    </apex:form> 
+</apex:page>

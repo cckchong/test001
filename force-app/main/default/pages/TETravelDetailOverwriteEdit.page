@@ -1,0 +1,3 @@
+<apex:page StandardController="Travel_Detail__c" extensions="TETravelDetailOverwriteEditCtrl" action="{!redirect}">
+
+</apex:page>

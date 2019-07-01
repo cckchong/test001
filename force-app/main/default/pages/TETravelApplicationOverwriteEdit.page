@@ -1,0 +1,3 @@
+<apex:page StandardController="Travel_Application__c" extensions="TETravelApplicationOverwriteEditCtrl" action="{!redirect}">
+
+</apex:page>

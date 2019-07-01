@@ -1,0 +1,5 @@
+<apex:page StandardController="Leave_Application__c" >
+    <script>
+        window.location.href='./EleaveVFP?sfdc.tabName=01rO00000004l1b';
+    </script>
+</apex:page>

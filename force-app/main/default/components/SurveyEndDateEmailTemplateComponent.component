@@ -1,0 +1,12 @@
+<apex:component access="global" controller="SurveyFormatDateController">
+	<apex:attribute assignTo="{!dateTimeValue}" description="The DateTime value to be rendered" name="date_time" type="DateTime"></apex:attribute>
+	<apex:attribute assignTo="{!emailType}" description="Email Type" name="email_type" type="String"></apex:attribute>
+
+    <apex:outputText rendered="{!showDateTimeValue}" 
+        value="Please click the link below to complete the survey by {0}.">
+       <apex:param value="{!formattedDateTime}"/>
+    </apex:outputText>
+    <apex:outputText rendered="{!showDateTimeValue == false}" 
+        value="Please click the link below to complete the survey." />
+
+</apex:component>

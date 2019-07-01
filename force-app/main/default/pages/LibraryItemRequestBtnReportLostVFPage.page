@@ -1,0 +1,20 @@
+<apex:page StandardController="Library_Item_Request__c" extensions="LibraryItemRequestButtonCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+
+    <apex:form >
+        <apex:actionFunction action="{!reportLostAction}" name="jsSetIsMobile" oncomplete="Sfdc.canvas.publisher.publish({name: 'publisher.close', payload:{ refresh:'true'}});">
+            <apex:param name="isSalesforceOne" assignTo="{!isSalesforceOne}" value="true" />
+        </apex:actionFunction>
+    </apex:form>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var isSalesforceOne = false;    
+            if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+                isSalesforceOne = true;
+            }           
+            jsSetIsMobile(isSalesforceOne);
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,103 @@
+<apex:component >
+
+    <script>
+        var $tabs = null;
+        var $js_basic_single = null;
+        var tableInit = null;
+        var $priTable = null;
+        var $result = null;
+        var priTable = null;
+        var $newPOButtonGroup = null;
+        var $existingPOButtonGroup = null;
+        var $dateFormat = null;
+        var $fromDate = null;
+        var $toDate = null;
+    </script>
+    
+    <script>
+        $(function() {initVariable();init();});
+        
+        function initVariable(){
+            $tabs = $("#tabs");
+            $js_basic_single = $(".js-basic-single"); 
+            $priTable = $("#priTable");
+            $result = $("#resultTable");
+            $newPOButtonGroup = $("#newPOButtonGroup");
+            $existingPOButtonGroup = $("#existingPOButtonGroup");
+            $dateFormat = $(".dateFormat");
+            $fromDate = $(".fromDate");
+            $toDate = $(".toDate");
+        }    
+        
+        function init(){
+            $tabs.tabs();
+            $js_basic_single.select2({placeholder: "Select Option", allowClear: false});
+            $dateFormat.fadeOut(0);
+            $fromDate.val("");
+            $toDate.val("");
+            
+            //priTable = $("#priTable").DataTable(tableInit); 
+        }
+
+
+        /* function dataTableInitSetting() {
+                return {
+
+                    "scrollY": 265,
+                    "scrollX": true,
+                    "paging": true,
+                    "pageLength": 2,
+                    "scrollCollapse": true,
+                    "bFilter": false,
+                    "bInfo": false,
+                    "bSort": false,
+                    "bAutoWidth": false,
+                    "deferRender": true
+                };
+        } */
+        
+        function dataTableInitSetting() {
+        	 return {
+                "paging":   false,
+                "info":     false,
+                "searching" : false,
+                "stateSave": true,
+                "columnDefs": [ {  
+                "targets": 'no-sort',
+                "orderable": false
+                } ]
+            };    
+        }
+        
+        
+        function searchOnComplete(){
+            $PRIDetail.fadeIn(0); 
+        //     tableInit = dataTableInitSetting();
+        //     $("#priTable").DataTable(tableInit); 
+        }
+        
+        function clearOnComplete() {
+            initVariable();
+            init();
+        }
+        function selectAllCheckboxes(obj,receivedInputID){
+            var inputCheckBox = document.getElementsByTagName("input");                  
+            for(var i=0; i<inputCheckBox.length; i++){          
+                if(inputCheckBox[i].id.indexOf(receivedInputID)!=-1){                                     
+                    inputCheckBox[i].checked = obj.checked;
+                }
+            }
+        }
+        
+        function addToExistingPOOnClick(){
+            $newPOButtonGroup.fadeOut(0);
+            $existingPOButtonGroup.fadeIn(0);   
+        }
+        function cancelAddToExistingPOOnClick(){
+            $existingPOButtonGroup.fadeOut(0);   
+            $newPOButtonGroup.fadeIn(0);
+        }                  
+    </script>
+    
+
+</apex:component>

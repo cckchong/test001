@@ -1,0 +1,13 @@
+<apex:page controller="ELeaveSwitchCtrl" cache="false" sidebar="false" showheader="true">
+    <apex:pageBlock title="Leave Switch" mode="edit"> 
+        <apex:form >
+            <blockquote>
+                <apex:outputText rendered="{!boolDisabled}">You can click below button to enable E-Leave Application.<br/><br/></apex:outputText>
+                <apex:commandButton action="{!enableAction}" value="Enable" id="enableButton" rendered="{!boolDisabled}"/>
+                
+                <apex:outputText rendered="{!!boolDisabled}">You can click below button to disable E-Leave Application.<br/><br/></apex:outputText>
+                <apex:commandButton action="{!disableAction}" value="Disable" id="disableButton" rendered="{!!boolDisabled}"/>
+            </blockquote>
+        </apex:form>
+    </apex:pageBlock>
+</apex:page>

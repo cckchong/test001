@@ -1,0 +1,181 @@
+<apex:component controller="LibraryMobileQrCodeComponentCtrl">
+	<!-- 
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap, '/js/bootstrap.min.js')}" />
+    -->
+    <apex:includeScript value="{!$Resource.megapix}" />
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/grid.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/version.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/detector.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/formatinf.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/errorlevel.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/bitmat.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/datablock.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/bmparser.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/datamask.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/rsdecoder.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/gf256poly.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/gf256.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/decoder.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/qrcode.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/findpat.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/alignpat.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.QRCode, 'jsqrcode-master/src/databr.js')}"></script>
+    <style>
+        .TalScanMsg {
+            padding-left: 5px;
+        }
+        .TalLoaderImg, .TalMobileLoaderImg {
+            display:none;
+            padding-left:20px;
+        }
+        .TalSfdcButton {
+            color: #333;
+            margin: 1px;
+            padding: 2px 3px;
+            border: 1px solid #b5b5b5;
+            border-bottom-color: #7f7f7f;
+            background: #e8e8e9 url('/img/alohaSkin/btn_sprite.png') repeat-x right top;
+            font-weight: bold;
+            font-size: .9em;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+            padding: 4px 3px;
+        }
+        .bs .btn {
+            padding-top:3px;
+            padding-bottom: 3px;
+            font-size: 12px;
+        }
+        #TalInputtedValue {
+        	margin-left: 20px;
+			border-bottom: 1px dashed #888;
+			color: #888;
+        }
+    </style>
+
+    <div class="bs row">
+        <div class="bs col-xs-12 col-sm-12 col-md-12">
+        <br/><br/>
+            <div class="bs well">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <h4>Scan Book QR Code</h4>
+                                <br/>
+                                <span style="color:#888;">Click "Choose File" button to capture QR Code</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/><br/>
+                <apex:form >
+                    <input id="imageFile" name="imageFile" type="file" onchange="previewFile()" accept="image/*" /><br/>
+		<br/>
+                	<div style="text-align:center;">
+                		<img id="qrcodeyay" src="" alt="" style="width: 250px;"/>
+                	</div><!-- 
+                	<div>
+                		<canvas id="canvas1" width="150" height="150" style="border: 1px solid black"></canvas>
+                	</div> -->
+                </apex:form>
+                <br/>
+                <button id="decode" onclick="decode()" class="bs btn btn-primary" 
+                			style="padding-top:8px;padding-bottom:8px;width:100%;">Submit</button>
+                <img src="/img/loading.gif" id="loadingImg" style="display:none;" />
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        
+        $(document).ready(function() {
+            qrcode.callback = readBarcode;
+            
+        });
+        
+        /** Begin Book Check-out JavaScript */
+        function readBarcode(a) {
+            addToLibraryCartAndRedirect(a);
+        }
+        
+        //var can = document.getElementById('canvas1');
+		//var ctx = can.getContext('2d');
+
+        function previewFile() {
+            //var preview = document.querySelector('#preview');
+            //var file    = document.querySelector('input[type=file]').files[0];
+            //var reader  = new FileReader();
+            
+            //reader.onloadend = function () {
+                //preview.src = reader.result;
+
+					var mpImg = new MegaPixImage($('#imageFile')[0].files[0]);
+				
+					var resImg = document.getElementById('qrcodeyay');
+					mpImg.render(resImg, { maxWidth: 250, maxHeight: 250, quality: 0.92 });
+					
+					/*
+					setTimeout(function() {
+						var img = new Image();
+	                	img.src = $("#qrcodeyay").attr("src");
+	                    var bigside = Math.max(img.width, img.height);
+					    var ratio =  0.50;
+					    can.width = img.width * ratio;
+					    can.height = img.height* ratio;
+					    ctx.scale(ratio, ratio); // scale by 1/4
+	    				ctx.drawImage(img, 0, 0);
+	    				alert(can.toDataURL());
+			        }, 500);
+			        */
+
+            //}
+            
+            //if (file) {
+            //    reader.readAsDataURL(file);
+            //} else {
+            //    preview.src = "";
+            //}
+        }
+ 
+        function decode() {
+            try {
+                //var preview=document.querySelector('#preview');
+                //qrcode.decode(preview.src);
+                //qrcode.decode(can.toDataURL());
+                qrcode.decode($("#qrcodeyay").attr("src"));
+            } catch(e) {
+               alert('Error - ' + e);
+            }
+        }
+        
+        function addToLibraryCartAndRedirect(inventoryId) {
+			$('#decode').hide();
+			$('#loadingImg').show();
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibraryMobileQrCodeComponentCtrl.bookBorrowAction}',
+                inventoryId,
+                function(result, event){
+                	$('#decode').show();
+					$('#loadingImg').hide();
+			
+                    if (event.status) {
+                        if(result != '') {
+                        	//alert(result);
+                            sforce.one.navigateToSObject(result);
+                        } else {
+                            alert('Invalid QR Code. Try again.');
+                        }
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+    </script>
+</apex:component>

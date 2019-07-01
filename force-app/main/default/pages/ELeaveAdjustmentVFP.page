@@ -1,0 +1,363 @@
+<apex:page controller="EleaveBatchController"  docType="html-5.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.dc_auto_complete, 'select2/select2.min.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.dc_auto_complete, 'json2.js')}"  />
+    <apex:stylesheet value="{!URLFOR($Resource.dc_auto_complete, 'select2/select2.css')}" />
+    <c:JavascriptUtilsComponent />
+    
+     <style>
+        .bs .row {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+        .bs .btn {
+            color: #333;
+            margin: 1px;
+            padding: 2px 3px;
+            border: 1px solid #b5b5b5;
+            border-bottom-color: #7f7f7f;
+            background: #e8e8e9 url('/img/alohaSkin/btn_sprite.png') repeat-x right top;
+            font-weight: bold;
+            font-size: .9em;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+        }
+        .bs .mobileBtn {
+            background-image: none;
+            border-radius: 2px;
+            padding: 5px 12px;
+            font-size: 11px;
+        }
+        .bs .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 3px;
+        }
+        .TalCustomHeader {
+            padding-bottom: 10px;
+            padding-top: 10px;
+            
+        }
+        .TalCustomHeader a {
+            text-decoration: none;
+            background: #EAEAEA;
+            border-radius: 2px;
+            color: #888;
+            padding: 5px;
+            font-size: 11pt;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        .TalCustomHeader a:hover {
+            text-decoration: none;
+            color: black;
+        }
+        .TalCustomHeader table td{
+            vertical-align: middle;
+            font-size: 12pt;
+            font-weight: bold;
+            letter-spacing: -1px;
+            color: #767676;
+        }
+        .TalCustomHeader table {
+            width: 100%;
+        }
+        .tal-bottom-border {
+            padding-bottom: 5px;
+            border-bottom: 1px solid #EAEAEA;
+        }
+    </style> 
+    <div class="bs container">
+        <div class="bs row">
+            <div class ="bs col-xs-12">
+                <apex:form id="form" styleclass="bs form-inline">
+                
+                    
+                        <div class="TalCustomHeader">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td width="32px">
+                                            <img src="/img/icon/plane24.png" />
+                                        </td>
+                                        <td width="200px">
+                                            E-Leave Adjustment
+                                        </td>
+                                        <td>
+                                            <apex:actionStatus id="pageLoadingStatus">
+                                                <apex:facet name="start">
+                                                    <img src="/img/loading.gif"/>
+                                                </apex:facet>
+                                            </apex:actionStatus>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <apex:pageBlock mode="maindetail">
+                        <apex:pageBlock >
+                        
+                            <div class="bs row">
+                                <apex:outputPanel id="submit" >
+                                    <!-- Added by William -->
+                                    <div class="bs col-sm-12" style="text-align:right;">
+                                        <!-- Commented By William
+                                        <apex:commandButton value="Search"  action="{!adjustmentSubmitAction}" />
+                                        -->
+                                        <!--Added By William -->
+                                        <apex:commandButton value="Search" action="{!adjustmentSearch}" reRender="form"   />
+                                        <!--
+                                        <apex:commandButton value="Search" action="{!adjustmentSearch}" reRender="form"  rendered="{!stringErrorMessage != ''}"/>
+                                        <apex:commandButton value="Search" onclick="javascript:window.alert('Please, check Holiday and Early Release setting.');"   reRender="form"  rendered="{!stringErrorMessage == '' }"/>
+                                        -->
+                                    </div>
+                                    <!-- Commment by William
+                                    <div class="bs col-sm-12" style="text-align:right">
+                                        <apex:commandButton value="Submit"  action="{!adjustmentSubmitAction}"  rendered="{!stringParameterID ==null && stringErrorMessage != '' }"   />
+                                        <apex:commandButton value="Submit"  action="{!adjustmentSubmitAction}"  rendered="{!stringParameterID ==null && stringErrorMessage == '' }" onclick="if(!confirm('{!stringErrorMessage }')){return;}"  />
+                                    </div>
+                                    -->
+                                </apex:outputPanel>
+                                 
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                 <div class="bs col-sm-2"  style="width:100px;">
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Employee__c.fields.Name.label}"> </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:250px;" >
+                                     <apex:inputText value="{!LeaveRequest.Employee_ID__r.name }" style="width:250px;" disabled="true"  />
+                                 </div>
+                                 <div class="bs col-sm-2" style="width:210px;">
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:100px;">
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Employee__c.fields.Department__c.label}"> </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2"   style="width:180px;">
+                                     <apex:inputText value="{!LeaveRequest.Employee_ID__r.Department__c}" disabled="true" style="width:180px;"  />
+                                 </div>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                 <apex:actionRegion immediate="true">
+                                 <div class="bs col-sm-2"  style="width:100px;">
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Site"> </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:180px;">
+                                     <apex:inputField value="{!LeaveRequest.Employee_ID__r.Site__c}" id="Site" rendered="{!stringParameterID==null}" required="true"  >
+                                          <apex:actionSupport event="onchange" action="{!changeSite}" rerender="LeavePolicy, LeaveType" />
+                                      </apex:inputField>
+                                      <apex:inputText value="{!LeaveRequest.Employee_ID__r.Site__r.name}" rendered="{!stringParameterID !=null}"  disabled="true"/> 
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:100px;">
+                                      <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Application__c.fields.Mandatory_Leave_Policy__c.label}"> </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2"     style="width:180px;">
+                                    <apex:selectList size="1" value="{!LeaveApplication.Mandatory_Leave_Policy__c}" id="LeavePolicy"  rendered="{!stringParameterID ==null}" style="width:150px;"  >
+                                          <apex:selectOptions value="{!ListLeavePolicyOption}"/>
+                                          <apex:actionSupport event="onchange" action="{!changeLeaveType}" rerender="LeaveType" />
+                                    </apex:selectList>
+                                    <apex:inputText value="{!LeaveRequest.Employee_ID__r.leave_policy__r.name}" rendered="{!stringParameterID !=null}"  disabled="true"/> 
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:100px;">
+                                    <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="{!$ObjectType.Leave_Request__c.fields.Leave_Type__c.label}"> </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2" style="width:180px;">
+                                      <apex:selectList size="1" value="{!LeaveRequest.Leave_Type__c}"  id="LeaveType"  rendered="{!stringParameterID ==null}"  style="width:180px;"  >
+                                          <apex:selectOptions value="{!ListLeaveTypeOption}"/>
+                                      </apex:selectList> 
+                                      <apex:inputText value="{!LeaveRequest.Leave_type__r.Display_Name__c}" rendered="{!stringParameterID !=null}"  disabled="true"/> 
+                                 </div>
+                                 </apex:actionRegion>
+                            </div>
+                            <br/>
+                            <div class="bs row">
+                                 <div class="bs col-sm-2" style="width:100px;">
+                                      <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;" value="Date"> </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:180px;">
+                                     <apex:inputField value="{!LeaveRequest.From_Date__c}"  rendered="{!stringParameterID ==null}" required="true" >
+                                         <!--<apex:actionSupport event="onchange"  action="{!changeAdjDate}"  reRender="submit"  />-->
+                                     </apex:inputField>
+                                     <apex:inputText value="{!dateApplicationDate }" rendered="{!stringParameterID !=null}"  disabled="true"/> 
+                                 </div>
+                                 
+                                 
+                                 <div class="bs col-sm-2" style="width:100px;">
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="StartTime" > </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-1"  style="width:80px;">
+                                          <apex:inputField value="{!LeaveRequest.From_Hour__c}"  /> 
+                                 </div>
+                                 <div class="bs col-sm-1" style="width:100px;">
+                                       <apex:inputField value="{!LeaveRequest.From_Minute__c}"  />
+                                 </div>
+                                 <div class="bs col-sm-2" style="width:100px;">
+                                     <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="End Time" > </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-1"  style="width:80px;">
+                                          <apex:inputField value="{!LeaveRequest.To_Hour__c}"  /> 
+                                 </div>
+                                 <div class="bs col-sm-1" style="width:90px;">
+                                       <apex:inputField value="{!LeaveRequest.To_Minute__c}"  />
+                                 </div>
+                                 
+                                 
+                                 <div class="bs col-sm-2"></div>
+                                 <div class="bs col-sm-2"></div>
+                            </div> 
+                            <!-- Commented by William
+                            <br/>
+                            <div class="bs row">
+                                <div class="bs col-sm-2"  style="width:100px;">
+                                      <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="Adjustment" > </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-2"  style="width:180px;">-->
+                                     <!--<apex:inputField value="{!LeaveRequest.Deduction__c}" required="true" /  > -->
+                            <!-- Commented by William         
+                                     <div class="requiredInput">
+                                         <div class="requiredBlock"></div>
+                                         <apex:inputfield value="{!LeaveRequest.Deduction__c}"   required="true" />
+                                     </div>
+                                     
+                                 </div>
+                                  <div class="bs col-sm-8"></div>
+                            </div>
+                            -->
+                            <br/>
+                            <div class="bs row">
+                                <div class="bs col-sm-2"  style="width:100px;">
+                                      <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="Adjustment" > </apex:outputLabel>
+                                 </div>
+                                 <div class="bs col-sm-10"  style="width:180px;">
+                                     <div class="requiredInput">
+                                         <div class="requiredBlock"></div>
+                                         <apex:inputfield value="{!LeaveRequest.Deduction__c}"   required="true" />
+                                     </div>
+                                     
+                                 </div> 
+                            </div>
+                            
+                        </apex:pageBlock>
+                    </apex:pageBlock>
+                    
+                    <apex:pageBlock rendered="{!displaySearchResult}"><!-- Added by William -->
+                        <div class="bs row">
+                             <div class="bs col-sm-12" style="text-align:right;">
+                                 <apex:commandButton value="Submit" action="{!adjustmentSubmitAction}"  />
+                             </div>
+                        </div>
+                        <div class="bs row">
+                        <!--
+                            <div class="bs col-sm-2"  style="width:100px;">
+                                  <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="Adjustment" > </apex:outputLabel>
+                             </div>
+                             <div class="bs col-sm-2"  style="width:180px;">
+                                 <div class="requiredInput">
+                                     <div class="requiredBlock"></div>
+                                     <apex:inputfield value="{!LeaveRequest.Deduction__c}"   required="false" />
+                                 </div>
+                                 
+                             </div>
+                        -->
+                             <div class="bs col-sm-2"  style="width:100px;">
+                                  <apex:outputLabel style="text-align:left;font-weight:bold;padding-right:5px;"  value="Adjustment Remark" > </apex:outputLabel>
+                             </div>
+                             <div class="bs col-sm-10"  >
+                                 <apex:inputField value="{!LeaveRequest.Remarks__c}"  />
+                                 <!--
+                                 <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                     <apex:inputTextarea cols="74" rows="2" />
+                                 </div>
+                                 -->
+                             </div>
+                        </div>
+                        <BR/>
+                        <!--
+                        <apex:outputPanel ></apex:outputPanel>
+                        <apex:actionSupport event="onchange"  action="{!changeLeaveRequestSelection  }"  rendered="dataSet"/>
+                        -->
+                        <apex:dataTable value="{!leaveRequestSearchResultset}" var="leaveRequestVO">
+                            <apex:column width="30px">
+                                <apex:facet name="header">
+                                    <!--<input type="checkbox"  />-->
+                                    <apex:inputCheckbox >
+                                         <apex:actionSupport event="onclick"  action="{!changeLeaveRequestSelection  }"    reRender="dataSet"/>
+                                    </apex:inputCheckbox>
+                                </apex:facet>
+                                <!--<input type="checkbox" />-->
+                                <apex:actionRegion immediate="true">
+                                <apex:outputPanel id="dataSet">
+                                    <apex:inputCheckbox value="{!leaveRequestVO.selected}" />
+                                </apex:outputPanel>
+                                </apex:actionRegion>
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">Employee ID</apex:facet>
+                                <apex:outputField value="{!leaveRequestVO.leaveRequest.On_Behalf_of__c}" />
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">Full Name</apex:facet>
+                                <apex:outputText value="{!leaveRequestVO.leaveRequest.On_Behalf_of_Full_Name__c}" />
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">Leave Request</apex:facet>
+                                <!--
+                                <apex:outputLink value="/{!leaveRequestVO.leaveRequest.id}">{!leaveRequestVO.leaveRequest.ChatterFeedId__c}</apex:outputLink>
+                                -->
+                                <apex:outputLink value="/{!leaveRequestVO.leaveRequest.id}">{!leaveRequestVO.leaveRequest.name}</apex:outputLink>
+                                 
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">Leave Type</apex:facet>
+                                <apex:outputText value="{!leaveRequestVO.leaveRequest.Leave_Type_Display_Name__c}" />
+                                <!--<apex:outputField value="{!leaveRequestVO.leaveRequest.Leave_Type__c}" />-->
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">From Session</apex:facet>
+                                
+                                <apex:outputText value="{0,date,dd/MM/yyyy} {1}">
+                                    <apex:param value="{!leaveRequestVO.leaveRequest.From_Date__c}" />
+                                    <apex:param value="{!SUBSTITUTE(leaveRequestVO.leaveRequest.From_Time__c, ' ', '')}" />
+                                </apex:outputText>
+                                
+                                 
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">To Session</apex:facet>
+                                <apex:outputText value="{0,date,dd/MM/yyyy} {1}">
+                                    <apex:param value="{!leaveRequestVO.leaveRequest.To_Date__c}" />
+                                    <apex:param value="{!SUBSTITUTE(leaveRequestVO.leaveRequest.To_Time__c, ' ', '')}" />
+                                </apex:outputText>
+                                
+                            </apex:column>
+                            
+                            <apex:column width="120px">
+                                <apex:facet name="header">Total Days</apex:facet>
+                                <apex:outputText value="{0,number,0.00}">
+                                    <apex:param value="{!leaveRequestVO.leaveRequest.Total_Days_Display__c}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column >
+                                <apex:facet name="header">Adjustment Remark</apex:facet>
+                                <apex:outputField value="{!leaveRequestVO.leaveRequest.Remarks__c}" />
+                            </apex:column>
+                        </apex:dataTable>                         
+                    </apex:pageBlock>
+                </apex:form>
+            </div>
+        </div>
+    </div>
+</apex:page>

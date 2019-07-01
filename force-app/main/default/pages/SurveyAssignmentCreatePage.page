@@ -1,0 +1,130 @@
+<apex:page standardController="Survey_Assignment__c" extensions="SurveyAssignmentController" showHeader="true" sidebar="true" action="{!checkAccessRight}">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+
+    <style>
+        /* Added by Connie. Remove border-top in pPageBlock */
+        .bPageBlock {
+            border-top: 4px solid #eaeaea !important;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+
+        $j(document).ready(function () {
+            // when user presses enter key in input user textbox, click find button to query user name
+            $j("input[id$='txtInputUser']").keypress(function(event){
+              if(event.keyCode == 13){
+                event.preventDefault();
+                var ctrl = $j("input[id$='btnQueryUser']");
+                ctrl.focus();
+                ctrl.click();
+                return false;
+              }
+            });
+
+            // when user presses enter key in input group textbox, click find button to query public group
+            $j("input[id$='txtInputPublicGroup']").keypress(function(event){
+              if(event.keyCode == 13){
+                event.preventDefault();
+                var ctrl = $j("input[id$='btnQueryGroup']");
+                ctrl.focus();
+                ctrl.click();
+                return false;
+              }
+            });
+        });
+        
+        function checkSelectedUsersAndGroups() {
+            // alert( $j('#selected_user_list').length );
+            // alert( $j('#selected_group_list').length );    
+            //comment by DTT Team                    
+        }
+    </script>
+
+    <div class="bs container">
+        <apex:form id="theForm">
+            <apex:pageBlock id="surveyAssignmentPageBlock">
+                <apex:pageBlockButtons >
+                       
+                        <apex:commandButton action="{!saveAssignment}" id="btnSaveAssignment" value="{!$Label.LABS_SF_Save}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Save}" onclick="checkSelectedUsersAndGroups();" />
+                        <apex:commandButton action="{!backToAssignmentListing}" id="btnCancel" value="{!$Label.LABS_SF_Cancel}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Cancel}" />
+
+                </apex:pageBlockButtons>
+                <!-- <apex:pageMessages/> -->
+                <apex:pageMessages id="showmsg"></apex:pageMessages>
+                <apex:pageBlockSection columns="1">
+                <!--
+                    <apex:outputLabel value="{!$Label.LABS_SF_New_Taker}" />
+                -->
+                    <apex:outputText >
+                    <apex:outputLabel value="{!$Label.LABS_SF_New_User_Group_Sharing}" /><BR/>
+                    <font color="blue">
+                        <apex:outputLabel value="{!$Label.LABS_SF_Limitation}" />                   
+                        <apex:outputLabel value="{!$Label.LABS_SF_Limitation2}" />                   
+                    </font>
+                    </apex:outputText>
+                    
+                    <apex:pageBlockSectionItem >
+                        <apex:panelGrid columns="3">
+                            <apex:outputLabel value="User:" style="margin-right: 5px;margin-top: 5px;"  />
+                            <apex:inputText id="txtInputUser" value="{!inputUser}" style="margin-right: 8px;margin-top: 5px;" />
+                            <apex:commandButton id="btnQueryUser" action="{!queryUsers}" value="Find" reRender="unselected_user_list" styleClass="bs btn btn-default btn-sm" style="margin-right: 5px;" />
+                        </apex:panelGrid>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:panelGrid columns="3" id="select_user_grid">
+                    <apex:selectList id="unselected_user_list" required="false" 
+                        value="{!selectedUsers}" multiselect="true" size="20" style="width:200px;margin-right:10px;">
+                        <apex:selectOptions value="{!unselectedUserOptions}"/>
+                    </apex:selectList>
+                    <apex:panelGroup style="margin-right:10px;">
+                        <apex:commandButton value=">>" styleClass="bs btn btn-default btn-sm" 
+                            action="{!doAddUser}" rerender="unselected_user_list,selected_user_list,showmsg"/>
+                        <br/>
+                        <apex:commandButton value="<<"  styleClass="bs btn btn-default btn-sm"
+                            action="{!doRemoveUser}" rerender="unselected_user_list,selected_user_list,showmsg"/>
+                    </apex:panelGroup>
+                    <apex:selectList id="selected_user_list" required="false" 
+                        value="{!unselectedUsers}" multiselect="true" size="20" style="width:200px;margin-right:10px">
+                        <apex:selectOptions value="{!selectedUserOptions}"/>
+                    </apex:selectList>
+                </apex:panelGrid>
+                
+                <apex:pageBlockSection columns="1" rendered="{!mode == 'taker'}">
+                    <!--
+                    <apex:outputLabel value="{!$Label.LABS_SF_New_User_Group_Sharing}" />
+                    -->
+                    <BR/>
+                    <apex:pageBlockSectionItem >
+                        <apex:panelGrid columns="3">
+                            <apex:outputLabel value="Group:" style="margin-right: 5px;margin-top: 5px;"  />
+                            <apex:inputText id="txtInputPublicGroup" value="{!inputPublicGroup}" style="margin-right: 5px;margin-top: 5px;" />
+                            <apex:commandButton id="btnQueryGroup"  action="{!queryGroups}" value="Find" styleClass="bs btn btn-default btn-sm" style="margin-right: 5px;" />
+                        </apex:panelGrid>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+
+                <apex:panelGrid columns="3" id="select_group_grid" rendered="{!mode == 'taker'}">
+                    <apex:selectList id="unselected_group_list" required="false" 
+                        value="{!selectedPublicGroups}" multiselect="true" size="20" style="width:200px;margin-right:10px;">
+                        <apex:selectOptions value="{!unselectedGroupOptions}"/>
+                    </apex:selectList>
+                    <apex:panelGroup style="margin-right:10px;">
+                        <apex:commandButton value=">>" styleClass="bs btn btn-default btn-sm" 
+                            action="{!doAddGroup}" rerender="unselected_group_list,selected_group_list,showmsg"/>
+                        <br/>
+                        <apex:commandButton value="<<"  styleClass="bs btn btn-default btn-sm"
+                            action="{!doRemoveGroup}" rerender="unselected_group_list,selected_group_list,showmsg"/>
+                    </apex:panelGroup>
+                    <apex:selectList id="selected_group_list" required="false" 
+                        value="{!unselectedPublicGroups}" multiselect="true" size="20" style="width:200px;margin-right:10px">
+                        <apex:selectOptions value="{!selectedGroupOptions}"/>
+                    </apex:selectList>
+                </apex:panelGrid>
+
+            </apex:pageBlock>
+        </apex:form>
+    </div>
+</apex:page>

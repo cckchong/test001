@@ -1,0 +1,28 @@
+<apex:page showHeader="true" sidebar="true">
+    
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+
+    <style>
+        .bPageBlock {
+            border-top-color: #eaeaea !important;
+        }
+    </style>
+
+    <div class="bs container">
+        <!--
+        <h2 class="bs col-md-8 col-sm-8 col-lg-8 col-md-offset-2 col-sm-offset-2 col-lg-offset-2">Survey Error Page</h2>
+        -->
+        <div class="bs row">
+            <div class="bs alert alert-danger col-md-8 col-sm-8 col-lg-8 col-md-offset-2 col-sm-offset-2 col-lg-offset-2" style="margin-top: 10px;">
+                {!$CurrentPage.parameters.error}
+            </div>
+        </div>
+        <!--
+        <div class="bs row">
+            <div class="bs col-md-8 col-sm-8 col-lg-8 col-md-offset-2 col-sm-offset-2 col-lg-offset-2">
+                <apex:outputLink value="{! URLFOR($Action.Survey__c.Tab, $ObjectType.Survey__c)}">Back to Survey</apex:outputLink>
+            </div>
+        </div>
+        -->
+    </div>
+</apex:page>

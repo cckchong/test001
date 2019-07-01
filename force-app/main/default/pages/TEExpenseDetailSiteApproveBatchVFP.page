@@ -1,0 +1,4 @@
+<apex:page standardController="Expense_Detail__c" recordSetVar="ExpenseDetail"  sidebar="false" showHeader="false" extensions="TEExpenseDetailSiteAdminApproveBatchCtrl"
+            action="{!approveAllexpenseDetail}">
+
+</apex:page>

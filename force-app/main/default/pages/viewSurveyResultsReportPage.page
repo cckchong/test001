@@ -1,0 +1,209 @@
+<apex:page standardcontroller="Survey__c" extensions="viewSurveyResultsReportController" cache="false" sidebar="false" showheader="false" 
+    id="thePage">
+
+  <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+  <style>
+    /* This is for the full screen DIV */
+    .popupBackground {
+        /* Background color */
+        background-color:black;
+        opacity: 0.20;
+        filter: alpha(opacity = 20);
+    
+        /* Dimensions */
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 998;
+        position: absolute;
+        
+        /* Mouse */
+        cursor:wait;
+    }
+ 
+    /* This is for the message DIV */
+    .PopupPanel {
+        /* Background color */
+        border: solid 2px blue;
+        background-color: white;
+ 
+        /* Dimensions */
+        left: 50%;
+        width: 200px;
+        margin-left: -100px;
+        top: 50%;
+        height: 50px;
+        margin-top: -25px;
+        z-index: 999;
+        position: fixed;
+        
+        /* Mouse */
+        cursor:pointer;
+    }
+
+    .bs .table-striped>tbody>tr:nth-child(odd)>td,.bs .table-striped>tbody>tr:nth-child(odd)>th{
+        background-color:#d9edf7
+    }
+
+    .bPageBlock {
+        border-top: none;
+    }
+
+    /*  commented out by Connie. Remove Grand Total Row       
+    .grandTotal {
+        border-top: 1px solid #333;
+        background-color: #818290;
+        font-weight: bold;
+        font-size: 24px;
+    }*/
+
+    .bs label {
+        display: inline-block;
+        margin-bottom: 5px;
+        font-weight: 700;
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    td .data-col {
+        height: 40px;
+        text-align: right;
+        vertical-align: bottom !important;
+    }
+
+    .report-question {
+        font-weight:bold; 
+        color: #555;
+    }
+
+</style>
+    <!-- added by Connie. include jQuery script --> 
+    <apex:includeScript value="{!URLFOR($Resource.SurveyForce, 'jquery.js')}"/>
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+        $j(document).ready(function () {
+
+            $j("input[id$='btnExport']").click(function exportExcel() {
+                window.open('/apex/SurveyExportSurveyResultsAsExcel?surveyId={!surveyId}&reportId={!reportId}&ext=csv', "_blank");
+                return false;
+            });
+
+            // added by Connie. Export survey takers who have not completed survey in csv file
+            $j("input[id$='btnExportLateSurveyTaker']").click(function exportLateSurveyTaker() {
+                var isAllowAnonymous={!AllowAnonymous}
+                if(isAllowAnonymous)
+                {
+                    alert('To protect the anonymity of the survey takers, this function is disabled for this survey.');
+                    return false;
+                }
+
+                window.open('/apex/SurveyExportLateSurveyTakerResults?surveyId={!surveyId}&ext=csv', "_blank");
+                return false;
+            });            
+        });
+    </script>
+    <!-- end -->
+
+<div class="bs container">
+ <apex:form id="theForm">
+    <apex:commandButton value="{!$Label.LABS_SF_Refresh_Summary}" action="{!refreshPage}" reRender="theSummary" id="btnRefresh" 
+            status="refreshStatus" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Refresh_Summary}" style="margin-right: 5px;"  />
+    <!-- added export button by Connie -->
+    <apex:commandButton value="{!$Label.LABS_SF_Export}" id="btnExport" styleClass="bs btn btn-default btn-sm" title="Export to file" style="margin-right: 5px;" />
+    <apex:actionStatus id="refreshStatus">
+        <apex:facet name="start">
+            <div>
+                <div class="popupBackground" />
+                <div class="PopupPanel">
+                    <table border="0" width="100%" height="100%">
+                        <tr>
+                            <td align="center"><b>{!$Label.Library_General_Wait}</b></td>
+                        </tr>
+                        <tr>
+                            <td align="center"><img src="{!$Resource.Loading_Image}"/></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </apex:facet>
+    </apex:actionStatus>
+
+    
+    <apex:pageBlock id="theSummary" >
+        <apex:pageMessages id="showMsg" />
+        <apex:variable var="totalTaker" value="{!reportResponse.numSurveyTaker + numLateTakers}"/>
+        <!-- added by Connie. Show number of users who has not completed the survey -->
+        <apex:pageBlockSection columns="2" id="theLateSurveyTakerSection"> 
+            
+            <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_NumPendingSurvey}">
+                <apex:outputLabel value="{!$Label.LABS_SF_Survey_Taker}:" style="width: 100%;" />
+                <apex:outputText value="{!TEXT(reportResponse.numSurveyTaker)+IF(totalAssignUser==0,' ',(' ('+ IF(totalTaker == 0, '0', TEXT(ROUND(reportResponse.numSurveyTaker*100/(totalTaker) , 0)))  + '%)')) }" >
+                </apex:outputText>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_NumPendingSurvey}">
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_NumPendingSurvey}" >
+                <apex:outputLabel value="{!$Label.LABS_SF_NumPendingSurvey}:" style="width: 100%;" />
+                <apex:outputText value="{!TEXT(numLateTakers)+IF(totalAssignUser==0,' ',(' ('+ IF(totalTaker == 0||totalAssignUser==0, '0',TEXT(ROUND(numLateTakers*100/(totalAssignUser) ,0))) + '%)'))}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem helpText="Buttons">
+                <!-- added by Connie. added export button to download people have not completed the survey -->
+                <apex:commandButton value="{!$Label.LABS_SF_Export_Late_Survey_Takers}" id="btnExportLateSurveyTaker" styleClass="bs btn btn-default btn-sm" title="Export survey takers who has not completed the survey" style="margin-right: 5px;" />
+                <apex:commandButton value="{!$Label.LABS_SF_ExportReminderEmails}" id="btnSendReminderEmail"
+                 onclick="return confirm('Email reminders will be sent to the {!numLateTakers} unresponded takers. \r\n Do you want to proceed?');"
+                
+                 styleClass="bs btn btn-default btn-sm" title="Export survey takers who has not completed the survey" style="margin-right: 5px;" action="{!sendReminderEmail}" />
+                
+                <!-- end -->     
+            </apex:pageBlockSectionItem>          
+            
+            <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_NumPendingSurvey}">
+                <apex:outputLabel value="Number of assigned taker(s):" style="width: 100%;" />
+                <apex:outputText value="{!totalAssignUser}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_NumPendingSurvey}">
+            </apex:pageBlockSectionItem>            
+        </apex:pageBlockSection>
+        <!-- end -->
+
+        <apex:pageBlockSection title="{! reportName }" columns="1" id="theSection"> 
+            <!-- modify by Connie. Add criteria to filter out response where status is draft -->
+            <!--
+            <analytics:reportChart reportId="{!reportId}"  cacheResults="false" 
+                showRefreshButton="false" filter="[{column:'Survey__c.Id',operator:'equals', value:'{! surveyId }'}]">            
+            </analytics:reportChart>
+            -->
+            <analytics:reportChart reportId="{!reportId}"  cacheResults="false" 
+                showRefreshButton="false" filter="[{column:'Survey__c.Id',operator:'equals', value:'{! surveyId }'}, 
+                {column:'SurveyQuestionResponse__c.Completed__c',operator:'equals', value:'true'},
+                {column:'Survey_Question__c.Total_Completed_Responses__c',operator:'greaterThan', value:'0'}]">            
+            </analytics:reportChart>
+            <!-- end -->
+            <apex:dataTable value="{!reportResponse.sumResp.groupList}" var="row" id="theTable" styleClass="bs table-striped table-bordered table-hover"> 
+                <!-- commented out by Connie. Remove Grand total Row
+                <apex:column styleClass="bs col-md-10 col-sm-10 col-lg-10 col-xs-10" footerClass="grandTotal"
+                     footerValue="{!$Label.LABS_SF_Grand_Totals + reportResponse.grandTotalLabel}">
+                -->
+                <apex:column styleClass="bs col-md-10 col-sm-10 col-lg-10 col-xs-10">
+                    <apex:outputText value="{!row.fieldName}" escape="false" styleClass="report-question" />:
+                        &nbsp;&nbsp;<apex:outputText value="{!row.fieldLabel}" />
+                        &nbsp;&nbsp;<apex:outputText value="{!row.recordCountLabel}" styleClass="report-question"  />
+                </apex:column>
+                <apex:column headerValue="{!$Label.LABS_SF_Number_of_People_Chosen}" headerClass="bs text-right" 
+                    styleClass="bs col-md-1 col-sm-1 col-lg-1 col-xs-1 data-col">
+                    <apex:outputText value="{!row.numPersonChosen}" />
+                </apex:column>
+                <apex:column headerValue="{!$Label.LABS_SF_Total}" headerClass="bs text-right" 
+                    styleClass="bs col-md-1 col-sm-1 col-lg-1 col-xs-1 data-col">
+                    <apex:outputText value="{!row.total}" />
+                </apex:column>
+            </apex:dataTable>
+        </apex:pageBlockSection>  
+   </apex:pageBlock>
+ </apex:form>
+ </div> 
+</apex:page>

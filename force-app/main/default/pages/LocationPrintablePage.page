@@ -1,0 +1,22 @@
+<apex:page standardController="Location__c" showHeader="false">
+    <style>
+    	body {
+        	font-size: 10px;
+        }
+    </style>
+    <apex:form id="theformid">
+        <apex:outputPanel >
+        <div style="border:1px solid #EAEAEA;width:155px;text-align:center;">
+            <apex:outputField Label="QR Code" value="{!Location__c.QR_Code__c}"/>
+            <table width="100%">
+                <tr>
+                    <td><apex:outputfield value="{!Location__c.name}" style="font-weight:bold;"></apex:outputfield></td>
+                </tr>
+                <tr>
+                    <td><apex:outputfield value="{!Location__c.Site__c}" style="font-weight:bold;"></apex:outputfield></td>
+                </tr>
+            </table>
+        </div>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

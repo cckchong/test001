@@ -1,0 +1,3 @@
+<apex:page StandardController="Travel_Price__c" extensions="TETravelPriceOverwriteEditCtrl" action="{!redirect}">
+
+</apex:page>

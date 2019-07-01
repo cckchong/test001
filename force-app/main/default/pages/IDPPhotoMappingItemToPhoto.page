@@ -1,0 +1,264 @@
+<apex:page controller="IDPPhotoMappingItemToPhotoCtrl"  cache="false" showHeader="false" standardStylesheets="true" sidebar="false" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0">
+
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/dataTables.bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+    <!--
+    <apex:includeScript value="{!URLFOR($Resource.nailthumb, 'jquery.nailthumb.1.1.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.nailthumb, 'jquery.nailthumb.1.1.min.css')}" />  
+    -->
+    <script>
+     $(function() {
+         $( "#accordion" ).accordion({collapsible: true});
+         }
+     );
+    
+    </script>
+    
+    <style type="text/css" media="screen">
+        .square-thumb {
+            width: 60px;
+            height: 60px;
+        }
+    </style>
+    <!--
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('.nailthumb-container').nailthumb();
+        });
+    </script>     
+    -->
+    <style type="text/css">
+        
+        .ui-accordion-header.ui-state-active { background-color: #dfeffc; }
+        .ui-accordion .ui-accordion-content {padding: 1em 0;}
+        
+        <!-- for image X button -->
+        .img-wrap {
+        position: relative;
+        float:left;
+        }
+        
+        .img-wrap #clear {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        z-index: 100;
+        }
+        
+        .page-length-right {
+            float:right;
+        }
+                     
+    </style>
+   <script>
+   
+       var $imageTable = null;
+       var tableInit = dataTableInitSetting();
+       $.fn.dataTableExt.sErrMode = 'console';
+       $(document).ready(function() {
+           $poTable = $('#imageTable').DataTable(tableInit);
+       }); 
+       
+       function dataTableInitSetting() {
+            return {
+                "dom": '<"page-length-right"l>rtip',
+                "paging":   true,
+                "info":     false,
+                "searching" : false,
+                "stateSave": false,
+                "order" :  [[ 1, "asc" ]],
+                "orderClasses" : false,
+                "columnDefs": [ {  
+                "targets": 'no-sort',
+                "orderable": false
+                } ]
+            };        
+        }
+   </script>
+                           
+    <apex:form id="mainform">
+        <p id="responseErrors"></p>
+        <div class="slds">
+            
+            <div aclass="slds-col slds-no-flex slds-align-middle btngp">
+                <apex:outputPanel id="itemPanel1">
+                    <div id="accordion" >
+                    <h3>Product Details</h3>
+                    <table border = "0"  width = "100%">
+                        <tr valign = "Top">
+                            <td width = "30%">
+                            
+                            <apex:actionFunction name="refereshToDefaultPic" rerender="itemPicPanel"/>  
+                            
+                                <apex:outputPanel id="itemPicPanel">
+                                        <div class="img-wrap">
+                                            <div id="clear" class="hide" onclick="resumeToDefaultPic(),refereshToDefaultPic()"><div class='ui-icon ui-icon-circle-close actionIcon' style='cursor: pointer;'> </div></div>
+                                            <img id="theImage" src="/servlet/servlet.FileDownload?file={!catItem.Photo_Doc_Id__c}"  width="300" height="300"/>  
+                                        </div>                                                                
+                                </apex:outputPanel>
+                                
+                                <apex:actionFunction name="resumeToDefaultPic" action="{!resumeToDefaultPic}" rerender="false"/>                        
+                                
+                            </td>
+                            <td width = "70%" >
+                                <div class="slds-text-heading--large"><B>{!catItem.Item_Name__c}</B></div>
+                                  <BR/>
+                                  <div>
+                                    <p>                                 
+                                     <ol>
+                                      <li> 
+                                          <apex:outputPanel id="itemPicNamePanel">
+                                              <div class="slds-text-title"><B>Photo File Name:</B> {!catItem.Photo_Name__c}</div>
+                                          </apex:outputPanel>
+                                      </li>
+                                      <li>
+                                          <div class="slds-text-title"><B>Catalog:</B> {!catItem.Catalog__r.Display_Name__c}</div>   
+                                      </li>
+                                      <li>
+                                          <div class="slds-text-title"><B>Owner:</B>
+                                          {!catItem.Catalog__r.Owner.FirstName} 
+                                          {!catItem.Catalog__r.Owner.lastName} 
+                                          </div>   
+                                      </li>
+                                      <li>
+                                          <div class="slds-text-title"><B>Description:</B>
+                                          {!catItem.Description__c}
+                                          </div>   
+                                      </li>
+                                     </ol>
+                                    </p>
+                                  </div>   
+                            </td>
+                        </tr>
+                    </table>
+                    </div> 
+                    <!--
+                    <div class="slds-button-group" role="group" style="display: inline-block;" ></div>
+                    -->
+                        
+                         <apex:outputText >
+                            <!--
+                            <apex:commandButton onclick="getSelectedPhoto();"
+                                value="Map Selected Photo" id="btn3"
+                                rerender="Msgs">
+                            </apex:commandButton>
+                            -->
+                            <apex:actionFunction name="next" action="{!save}" rerender="itemPicPanel , itemPicNamePanel ,  msg">
+                                <apex:param name="selected" value="" />
+                            </apex:actionFunction>
+                            <script>
+                             function getSelectedPhoto(){
+                                var $radio = $('input[name=photoGrp]:checked');
+                                var updateDay = $radio.val();
+                                var id = $radio.attr('id');
+                    
+                                 next(id);
+                             }
+                             
+                            </script>
+                        </apex:outputText>
+                    
+                    
+                    
+                </apex:outputPanel>
+            </div>
+            <apex:outputPanel id="msg">
+                <apex:pageMessages id="showmsg" escape="false"></apex:pageMessages>
+            </apex:outputPanel>
+            <BR/>
+            <!--<apex:outputPanel rendered="{!TextId != ''}">-->
+            <div style = "margin-bottom:-10px; ">
+            <apex:pageBlock mode="maindetail" id="headerBlock">
+            <div id="accordion" style = "width:99.5%; margin-top:-18px;">
+               <label class="slds-form-element__label details-toggle" style="font-size:14px;">
+               <span class="edit-toggle">
+                   
+               
+               </span>
+               </label>
+               <div style="margin-bottom:25px;">
+                    <table style="width: 100%;margin-top:5px;" border = "0px;" id = "headerTable">
+                         <tr><td></td>
+                         </tr>
+                        <tr>
+                            <td>
+                            <apex:actionFunction name="reloadPhotoTbl" action="{!getAllPhotos}" rerender="photoTable" status="loading..."/>
+                            <apex:outputPanel id="photoSrch" >
+                                <apex:inputText value="{!searchPhotoString}" onKeyUp="reloadPhotoTbl();"><label>Filter:</label></apex:inputText>
+                            </apex:outputPanel>
+                            &nbsp;&nbsp;
+                            <apex:commandButton onclick="getSelectedPhoto();"
+                                value="Map Selected Photo" id="btn3"
+                                rerender="Msgs">
+                            </apex:commandButton>
+                            
+                            
+                            <apex:outputPanel id="photoTable" rendered="{!docWrapperList.size!=0}">
+                                <apex:outputPanel rendered="{!docWrapperList.size==0}">
+                                    <label>No record to display</label>
+                                </apex:outputPanel>
+                                <table id="imageTable" class="display dataTable no-footer">
+                                    <thead>
+                                        <tr style="border-bottom:1pt solid black;" >
+                                            <th class="no-sort">Image</th>
+                                            <th>File Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    
+                                        <apex:variable value="{!0}" var="counter" />
+                                        <apex:repeat value="{!docWrapperList}" var="att">
+                                            <apex:variable value="{!(counter + 1)}" var="counter" />
+                                            <tr>
+                                                
+                                                <!-- <td>
+                                                    <apex:outputText value="{!counter}" />
+                                                </td> -->
+                                                <td>
+                                                    <div class="nailthumb-container square-thumb">
+                                                        <img id="theImage" src="/servlet/servlet.FileDownload?file={!att.doc.id}"/>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td>    
+                                                    <input type="radio" name="photoGrp" id="{!att.doc.Id}" />
+                                                    <apex:outputText >
+                                                        <a href="/servlet/servlet.FileDownload?file={!att.doc.id}" target="_blank"  >                                            
+                                                            {!att.doc.Name}
+                                                        </a>
+                                                    </apex:outputText>
+                                                </td>
+                                                
+                                            </tr>
+            
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                                
+                        
+                            </apex:outputPanel>
+                        </td>
+                        </tr>
+                        
+                    </table>
+                    
+                </div>
+                
+            </div>
+            </apex:pageBlock>
+            </div>
+            
+        </div>
+
+        <br/>
+  
+    </apex:form>
+
+</apex:page>

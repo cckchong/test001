@@ -1,0 +1,4 @@
+<apex:page tabstyle="Travel_Application__c"> 
+    <apex:enhancedList type="Travel_Application__c"  height="500" customizable="true"/>
+    
+</apex:page>

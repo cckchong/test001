@@ -1,0 +1,70 @@
+<apex:page standardController="Expense_Application__c" sidebar="false" showHeader="false" extensions="TEExpenseApplicationSubmitCtrl" action="{!actionFunction}">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    
+    <script>
+        
+        $(document).ready(function() {
+            if (confirm('{!$Label.TE_Expense_Application_Confirm_Approval}')) {
+                recallApprovalProcess('{!Expense_Application__c.Id}');
+            } else {
+                window.history.back();
+            }
+        });
+        
+        function recallApprovalProcess(recordId) {
+
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.TEExpenseApplicationSubmitCtrl.submitExpenseApp}',
+                recordId,
+                function(result, event){
+                    if (event.status) {
+                        // console.log(result);
+                        if(result != '') {
+                            
+                            var pos = result.indexOf('=')+1;
+                            var message = result.substring(pos).replace(/\+/g,' ');
+                            alert(message);                            
+                            if(!{!isSalesforceOne}) {
+                                navigateTo(result.substring(0,result.indexOf('?'))); 
+                            }
+                            else{                           
+                                sforce.one.back(true);
+                            }
+                        } else {                            
+                            alert('{!$Label.TE_Expense_Application_No_Submitted_Detail}');
+                            if(!{!isSalesforceOne}) {
+                                navigateTo(result);
+                            }
+                            else{                           
+                                sforce.one.back(true);
+                            }
+                        }
+                    } else if (event.type === 'exception') {
+                        
+                        console.log(result);
+                        alert(event.message);
+                        if(!{!isSalesforceOne}) {
+                            sforce.one.back(true);
+                        }                           
+                        // navigateTo(event.data[0]);
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+        
+        function navigateTo(endpoint) {
+            // console.log(endpoint);
+            window.location.href = '/' + endpoint;
+            /*if(getIsSalesforceOne()) {
+                // sforce.one.navigateToSObject(endpoint);
+                sforce.one.back(true);
+            } else {
+                window.location.href = '/' + endpoint;
+            }*/
+        }
+    
+    </script>
+    <a href="javascript:window.history.back();" class="bs btn-primary btn-default">&laquo; Back</a>
+</apex:page>

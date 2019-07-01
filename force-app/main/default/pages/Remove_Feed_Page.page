@@ -1,0 +1,85 @@
+<apex:page standardController="FeedItem" extensions="RemoveFeedPageExtension" docType="html-5.0">
+    <apex:form >
+        <apex:pageBlock title="Remove FeedItem">
+            <apex:pageMessages id="showmsg"/>
+            <apex:outputLabel value="The number of results is limited to {!LIST_LIMIT}" style="font-weight:bold; line-height: 200%"/>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="searchingAct" >
+                    <apex:facet name="start" >
+                          <img src="/img/loading.gif" />                    
+                    </apex:facet>
+                </apex:actionStatus>
+                <apex:commandButton value="Search" action="{!search}" onclick="passCreatedByIdToController(document.getElementById('j_id0:j_id1:j_id2:j_id32:createdByInput_lkid').value); return false;"/>
+                <apex:actionFunction name="passCreatedByIdToController" action="{!search}" status="searchingAct"  rerender="resultPanel,showmsg">
+                    <apex:param name="p1" value="" assignTo="{!createdById}" />
+                </apex:actionFunction>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="1">
+                    <tr>
+                       <th class="labelCol vfLabelColTextWrap " scope="row"><label for="j_id0:j_id1:j_id2:j_id32:createdByInput"><span class="assistiveText">*</span>Created By</label></th>
+                       <td class="data2Col ">
+                          <div class="requiredInput">
+                             <div class="requiredBlock"></div>
+                             <input type="hidden" name="j_id0:j_id1:j_id2:j_id32:createdByInput_lkid" id="j_id0:j_id1:j_id2:j_id32:createdByInput_lkid" value="{!$User.Id}"/><input type="hidden" name="j_id0:j_id1:j_id2:j_id32:createdByInput_lkold" id="j_id0:j_id1:j_id2:j_id32:createdByInput_lkold" value="{!$User.FirstName} {!$User.LastName}"/><input type="hidden" name="j_id0:j_id1:j_id2:j_id32:createdByInput_lktp" id="j_id0:j_id1:j_id2:j_id32:createdByInput_lktp" value="StandardUserLookup"/><input type="hidden" name="j_id0:j_id1:j_id2:j_id32:createdByInput_lspf" id="j_id0:j_id1:j_id2:j_id32:createdByInput_lspf" value="0"/><input type="hidden" name="j_id0:j_id1:j_id2:j_id32:createdByInput_lspfsub" id="j_id0:j_id1:j_id2:j_id32:createdByInput_lspfsub" value="0"/><input type="hidden" name="j_id0:j_id1:j_id2:j_id32:createdByInput_mod" id="j_id0:j_id1:j_id2:j_id32:createdByInput_mod" value="0"/>
+                             <span class="lookupInput">
+                                <input id="j_id0:j_id1:j_id2:j_id32:createdByInput" maxlength="255" name="j_id0:j_id1:j_id2:j_id32:createdByInput" onchange="getElementByIdCS('j_id0:j_id1:j_id2:j_id32:createdByInput_lkid').value='';getElementByIdCS('j_id0:j_id1:j_id2:j_id32:createdByInput_mod').value='1';" size="20" type="text" value="{!$User.FirstName} {!$User.LastName}"/><script>new ForeignKeyInputElement("j_id0:j_id1:j_id2:j_id32:createdByInput","/_ui/common/data/LookupValidationServlet",null,true,{"acent":"005"});</script><a href="javascript:%20openLookup%28%27%2F_ui%2Fcommon%2Fdata%2FLookupPage%3Flkfm%3Dj_id0%253Aj_id1%26lknm%3Dj_id0%253Aj_id1%253Aj_id2%253Aj_id32%253AcreatedByInput%26lktp%3D%27%20%2B%20getElementByIdCS%28%27j_id0%3Aj_id1%3Aj_id2%3Aj_id32%3AcreatedByInput_lktp%27%29.value%2C670%2C%271%27%2C%27%26lksrch%3D%27%20%2B%20escapeUTF%28getElementByIdCS%28%27j_id0%3Aj_id1%3Aj_id2%3Aj_id32%3AcreatedByInput%27%29.value.substring%280%2C%2080%29%29%29" id="j_id0:j_id1:j_id2:j_id32:createdByInput_lkwgt" onclick="setLastMousePosition(event)" title="Created By Lookup (New Window)"><img src="/s.gif" alt="Created By Lookup (New Window)" class="lookupIcon" onblur="this.className = 'lookupIcon';" onfocus="this.className = 'lookupIconOn';" onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';" onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';" title="Created By Lookup (New Window)"/></a>
+                             </span>
+                          </div>
+                       </td>
+                    </tr>
+                <apex:inputField value="{!feedItem.Type}" required="true"/>
+                <apex:input type="datetime-local" value="{!fromTime}" label="Created From"/>
+                <apex:input type="datetime-local" value="{!toTime}" label="Created To"/>
+            </apex:pageBlockSection>
+        
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:form >
+        <apex:outputPanel id="resultPanel">
+            <apex:pageBlock title="Search Results" rendered="{!feedItems!=null}">
+                <apex:pageBlockButtons >
+                    <apex:commandButton id="removeBtn" value="Remove Selected Feed(s)" action="{!deleteFeed}" rerender="resultPanel,showmsg"
+                    onclick="if(!confirm('{!selectedCount} record(s) will be deleted. Are you sure?')){return false};" status="deletingAct"/>
+                    <apex:actionStatus id="deletingAct" >
+                        <apex:facet name="start" >
+                              <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:pageBlockButtons>
+                <apex:pageMessage summary="{!resultCount} result(s) returned" severity="info" strength="1"/>
+                <apex:outputLabel value="{!selectedCount} record(s) selected" id="selectedCountLabel"/>
+                <div align="center">
+                    <apex:commandButton value="Previous" disabled="{!!hasPrevious}" action="{!previous}" rerender="resultPanel" status="turningPageAct"/>
+                    <apex:commandButton value="Next" disabled="{!!hasNext}" action="{!next}" rerender="resultPanel" status="turningPageAct"/>
+                    <apex:actionStatus id="turningPageAct" >
+                        <apex:facet name="start" >
+                              <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </div>
+                <apex:outputLabel value="Showing the {!firstRecordNumber} - {!lastRecordNumber} record(s)"/>
+                <apex:pageBlockTable value="{!listWindow}" var="f">
+                    <apex:column >
+                        <apex:facet name="header">
+                            <apex:outputPanel >
+                                <apex:inputCheckbox value="{!isSelectAll}">
+                                    <apex:actionSupport event="onchange" action="{!onSelectAll}" rerender="resultPanel"/>
+                                </apex:inputCheckbox>
+                                <apex:outputLabel value="Select All"/>
+                            </apex:outputPanel>
+                        </apex:facet>
+                        <apex:inputCheckbox value="{!f.selected}">
+                            <apex:actionsupport event="onchange" rerender="selectedCountLabel, removeBtn"/>
+                        </apex:inputCheckbox>
+                    </apex:column>
+                    <apex:column headervalue="FeedItem Id">
+                        <apex:outputLink value="/{!f.feedItem.Id}" target="_blank">{!f.feedItem.Id}</apex:outputLink>
+                    </apex:column>
+                    <apex:column value="{!f.feedBody}" headervalue="Message"/>
+                    <apex:column value="{!f.feedItem.CreatedDate}" headervalue="Created Date"/>
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

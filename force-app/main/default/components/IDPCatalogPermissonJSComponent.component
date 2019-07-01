@@ -1,0 +1,182 @@
+<apex:component >
+
+    <script>
+        var $js_basic_single = null;
+        var $js_basic_multi = null;        
+        var $user_label = null;
+        var $user_sel = null;
+        var $fun_label = null;
+        var $fun_sel = null;
+        var $dep_label = null;
+        var $dep_sel = null;
+        var $cat_label = null;
+        var $cat_sel = null;
+        var $item_label = null;
+        var $item_sel = null;
+        var $policy_label = null;
+        var $policy_sel = null;
+        var $searchPanel = null;
+        var $loading = null;
+        var $result = null;
+        var $btns = null;
+        var $tdtable = null;
+        //var tableInit = null;
+        
+    </script>
+    
+    <script>
+        $(function() {initVariable();init();});
+        
+        function initVariable(){
+            $js_basic_single = $(".js-basic-single"); 
+            $js_basic_multi = $(".js-basic-multi");             
+            $user_label = $("#user_label"); 
+            $user_sel = $("#user_sel"); 
+            $fun_label = $("#fun_label"); 
+            $fun_sel = $("#fun_sel"); 
+            $dep_label = $("#dep_label"); 
+            $dep_sel = $("#dep_sel"); 
+            $cat_label = $("#cat_label"); 
+            $cat_sel = $("#cat_sel"); 
+            $item_label = $("#item_label"); 
+            $item_sel = $("#item_sel");
+            $policy_label = $("#policy_label"); 
+            $policy_sel = $("#policy_sel");
+            $searchPanel = $("#searchPanel");
+            $loading = $("#loading");
+            $result = $("#resultTable");
+            $btns = $("#btns");
+            //$tdtable = $('#tdtable');
+        }
+        
+        function init(){
+            $searchPanel.fadeIn(0);
+            $js_basic_single.select2({placeholder: "Select Option", allowClear: false});
+            //$js_basic_multi.prop('multiple', 'multiple');
+            //$('.fun-select').children('option:first').remove();
+            //$('.department-select').children('option:first').remove();
+            $js_basic_multi.select2({placeholder: "Select Option", allowClear: false,  maximumSelectionLength: 10});
+            depCatSel();
+            $( "#accordion" ).accordion({collapsible: true});
+            tableInit = dataTableInitSetting();
+            $tdtable.DataTable(tableInit );
+        }
+        
+        function dataTableInitSetting() {
+                return {
+
+                    "scrollY": 265,
+                    "scrollX": true,
+                    "paging": false,
+                    "scrollCollapse": true,
+                    "bFilter": false,
+                    "bInfo": false,
+                    "bSort": false,
+                    "bAutoWidth": false,
+                    
+                };
+        }
+        
+        function depCatSel(){
+            $user_label.fadeOut(0);
+            $user_sel.fadeOut(0);
+            $fun_label.fadeIn(0);
+            $fun_sel.fadeIn(0);
+            $dep_label.fadeIn(0);
+            $dep_sel.fadeIn(0);
+            $cat_label.fadeIn(0);
+            $cat_sel.fadeIn(0);
+            $item_label.fadeOut(0);
+            $item_sel.fadeOut(0);
+            $policy_label.fadeIn(0);
+            $policy_sel.fadeIn(0);
+        }
+        
+        function usrCatSel(){
+            $user_label.fadeIn(0);
+            $user_sel.fadeIn(0);
+            $fun_label.fadeOut(0);
+            $fun_sel.fadeOut(0);
+            $dep_label.fadeOut(0);
+            $dep_sel.fadeOut(0);
+            $cat_label.fadeIn(0);
+            $cat_sel.fadeIn(0);
+            $item_label.fadeOut(0);
+            $item_sel.fadeOut(0);
+            $policy_label.fadeOut(0);
+            $policy_sel.fadeOut(0);
+            //$policy_label.fadeIn(0);
+            //$policy_sel.fadeIn(0);
+        }
+        
+        function usrItemSel(){
+            $user_label.fadeIn(0);
+            $user_sel.fadeIn(0);
+            $fun_label.fadeOut(0);
+            $fun_sel.fadeOut(0);
+            $dep_label.fadeOut(0);
+            $dep_sel.fadeOut(0);
+            $cat_label.fadeOut(0);
+            $cat_sel.fadeOut(0);
+            $item_label.fadeIn(0);
+            $item_sel.fadeIn(0);
+            $policy_label.fadeOut(0);
+            $policy_sel.fadeOut(0);
+            //$policy_label.fadeIn(0);
+            //$policy_sel.fadeIn(0);
+        }
+        
+        function PermissionChange(evt){
+            var str = evt.value;
+            if( str == 'opt1'){
+                depCatSel();
+            }
+            if( str == 'opt2'){
+                usrCatSel();
+            }
+            if( str == 'opt3'){
+                usrItemSel();
+            }
+            
+        }
+        
+        function searchOnClick(){
+            $loading.fadeIn(0);
+            $result.fadeOut(0);
+            //$tdtable.destroy();
+        }
+        
+        
+        function searchOnComplete(){
+            $loading.fadeOut(0);
+            $result.fadeIn(0);
+            //$('#tdtable').DataTable(dataTableInitSetting());
+        }
+        
+        function saveOnClick(){
+            $loading.fadeIn(0);
+            $result.fadeOut(0);
+            $btns.fadeOut(0);
+        }
+        
+        
+        function saveOnComplete(){
+            $loading.fadeOut(0);
+            $result.fadeIn(0);
+            $btns.fadeIn(0);
+        }
+        
+        function rowCheckAll(str){
+            $('.'+str).prop('checked', $('#'+str).is(':checked'));
+        }
+        
+        function rowCheckSelectAllCheckbox(str){
+            var status = $('.' + str + ':checked').length == $('.' + str).length;
+            
+            $('#'+str).prop('checked', status);
+        
+        }
+    </script>
+
+
+</apex:component>

@@ -1,0 +1,50 @@
+<apex:component >
+<!-- <apex:component controller="ArticleController" layout="block">
+	<apex:attribute name="feedCat" type="String" description="feed Category filter" assignTo="{!feedCategory}" required="true" />
+    <apex:attribute name="title" type="String" description="title of the Panel" assignTo="{!panelTitle}" required="true" />
+    <apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="true" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+    <apex:attribute name="childListPage" description="Child List Page" type="String" assignTo="{!articleListPage}" required="false" />
+    <apex:attribute name="childDetailPage" description="Child Detail Page" type="String" assignTo="{!articleDetailPage}" required="false" />
+    <apex:attribute name="StrCategory" type="String" description="Category" assignTo="{!Category}" required="false" />
+    <apex:attribute name="StrSubCategory" type="String" description="SubCategory" assignTo="{!SubCategory}" required="false" />
+    <style>
+	.panelClass {
+		height: 100%;
+	}
+	
+	.articlePanel {
+		overflow: visible;
+		height: 100%;
+		border-bottom: 1px Solid #D7EBFF;/*#99CCFF;*/
+	}
+	
+	.viewAllButton {
+		color: #555;
+		font-family: arial;
+		font-size: 1em;
+	}
+	</style>  
+    <div class="bs wrapper">
+	    <div class="bs panel panel-info panelClass">
+	        <div class="bs panel-heading">
+	            <h3 class="bs panel-title">{!panelTitle}</h3>
+	        </div>
+	        <div class="bs panel-body" >
+		            <apex:repeat value="{!articleFeed}" var="articleContent">
+		                <apex:outputPanel styleClass="articlePanel" layout="block" rendered="{!IF((articleContent.picUrl=''), true, false)}">
+		                	<c:ArticleComponent Title="{!articleContent.objpc.Title__c}" Summary="{!articleContent.objpc.Summary__c}" ContentURL="{!articleDetailPageURL}&Id={!articleContent.objpc.Id}&title={!panelTitle}&department={!strDepartment}&Category={!Category}&SubCategory={!SubCategory}"  PublishDate="{!articleContent.objpc.CreatedDate}" LastUpdateDate="{!articleContent.objpc.LastModifiedDate}" PublishBy="{!articleContent.objpc.Owner.Name}" PublishById="{!articleContent.objpc.OwnerId}" PicURL="{!$Resource.DefaultPicture}" revised="{!articleContent.objpc.Revised__c}" Feedsize="{!articleContent.feedsize}" ArticleId="{!articleContent.articleId}" fromArticleList="false" Grade="{!articleContent.distributeGrade}" FromDept="{!articleContent.objpc.BU__c}" Priority="{!articleContent.objpc.Sticky_Scale__c}"/>
+		                </apex:outputPanel>
+		                <apex:outputPanel styleClass="articlePanel" layout="block" rendered="{!IF((articleContent.picUrl=''), false, true)}">
+		                	<c:ArticleComponent Title="{!articleContent.objpc.Title__c}" Summary="{!articleContent.objpc.Summary__c}" ContentURL="{!articleDetailPageURL}&Id={!articleContent.objpc.Id}&title={!panelTitle}&department={!strDepartment}&Category={!Category}&SubCategory={!SubCategory}"  PublishDate="{!articleContent.objpc.CreatedDate}" LastUpdateDate="{!articleContent.objpc.LastModifiedDate}" PublishBy="{!articleContent.objpc.Owner.Name}" PublishById="{!articleContent.objpc.OwnerId}" PicURL="/servlet/servlet.FileDownload?file={!articleContent.picUrl}" revised="{!articleContent.objpc.Revised__c}"  Feedsize="{!articleContent.feedsize}" ArticleId="{!articleContent.articleId}" fromArticleList="false" Grade="{!articleContent.distributeGrade}" FromDept="{!articleContent.objpc.BU__c}" Priority="{!articleContent.objpc.Sticky_Scale__c}"/>
+		                </apex:outputPanel>	   
+		                <br/>       
+		            </apex:repeat>
+	        </div>
+	        <div class="bs panel-footer"><apex:outputLink value="/{!articleListPageURL}&title={!panelTitle}&department={!strDepartment}&{!$Label.ConnecTalTab}" styleclass="viewAllButton">[View All<apex:outputPanel id="tabOutPan3" rendered="{!IF(iNoOfArticle>0,TRUE,FALSE)}"> <Strong>{!iNoOfArticle}</Strong> Announcements</apex:outputPanel>]</apex:outputLink>
+	            <br/>
+	            <apex:outputLink value="/{!recordID}" styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}" target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+	        </div>
+	    </div>
+    </div> -->
+</apex:component>

@@ -1,0 +1,1530 @@
+<apex:page controller="IDPPurchaseOrderCtrl" tabStyle="Purchase_Order__c" >
+   
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />   
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/dataTables.bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+    <apex:includeScript value="{!URLFOR($Resource.FixedColumns, 'js/dataTables.fixedColumns.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <apex:stylesheet value="{!$Resource.jQuery_qtip_css}" /> 
+    <apex:includeScript value="{!$Resource.jQuery_qtip_js}" />    
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.5/dist/loadingoverlay.min.js"></script>
+
+    <!--
+    <apex:includeScript value="{!URLFOR($Resource.JqueryValidation, 'dist/additional-methods.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JqueryValidation, 'dist/jquery.validate.js')}" />
+    -->
+    <c:IDPPurchaseOrderComponent pid="{!pid}" />
+    
+    <style type="text/css" class="init">
+ 
+        
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        /*
+        .select2-dropdown {
+           //margin-left: 0px;
+           width: 999px;
+        }
+        .select2-selection__rendered{
+            margin-top: 99px;
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .select2-search--inline{
+            margin-left: 0px;
+            margin-top: 2px;
+        }
+        */
+        table.dataTable thead th, table.dataTable thead td{
+          padding-bottom: 0px;
+          //padding-left: 10px;
+          //padding-right: 10px;
+          padding-left: 10px;
+          padding-right: 0px;
+          border-bottom: 1px solid #111;
+        }
+        
+        table.dataTable tfoot th{
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        
+        table.dataTable tbody td{
+          padding-left: 10px;
+          padding-right: 0px;
+          padding-top: 10px;
+          padding-bottom: 5px;
+        }    
+        .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td {
+            vertical-align: middle;
+           padding-top:5px; 
+        }
+        .dataTables_wrapper{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        } 
+        table.dataTable input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        label{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .accordion table tr td {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        
+        .verticalLine{
+             border-left: medium solid #c00;             
+        }
+        .inputClass{
+            //margin-top:4px;
+            margin-top:0px;
+        }
+        .errorAlert{
+            border:1px solid red;
+            outline: 2px solid #F00;
+        }
+        .ui-autocomplete {
+            max-height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .ui-tabs-anchor{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+         }
+       
+        .ui-state-focus:focus { outline:none }
+         
+        .ui-state-default{
+          background-color: #dfeffc;
+          background-image: none;
+         }
+         
+         .prheaderlabel{
+             text-align: right !important;
+             padding-top:2px !important;
+             width:150px;
+         }
+         .prheaderval{             
+             padding-left: 10px !important;
+             padding-top:2px !important;
+             width:300px;
+         }
+         
+         .prheaderInputLongVal{             
+             width:250px;
+         }
+         .prheaderInputval{             
+             width:250px;
+         }                  
+         .actionIcon{
+            float:left;
+            margin-left:5px;
+         }         
+        .select2-results__option{
+            padding-left: 5px;
+            margin-left: 5px;
+         }
+         table.dataTable input {
+            //height: 20px;
+         }
+         table.dataTable textarea {
+            height: 23px;
+         }
+         
+         .alertlabel {
+          background-color: #f0ad4e;
+          color: black;   
+          padding: 4px;
+          border-radius:10px;
+          -moz-border-radius:10px;
+          font-family: Verdana, Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+          color : #FFFFFF;
+        }
+        
+        .col-sm-12{
+            width:100% !important;
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+        }
+        .progressbar {
+            position: relative; 
+            left: 50%;
+            margin-top : 50px;
+            margin-bottom : 50px;
+        }        
+    </style>
+    
+    <!-- Validation style -->
+    <style>
+        label.error {
+            color:red;
+            border: 0px !important;
+        }      
+    </style>
+    
+    <style>
+        /* to hide submit for approval button */
+        input.btn[name="piSubmit"] {
+            display: none;
+        } 
+        /* to hide recall button */
+        input.btn[name="piRemove"] {
+               display: none;
+        }
+        input.btn[name="newNote"] {
+               display: none;
+        }
+        input.btn[name="attachFile"] {
+               display: none;
+        }
+    </style>
+
+    <script type="text/javascript">
+        function selectAllCheckboxes(obj,receivedInputID){
+            var inputCheckBox = document.getElementsByTagName("input");                  
+            for(var i=0; i<inputCheckBox.length; i++){          
+                if(inputCheckBox[i].id.indexOf(receivedInputID)!=-1){                                     
+                    inputCheckBox[i].checked = obj.checked;
+                }
+            }
+        }    
+    </script>
+    <script type="text/javascript">
+        $.LoadingOverlaySetup({
+            imageColor      : "#01A9DB",
+            imageAnimation : "4000ms"
+        });
+    </script>
+    <div id="feed">
+        <h3>Chatter Feed</h3>
+        <div>
+            <div style="margin-bottom:3px; font-family: Salesforce Sans, Arial, sans-serif;font-size: 8.5pt;Padding-left: 30px;">
+               <chatter:feed id="feedid" entityId="{!pid}" onComplete="refreshPOAttachment()"/>
+            </div>
+        </div>
+    </div>
+    <apex:form id="poFormVali">
+    
+        <!--
+        <apex:actionFunction name="resetisAttemptedToSubmit">
+            <apex:param name="test" value="false" assignTo="{!isAttemptedToSubmit}"/>
+        </apex:actionFunction>
+        -->
+
+        <apex:actionFunction name="refreshTotalTaxAndCost" action="{!refreshTotalTaxAndCost}" reRender="shippingPanel, taxPanel, otherCostPanel, totalPriceInclTaxShipPanel"/>
+
+        <apex:actionFunction name="closePO" action="{!massClosedPOPOI}" rerender="poFormVali">
+        </apex:actionFunction>
+
+        <apex:actionFunction name="deletePOAttachment" action="{!deletePOAttachment}" reRender="POAttachDetail">
+            <apex:param name="attId" value=""/>
+        </apex:actionFunction>
+
+        <apex:actionFunction name="refreshPOAttachment" action="{!refreshPOAttachment}" reRender="POAttachDetail"/>
+
+        <apex:actionFunction name="callWebService" action="{!callWebService}" oncomplete="callWebServiceOnComplete({!isDisplayedMessage}); saveOnComplete({!isDisplayedMessage},{!isFullyReceived});" reRender="showmsg"/>
+
+        <input type="file" name="file" multiple="true" id="filesInput" onchange= "prepareFileUploads(this);" style="display:none" />
+        <div class="slds">
+            <div class="slds-page-header" role="banner" >
+                <div class="slds-grid">
+                
+                <div class="slds-media__body">              
+                    <h1 class="slds-text-heading--medium">Purchase Order</h1>                
+                </div>
+
+                <div class="slds-col slds-no-flex slds-align-middle">
+                    <div class="slds-button-group" role="group">
+                        
+                        <a href="javascript:;" onclick="$('#RFLNewFile').click();" class="actionbtn" style="padding-right: 1px;" >
+                            <apex:outputPanel styleClass="slds-button slds-button--neutral"  style="margin-left:-4px"> 
+                                <span >
+                                    <apex:image value="{!URLFOR($Resource.upload_icon, '')}" width="15px" height="15px" style="position: relative;top: -2px;" />
+                                </span>
+                                Attachment(s)
+                            </apex:outputPanel>
+                        </a>
+
+                        <!-- <a href="javascript:;" onclick="getElementById('RFLNewFile').click();" class="actionbtn" style="padding-right: 1px;" >
+                            <apex:outputPanel styleClass="slds-button slds-button--neutral"  style="margin-left:-4px"> 
+                                <span >
+                                    <apex:image value="{!URLFOR($Resource.upload_icon, '')}" width="15px" height="15px" style="position: relative;top: -2px;" />
+                                </span>
+                                Attachment(s) TEST
+                            </apex:outputPanel>
+                        </a>        -->                 
+                      
+                        <apex:outputPanel id="buttonPanel">
+                            <!-- <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!saveAction}" reRender="buttonPanel, showmsg , receivedQty, PODetail, shippingPanel, shippingAddressPanel" oncomplete="callWebService();saveOnComplete({!isDisplayedMessage},{!isFullyReceived});" rendered="{!isSave}"/> -->
+                            <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!saveAction}" reRender="buttonPanel, showmsg , receivedQty, PODetail, shippingPanel, shippingAddressPanel" oncomplete="saveOnComplete({!isDisplayedMessage},{!isFullyReceived});" rendered="{!isSave}"/>                            
+
+                            <!-- <apex:commandButton value="Submit" styleClass="slds-button slds-button--neutral" action="{!submitAction}" reRender="buttonPanel, showmsg, receivedQty, PODetail, taxPanel, shippingPanel, otherCostPanel, shippingAddressPanel, deliveryAddressPanel" oncomplete="callWebService();submitOnComplete({!isDisplayedMessage});" rendered="{!isSubmit}"/> -->
+                            <apex:commandButton value="Submit" onclick="$.LoadingOverlay('show');" styleClass="slds-button slds-button--neutral" action="{!submitAction}" reRender="buttonPanel,   showmsg, receivedQty, PODetail, taxPanel, shippingPanel, otherCostPanel, shippingAddressPanel, deliveryAddressPanel" oncomplete="saveOnComplete({!isDisplayedMessage});$.LoadingOverlay('hide');" rendered="{!isSubmit}"/>
+                            
+<!--
+                            <apex:commandButton value="Submit" styleClass="slds-button slds-button--neutral" action="{!submitAction}" rendered="{!isSubmit}"/>
+-->                                
+                            <apex:commandButton value="Edit" styleClass="slds-button slds-button--neutral" action="{!editAction}" rendered="{!isEdit}"/>
+                            <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" action="{!cancelAction}" rendered="{!isSave}"/>  
+                            <!--
+                            <apex:commandButton value="Close PO" styleClass="slds-button slds-button--neutral" action="{!massClosedPOPOI}" rendered="{!isSubmitted && !isClosed && isbeingShared == true}"/> 
+                            -->
+                            <!--
+                            <apex:commandButton value="Cancel PO" styleClass="slds-button slds-button--neutral" action="{!cancelPOAction}"/>   
+                            -->
+                                                 
+                            <apex:commandButton value="Back" styleClass="slds-button slds-button--neutral" action="{!backAction}"/>
+                            
+                            <!--                             
+                            <apex:inputCheckbox styleClass="attemptCheckbox" value="{!isAttemptedToSubmit}" style="display:none;width:0px"/>
+                            <script>
+                                $(".attemptCheckbox").prop('checked', false);
+                            </script> 
+                            -->
+
+                        </apex:outputPanel>
+                    </div>
+                </div>
+           </div>
+        </div> 
+
+        <div class="accordion">
+            <h3>Progress Flow</h3>
+              
+                <div style="padding-left:0px; padding-right:0px;">
+                    <iframe src="/apex/IDPPurchaseOrderProgressBarVFP?poId={!po}" width="98%" height="120px" id="iframe1" frameBorder="0" style="overflow:hidden;" scrolling="no"/>    
+                </div>
+             
+        </div>
+
+        <div class="accordion">
+          <h3>Purchase Order</h3>
+            <div>
+                <apex:pageBlock mode="maindetail">
+                    <table border = "0" style="width:100%" id="prheader" >
+                        <tr>
+                            <td class = "prheaderlabel">Purchase Order:</td>
+                            <td class = "prheaderval">{!po.Name}</td>
+                            
+                            <td class = "prheaderlabel">Submitted Date:</td>
+                        
+                            <td class = "prheaderval">
+                                <apex:outputText value="N/A" rendered="{!!isSubmitted}"/>
+                                <apex:outputText value="{0, date, dd MMMM','  yyyy}" rendered="{!isSubmitted}">
+                                    <apex:param value="{!SubmittedDate}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>         
+                        
+                        <tr>
+                            <td class = "prheaderlabel">M3 PO No.:</td>
+                            <td class = "prheaderval">{!po.M3_PO_No__c}</td>
+                            
+                            <td class = "prheaderlabel">Created By:</td>
+                            <td class = "prheaderval">{!po.CreatedBy.name}</td>
+                        </tr>                          
+                        
+                        <tr>
+                            <!--
+                            <td class = "prheaderlabel">Delivery Site:</td>
+                            
+                            <td class = "prheaderval">
+                                <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                    <apex:outputText value="{!po.Delivery_Site__r.Name}"/>
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                    <apex:inputField value="{!po.Delivery_Site__c}" styleClass="prheaderInputval" />
+                                </apex:outputPanel>
+                            </td>
+                            -->
+                            <td class = "prheaderlabel">Supplier:</td>
+                            <td class = "prheaderval">{!po.Supplier__r.name}</td>
+
+                            
+                                             
+                            <td class = "prheaderlabel">Status:</td>
+                            <td class = "prheaderval">
+                                <apex:outputField value="{!po.Status__c}"/>
+                            </td>
+                        </tr>     
+    
+                        <tr>
+                            <!--
+                            <td class = "prheaderlabel">Final Delivery Address:</td>
+                                                    
+                            <td class = "prheaderval">
+                                <apex:outputPanel id="deliveryAddressPanel">
+                                      <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                      {!po.Delivery_To__c}
+                                      </apex:outputPanel>
+                                      
+                                      <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                            <div class="requiredInput">
+                                                <apex:outputPanel rendered="{!isDeliveryAddressBlank && isDisplayedMessage}">
+                                                    <div class="requiredBlock"></div>
+                                                </apex:outputPanel>                                 
+                                      
+                                                  <apex:inputField value="{!po.Delivery_To__c}" styleClass="prheaderInputLongVal"/>
+                                                  
+                                          </div>
+                                      </apex:outputPanel>
+                              </apex:outputPanel>
+                            </td>
+                            -->
+                            <td  class = "prheaderlabel">
+                                Shipping Site:  
+                            </td>
+
+                            <td class = "prheaderval">
+                                <apex:actionRegion > 
+                                    <apex:selectList value="{!po.Delivery_Site__c}" size="1" styleClass="prheaderInputval" rendered="{!isSave && !isSubmitted}">
+                                        <apex:selectOptions value="{!deliverySiteOptList}"></apex:selectOptions>
+                                        <apex:actionSupport event="onchange"  action="{!changeSite}"  rerender="deliveryAddressPanel"/>
+                                    </apex:selectList>
+                                </apex:actionRegion>    
+                                <apex:outputText value="{!po.Delivery_Site__r.Name}" rendered="{!isView || isSubmitted}"/>
+                            </td>  
+                                                             
+                            <td class = "prheaderlabel">
+                                Expected Delivery Date:
+                            </td>
+                            
+                            <td class = "prheaderval">
+                                <apex:outputText value="{0, date, dd MMMM','  yyyy}"  rendered="{!isView || !isSubmit}">
+                                    <apex:param value="{!po.Delivery_Date__c}" />
+                                </apex:outputText>
+                                
+                                <apex:inputField value="{!po.Delivery_Date__c}"  style="width:250px" styleClass="prheaderInputval" rendered="{!isSave && !isSubmitted}"/>
+                                   
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <!--
+                            <td class = "prheaderlabel">Shipping Address:</td>
+                            
+                            <td class = "prheaderval">
+                                <apex:outputPanel id="shippingAddressPanel">
+                                      <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                      {!po.Shipping_Address__c}
+                                      </apex:outputPanel>
+                                      
+                                      <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                            <div class="requiredInput">
+                                                <apex:outputPanel rendered="{!isShippingAddressBlank && isDisplayedMessage}">
+                                                    <div class="requiredBlock"></div>
+                                                </apex:outputPanel>                              
+                                      
+                                                    <apex:inputField value="{!po.Shipping_Address__c}" styleClass="prheaderInputLongVal"/>
+                                             </div>
+                                      </apex:outputPanel>
+                                </apex:outputPanel>
+                            </td>
+                            -->
+                            
+                            <td class = "prheaderlabel">Shipping Address:</td>
+
+                            <td class = "prheaderval">
+                                <apex:outputPanel id="deliveryAddressPanel">
+                                    <apex:outputPanel rendered="{!isView || !isSubmit}">
+                                        <!-- {!po.Delivery_To__c} -->
+                                        {!po.Shipping_Address_1__c}
+                                        {!po.Shipping_Address_2__c}<BR/>
+                                        {!po.Shipping_Address_3__c}
+                                        {!po.Shipping_Address_4__c}
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                        <div class="requiredInput">
+                                            <apex:outputPanel rendered="{!isDeliveryAddressBlank && isDisplayedMessage}">
+                                                <div class="requiredBlock"></div>
+                                            </apex:outputPanel>
+                                            <!--                                  
+                                            <apex:inputField value="{!po.Delivery_To__c}" styleClass="prheaderInputLongVal"/> 
+                                            -->
+                                            <apex:inputField value="{!po.Shipping_Address_1__c}" styleClass="prheaderInputval"/>
+                                            <apex:inputField value="{!po.Shipping_Address_2__c}" styleClass="prheaderInputval"/><BR/>
+                                            <apex:inputField value="{!po.Shipping_Address_3__c}" styleClass="prheaderInputval"/><BR/>
+                                            <apex:inputField value="{!po.Shipping_Address_4__c}" styleClass="prheaderInputval"/>
+                                        </div>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </td>                                             
+                            
+                            
+                        </tr>
+                        <tr>
+                            <td class = "prheaderlabel">Delivery Method:</td>
+                            
+                            <td class = "prheaderval">
+                                <apex:outputPanel rendered="{!isView || !isBeforePartialDelivered}">
+                                    <apex:outputField value="{!po.Delivery_Method__c}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!isSave && isBeforePartialDelivered}">
+                                    <!--
+                                    <apex:inputField value="{!po.Delivery_Method__c}" required="true"/>
+                                    -->
+                                    
+                                    <apex:selectList value="{!po.Delivery_Method__c}" size="1" styleClass="prheaderInputval">
+                                        <apex:selectOptions value="{!deliveryMethodOptList}"/>
+                                    </apex:selectList>
+                                </apex:outputPanel>                             
+                            </td>                    
+                        
+                            <td class = "prheaderlabel">Delivery Terms:</td>
+                            
+                            <td class = "prheaderval">
+                            
+                                <apex:outputPanel rendered="{!isView || !isBeforePartialDelivered}">
+                                    <apex:outputField value="{!po.Delivery_Terms__c}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!isSave && isBeforePartialDelivered}">
+                                    <apex:selectList value="{!po.Delivery_Terms__c}" size="1" styleClass="prheaderInputval">
+                                        <apex:selectOptions value="{!deliveryTermsOptList}"/>
+                                    </apex:selectList>
+                                </apex:outputPanel>                             
+                            </td> 
+                            
+                        </tr>                        
+                        <tr>
+                            <td class = "prheaderlabel">Payment Method:</td>
+                            <td class = "prheaderval">
+                                <apex:outputPanel rendered="{!isView || !isBeforePartialDelivered}">
+                                    <apex:outputField value="{!po.Payment_Method__c}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!isSave && isBeforePartialDelivered}">
+                                    <!--
+                                    <apex:inputField value="{!po.Payment_Method__c}" required="true"/>
+                                    -->
+                                    <apex:selectList value="{!po.Payment_Method__c}" size="1" styleClass="prheaderInputval">
+                                        <apex:selectOptions value="{!paymentMethodOptList}"/>
+                                    </apex:selectList>
+                                </apex:outputPanel> 
+                            </td>                       
+                            
+                            <td class = "prheaderlabel">Payment Term:</td>
+                            <td class = "prheaderval">
+                                <apex:outputPanel rendered="{!isView || !isBeforePartialDelivered}">
+                                    <apex:outputField value="{!po.Payment_Terms__c}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!isSave && isBeforePartialDelivered}">
+                                    <!--
+                                    <apex:inputField value="{!po.Payment_Terms__c}" required="true"/>
+                                    -->
+                                    <apex:selectList value="{!po.Payment_Terms__c}" size="1" styleClass="prheaderInputval">
+                                        <apex:selectOptions value="{!paymentTermsOptList}"/>
+                                    </apex:selectList>
+                                </apex:outputPanel> 
+                            </td>
+                                          
+                        </tr>
+                        <tr>
+                            <td class = "prheaderlabel">Currency:</td>
+                            
+                            <td class = "prheaderval">
+                                <apex:outputText id="poCurrency" value="{!po.Currency__r.Name}"/>
+                                <!--
+                                <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                    <apex:outputText id="poCurrency" value="{!po.Currency__r.Name}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                    <apex:selectList value="{!selectedCurrency}" size="1" styleClass="prheaderInputval">
+                                        <apex:selectOptions value="{!currencyList}"></apex:selectOptions>
+                                        <apex:actionSupport event="onchange" action="{!massEditCurrency}" rerender="PODetail, showmsg, taxPanel, shippingPanel"/>
+                                    </apex:selectList>
+                                    
+                                    <apex:commandButton value="Update" styleClass="slds-button slds-button--neutral" action="{!massEditCurrency}" rerender="PODetail, showmsg, taxPanel, shippingPanel"/>
+                                    
+                                </apex:outputPanel>
+                                -->                             
+                            </td>                                 
+                            
+
+                            <td class = "prheaderlabel">Payment Remark:</td>
+                            <td class = "prheaderval">
+                                <apex:outputPanel rendered="{!isView || !isBeforePartialDelivered}">
+                                    <apex:outputField value="{!po.Payment_Remark__c}"/>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!isSave && isBeforePartialDelivered}">
+                                    <apex:inputField value="{!po.Payment_Remark__c}" styleClass="prheaderInputLongVal"/> 
+                                </apex:outputPanel> 
+                            </td>   
+                        </tr>    
+                        <!--
+                        <tr>      
+                            <td class = "prheaderlabel">Total Shipping Cost(*Original):</td>
+                            <td class = "prheaderval">
+                            
+                            
+                                <apex:outputPanel id="shippingPanel">
+                                    <div class="requiredInput">
+                                        <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                            <apex:outputText value="{0,number,###,###,###,##0.00}">
+                                                <apex:param value="{!po.Total_Shipping_Cost__c}"/>
+                                            </apex:outputText>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                            <apex:inputField value="{!po.Total_Shipping_Cost__c}" styleClass="prheaderInputval">
+                                                <apex:actionSupport event="onchange" reRender="totalPriceInclTaxShipPanel"/>
+                                            </apex:inputField>                                            
+                                        </apex:outputPanel>
+                                        &nbsp;
+                                        <apex:outputText value="({0,number,###,###,###,##0.00})">
+                                            <apex:param value="{!po.Original_Total_Shipping_Cost__c}"/>
+                                        </apex:outputText>
+                                    </div>
+                                </apex:outputPanel>                            
+                            </td>                   
+                            
+                            <td class = "prheaderlabel">Supplier Tax Rate (%):</td>
+                            <td class = "prheaderval">{!po.Supplier__r.Tax__c}</td>
+                            
+                        </tr>      
+
+                        <tr>
+                            <td class = "prheaderlabel">Total Other Cost(*Original):</td>
+                            <td class = "prheaderval">
+                            
+                            
+                                <apex:outputPanel id="otherCostPanel">
+                                    <div class="requiredInput">
+                                        
+                                        
+                                        <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                            <apex:outputText value="{0,number,###,###,###,##0.00}">
+                                                <apex:param value="{!po.Total_Other_Cost__c}"/>
+                                            </apex:outputText>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                            <apex:inputField value="{!po.Total_Other_Cost__c}" styleClass="prheaderInputval">
+                                                <apex:actionSupport event="onchange" reRender="totalPriceInclTaxShipPanel"/>
+                                            </apex:inputField>                                            
+                                        </apex:outputPanel>
+                                        &nbsp;
+                                        <apex:outputText value="({0,number,###,###,###,##0.00})">
+                                            <apex:param value="{!po.Original_Total_Other_Cost__c}"/>
+                                        </apex:outputText>
+                                    </div>
+                                </apex:outputPanel>                            
+                            </td>
+
+                            <td class = "prheaderlabel">Total Tax (*Original):</td>
+                            <td class = "prheaderval">
+                                <apex:outputPanel id="taxPanel">
+                                    <div class="requiredInput">
+                                        <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                            <apex:outputText value="{0,number,###,###,###,##0.00}">
+                                                <apex:param value="{!po.Total_Tax__c}"/>
+                                            </apex:outputText>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                            <apex:inputField value="{!po.Total_Tax__c}" styleClass="prheaderInputval">
+                                                 <apex:actionSupport event="onchange" reRender="totalPriceInclTaxShipPanel"/>
+                                            </apex:inputField>
+
+                                            <a href="javascript:;" title="Calculate Tax" style="width:15px; margin-top:2px;">
+                                              <apex:outputPanel styleClass="ui-icon  ui-icon-calculator actionIcon" style="display: inline-block; float: none;">
+                                                  <apex:actionSupport event="onclick" action="{!calculateTax}" rerender="taxPanel,totalPriceInclTaxShipPanel"/>
+                                              </apex:outputPanel>
+                                            </a>
+                                        </apex:outputPanel>
+                                        &nbsp;
+                                        <apex:outputText value="({0,number,###,###,###,##0.00})">
+                                            <apex:param value="{!po.Original_Total_Tax__c}"/>
+                                        </apex:outputText>
+                                    </div> 
+                                </apex:outputPanel>
+                            </td>
+                        </tr>            
+                        -->                                
+                    </table>
+                </apex:pageBlock>
+            </div>
+        </div>            
+     </div>
+    <!--
+    <apex:outputPanel rendered="{!isSave && isDraft}">
+        <div class="accordion">
+            <h3>Mass Edit</h3>
+                <div>
+                    <apex:outputPanel id="MassEdit">
+                        <table border = "0" style="width:100%" id="prheader" >
+                            <tr>
+                                
+                                <td class = "prheaderlabel">Currency</td>
+                                <td class = "prheaderval">
+                                    <apex:selectList value="{!po.Currency__c}" size="1">
+                                        <apex:selectOptions value="{!currencyList}"></apex:selectOptions>
+                                    </apex:selectList>                    
+                                </td>
+        
+                                <div class="slds-button-group" role="group">
+                                    <td><apex:commandButton value="Update" styleClass="slds-button slds-button--neutral" action="{!massEditCurrency}" rerender="PODetail, showmsg"/></td>
+                                </div>
+                                                        
+                                <td class = "prheaderlabel">Delievery Date</td>
+                                <td class = "prheaderval"><apex:inputField value="{!po.Delivery_Date__c}"/></td>      
+                              
+                                <div class="slds-button-group" role="group">
+                                    <td>
+                                        <apex:commandButton value="Update" styleClass="slds-button slds-button--neutral" action="{!massEditDate}" rerender="PODetail, showmsg"/>
+                                    </td>
+                                </div>
+                                
+                            </tr>
+                        </table>
+                    </apex:outputPanel>
+               </div>
+        </div>            
+    </apex:outputPanel>
+    -->
+    <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+        <div class="slds">
+            <div class="slds-page-header" role="banner" >
+                <div class="slds-grid">
+                    <div class="slds-col slds-no-flex slds-align-middle">
+                        <div class="slds-button-group" role="group">
+                            <apex:commandButton value="Remove Selected" styleClass="slds-button slds-button--neutral" action="{!removePOIAction}" onclick="deleteLineAction('CL');" onComplete="deleteLineAction('CP');" reRender="PODetail, relatedPRDetail, historyDetail, POAttachDetail, PRAttachDetail, lessThanMOQIcon, showmsg"/>
+                            <apex:commandButton value="Merge PO Items" styleClass="slds-button slds-button--neutral" action="{!mergePOIAction}" onclick="deleteLineAction('CL');" onComplete="deleteLineAction('CP');" reRender="PODetail, relatedPRDetail, lessThanMOQIcon, showmsg"/>
+                        </div>
+                    </div>        
+                </div>   
+            </div>
+        </div>
+    </apex:outputPanel>
+    
+    <apex:pageMessages id="showmsg"></apex:pageMessages>
+
+     <div id="tabs">
+          <ul>
+            <li><a href="#tabs-1">Detail</a></li>
+            <li><a href="#tabs-2">Related Purchase Request</a></li>
+            <li><a href="#tabs-3">Receiving History</a></li>
+          </ul>
+          
+          <div id="tabs-1">
+              <div class="progressbar" style="display:none; "><apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" /></div>
+              <div id="tab1">
+                 <apex:pageBlock mode="maindetail" id="headerBlock">
+                 <apex:outputPanel id="PODetail">
+                     <table id="PRTable" class="display dataTable no-footer" cellspacing="0" width="100%" border = "0">
+                        <thead>
+                            <tr>
+                                <apex:outputText rendered="{!isSave && !isSubmitted}">
+                                <th style="width:50px" class='no-sort'>
+                                    <apex:inputCheckbox onclick="selectAllCheckboxes(this,'inputId')"/>
+                                </th>
+                                </apex:outputText>
+                                                                
+                                <th style="width:40px">
+                                    No.
+                                </th>
+                                <th style="width:100px">Catalog</th> 
+                                <th style="width:100px">Sub Catalog</th> 
+                                <th style="width:150px">Name</th>
+                                <th style="width:70px" class='no-sort'>Currency</th>                     
+                                <th style="width:70px" class='no-sort'>Price/Unit <br/>
+                                    (*Original)
+                                </th>
+                                <th style="width:30px" class='no-sort'>MOQ</th>
+                                <th style="width:30px" class='no-sort'>Qty</th>
+                                <th style="width:80px" class='no-sort'>Total <br/>
+                                    Received Qty
+                                </th>
+                                <!--
+                                <apex:outputPanel rendered="{!isSave && isOrdered}">
+                                    <th>Deliveried</th>
+                                </apex:outputPanel>
+                                -->
+                                <th style="width:35px" class='no-sort'>UOM</th>                              
+                                <th style="width:70px" class='no-sort'>Amount</th>
+                                <th style="width:70px" class='no-sort'>Amount<BR/>(USD)</th> 
+                                <th style="width:70px" class='no-sort'>Additional<BR/>Cost ({!po.Currency__r.Name})</th> 
+                                <th style="width:160px" class='no-sort'>Buyer Remark</th>
+                                <th style="width:120px" class='no-sort'>Expected <br/>
+                                    Delivery Date
+                                </th>
+                                <th style="width:30px" class="no-sort"></th>
+                                <!--
+                                <th></th>
+                                -->
+                                <th style="width:50px">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!POLineList}" var="POItem">
+                                <tr>
+                                    <apex:outputText rendered="{!isSave && !isSubmitted}" >
+                                        <td>
+                                            <apex:inputCheckbox value="{!POItem.isChecked}" id="inputId" style="float:left;"/>
+                                            <a href="javascript:;" title="Delete this line">
+                                                <apex:outputPanel styleClass="ui-icon  ui-icon-circle-minus actionIcon" style="margin-left:-2px;" >
+                                                    <apex:actionSupport event="onclick" onsubmit="deleteLineAction('CL');" action="{!POItem.removeSinglePOIAction}" onComplete="deleteLineAction('CP'); refreshTotalTaxAndCost();" rerender="PODetail, relatedPRDetail, historyDetail, POAttachDetail, PRAttachDetail"/>
+                                                </apex:outputPanel>                                         
+                                            </a>                                    
+                                        </td>
+                                    </apex:outputText>
+                                    <td>
+                                        <apex:outputText value="{!POItem.poi.Number__c}"/>
+                                    </td>
+                                
+                                    <!--
+                                    <td>
+                                        <apex:outputText value="{!POItem.poi.Number__c}" rendered="{!isView || isSubmitted}"/>
+                                        
+                                        <apex:inputCheckbox value="{!POItem.isChecked}" id="inputId" rendered="{!isSave && !isSubmitted}" style="float:left;"/>
+                                        <a href="javascript:;" title="Delete this line">
+                                            <apex:outputPanel rendered="{!isSave && !isSubmitted}" styleClass="ui-icon  ui-icon-circle-minus actionIcon" style="margin-left:-2px;" >
+                                                <apex:actionSupport event="onclick" action="{!POItem.removeSinglePOIAction}" rerender="PODetail, relatedPRDetail, historyDetail, POAttachDetail, PRAttachDetail"/>
+                                            </apex:outputPanel>                                         
+                                        </a>
+                                        
+                                        -------<!--
+                                        <apex:outputPanel rendered="{!isSave && isDraft && NOT(POItem.isCancel)}">
+                                              <apex:image value="/img/func_icons/remove12.gif" style="cursor: pointer;"/>
+                                              <apex:actionSupport event="onclick"  action="{!POItem.cancelPOI}"  rerender="PODetail"/>
+                                        </apex:outputPanel>
+                                        --------------
+                                    </td>
+                                    -->       
+                                                         
+
+                                    <td>
+                                        {!POItem.poi.Catalog_Item__r.Catalog__r.Parent_Catalog__r.Catalog_Name__c}
+                                        <!--
+                                        <a href='/{!POItem.poi.id}'><apex:outputField value="{!POItem.poi.name}"/></a>
+                                        -->
+                                    </td>                                    
+                                    <td>
+                                        {!POItem.poi.Catalog_Item__r.Catalog__r.Catalog_Name__c}
+                                    </td>
+                                    <td>
+                                        <a href="/{!POItem.poi.Catalog_Item__r.Id}" target="_blank">{!POItem.poi.Catalog_Item__r.Item_Name__c}</a>
+                                        
+                                    </td>
+                                    <td>
+                                        <apex:outputField value="{!currencyIdMap[POItem.poi.Currency__c].name}"/>                                        
+                                    </td>
+                                    <td>
+                                        <apex:outputPanel id="pricePanel">
+                                            <div class="requiredInput">
+                                                <!-- <apex:outputPanel id="priceWarning" Rendered="{!POItem.isExceededToleranceLevel}">
+                                                    <div class="requiredBlock"></div>
+                                                </apex:outputPanel> -->
+                                                <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                                    <apex:outputfield value="{!POItem.poi.Price__c}" />
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                                    <apex:inputfield styleClass="{!POItem.poi.id}poiPrice" value="{!POItem.poi.Price__c}" style="width:100px;"> 
+                                                        <apex:actionSupport event="onchange" reRender="stdAmount,origPrice,totalPricePanel,totalPriceInclTaxShipPanel"/>
+                                                    </apex:inputField>
+
+                                                </apex:outputPanel>
+                                            </div>
+                                                <apex:outputText value="({0,number,###,###,###,##0.00})">
+                                                      <apex:param value="{!POItem.poi.Tech_Price__c}"/>
+                                                </apex:outputText>
+                                            
+                                        </apex:outputPanel>                                        
+                                    </td>
+                                    
+                                    
+                                    
+                                    <td>
+                                        <apex:outputText rendered="{!POItem.moq != null && POItem.moq > 0}">
+                                            {!POItem.moq}
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!POItem.moq == null || POItem.moq <= 0}">
+                                            --
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputfield value="{!POItem.poi.Quantity__c}"/>
+                                        <apex:outputText >
+                                            <apex:outputPanel id="lessThanMOQIcon">
+                                                <apex:outputPanel rendered="{!POItem.isLessThanMoq}">
+                                                  <a href="javascript:;" style="float:right;cursor:default">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-alert actionIcon moqIcon" style="margin-left:-16px;cursor:default" />
+                                                  </a>
+                                                </apex:outputPanel>
+                                                <script> 
+                                                    $(function(){ 
+                                                        initQtip(); 
+                                                    }); 
+                                                </script>
+                                            </apex:outputPanel>
+                                        </apex:outputText>
+                                    </td>
+                                    
+                                    <td>
+                                        <apex:outputPanel id="receivedQty">
+                                            <div class="requiredInput">
+                                            
+                                                <apex:outputPanel rendered="{!isView || !isSubmitted}">
+                                                    <apex:outputfield value="{!POItem.poi.Received_Quantity__c}"/>
+                                                </apex:outputPanel>
+                                                
+                                                <apex:outputPanel rendered="{!isSave && isSubmitted}">
+                                                    
+                                                    <!-- 
+                                                    <apex:inputText styleClass="{!POItem.poi.Id}" value="{!POItem.receivedQuantity}" rendered="{!isSave && isOrdered && NOT(POItem.isDeliveried)}"/>
+                                                    <apex:outputPanel Rendered="{!POItem.receivedQuantity > POItem.poi.Quantity__c}" >
+                                                    -->
+                                                    <apex:outputText rendered="{!POItem.poi.Received_Quantity__c == POItem.poi.Quantity__c}">
+                                                        <apex:outputfield value="{!POItem.poi.Received_Quantity__c}"/>
+                                                    </apex:outputText>
+                                                    <apex:outputText rendered="{!POItem.poi.Received_Quantity__c < POItem.poi.Quantity__c}">
+                                                        <apex:outputPanel id="receivedQtyWarning" Rendered="{!POItem.isExceededOrderedQuantity}" >
+                                                            <div class="requiredBlock"></div>
+                                                        </apex:outputPanel>  
+                                                        
+                                                        <apex:inputText style="width:65%" value="{!POItem.receivedQuantity}" id="receivedQtyInput" styleclass="receivedQtyClass"/>
+                                                        
+                                                        &nbsp;
+                                                        <a href="javascript:;" title="Fully received" style="float:right">
+                                                            <apex:outputPanel styleClass="ui-icon  ui-icon-circle-check actionIcon" style="margin-left:-25px;" >
+                                                                <apex:actionSupport event="onclick" action="{!POItem.preInputReceivedQtyAction}" rerender="PODetail"/>
+                                                            </apex:outputPanel>                                         
+                                                        </a>
+                                                     </apex:outputText>
+                                                </apex:outputPanel>
+                                           </div>
+                                        </apex:outputPanel>   
+                                    </td>
+                                    <!--
+                                    <apex:outputPanel rendered="{!isSave && isOrdered}">
+                                    <td>
+                                        <apex:commandButton value="Deliveried" styleClass="slds-button slds-button--neutral" action="{!POItem.deliveriedPOI}" reRender="PODetail"/>
+                                    </td>   
+                                    </apex:outputPanel>
+                                    -->    
+                                    <td><apex:outputField value="{!POItem.poi.Unit_of_Measure__c}"/></td>    
+                                    
+                                    <td>
+                                        <apex:outputPanel id="origPrice">
+                                            <apex:outputText value="{0, number,###,###,###,##0.00}">
+                                                  <apex:param value="{!POItem.poi.Quantity__c * POItem.poi.Price__c}" />
+                                            </apex:outputText>
+                                        </apex:outputPanel>
+                                    </td> 
+                                    <td>
+                                        
+                                         <apex:outputPanel id="stdAmount">
+                                             <apex:outputText value="{0,number,###,###,###,##0.00}" rendered="{!!isSubmitted}">
+                                                   <apex:param value="{!(POItem.poi.Quantity__c * POItem.poi.Price__c * currentEXRate)}"/>
+                                             </apex:outputText>
+                                             <apex:outputText value="{0,number,###,###,###,##0.00}" rendered="{!!isblank(POItem.poi.Budget_Exchange_Rate__c) && isSubmitted }">
+                                                  <apex:param value="{!(POItem.poi.Quantity__c * POItem.poi.Price__c * POItem.poi.Budget_Exchange_Rate__c)}"/>
+                                             </apex:outputText>
+                                         </apex:outputPanel>
+                                         <!--
+                                         <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                           <apex:outputText value="{0,number,###,###,###,##0.00}" rendered="{!isblank(POItem.poi.Budget_Exchange_Rate__c)}">
+                                               <apex:param value="{!(POItem.poi.Quantity__c * POItem.poi.Price__c * currentEXRate)}"/>
+                                           </apex:outputText>
+                                           <apex:outputText value="{0,number,###,###,###,##0.00}" rendered="{!!isblank(POItem.poi.Budget_Exchange_Rate__c)}">
+                                              <apex:param value="{!(POItem.poi.Quantity__c * POItem.poi.Price__c * POItem.poi.Budget_Exchange_Rate__c)}"/>
+                                           </apex:outputText>
+                                        </apex:outputPanel>
+                                        -->
+                                    </td>
+                                    <td>
+                                        <apex:inputfield styleClass="{!POItem.poi.id}poiPrice" value="{!POItem.poi.Additional_Cost__c}"  rendered="{!!isView && !isSubmitted}" style="width:100px;"> 
+                                            <apex:actionSupport event="onchange"  rerender="totalPriceInclTaxShipPanel"/>
+                                        </apex:inputField>
+                                        <apex:outputPanel rendered="{!isView || isSubmitted}">
+                                            <apex:outputfield value="{!POItem.poi.Additional_Cost__c}" />
+                                        </apex:outputPanel>
+                                    </td>                                                                           
+                                    <td>
+                                        <apex:outputfield styleClass="{!POItem.poi.id}buyerRemark" value="{!POItem.poi.Buyer_Remark__c}" rendered="{!isView}" />
+                                        <apex:inputfield styleClass="{!POItem.poi.id}buyerRemark" value="{!POItem.poi.Buyer_Remark__c}" rendered="{!isSave}" />
+                                    </td>
+                             
+                                    <td>
+                                    
+                                        <apex:outputText styleClass="{!POItem.poi.id}deliveriedDate" value="{0, date, dd MMMM','  yyyy}" rendered="{!IsView || isSubmitted}">
+                                            <apex:param value="{!POItem.poi.Delivery_Date__c}" />
+                                        </apex:outputText> 
+                                        <apex:outputPanel rendered="{!isSave && !isSubmitted}">
+                                        <!--
+                                            <apex:inputfield style="float:left;" styleClass="{!POItem.poi.id}deliveriedDate" value="{!POItem.poi.Delivery_Date__c}" />                                
+                                        -->
+                                            <apex:inputfield style="float:left;" value="{!POItem.poi.Delivery_Date__c}" />                                
+                                            <a href="javascript:;" title="Apply to all">
+                                                <apex:outputPanel styleClass="ui-icon  ui-icon-copy actionIcon" style="margin-left:2px;" >
+                                                    <apex:actionSupport event="onclick" action="{!POItem.applyDeliveredDate}" rerender="PODetail"/>
+                                                </apex:outputPanel>
+                                            </a>
+                                        </apex:outputPanel>
+                                       <script>
+                                           $(".dateFormat").remove();
+                                       </script>                                                                            
+                                    </td>  
+
+
+                                    <!-- Lead Time Info Column -->
+                                    <td>
+                                        <apex:outputPanel id="leadTimeInfo">
+                                            <apex:outputPanel >
+                                                <a href="javascript:;" style="float:right;cursor:default" data-leadTimeInfo="{!POItem.leadTime}">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-info actionIcon leadTimeIcon" style="margin-left:-18px;cursor:default" />
+                                                </a>
+                                            </apex:outputPanel>  
+
+                                            <script>
+                                                $(function(){
+                                                    initLeadTimeQtip();
+                                                })
+                                            </script>                                               
+                                        </apex:outputPanel>
+                                    </td>
+                                    <!--
+                                    <td>  
+                                        <apex:commandButton value="Apply To All" styleClass="slds-button slds-button--neutral" action="{!POItem.applyDeliveredDate}" rerender="PODetail" rendered="{!isSave && !isSubmitted}"/>
+                                    
+                                   
+                                    </td>
+                                    -->
+                                    <td><apex:outputField value="{!POItem.poi.Status__c}"/></td>                        
+                                </tr>         
+                                </apex:repeat>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <apex:outputText rendered="{!isSave && !isSubmitted}">
+                                    <td>
+                                    </td>
+                                    </apex:outputText>                                
+                                
+                                    <td colspan="8">
+                                    &nbsp;
+                                    </td>
+                                    
+                                    <td colspan="2" style="padding-left:10px !important;">
+                                        Total Price ({!po.Currency__r.Name})
+                                    </td>
+                                    
+                                    <td colspan="7" style="padding-left:10px !important;">
+                                    
+                                    <apex:outputText id="totalPricePanel" value="{0, number,###,###,###,##0.00}">
+                                        <!-- <apex:param value="{!po.Estimated_Total_Price__c}" /> -->
+                                        <apex:param value="{!totalPrice}" />
+                                    </apex:outputText>                                       
+                                        
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <apex:outputText rendered="{!isSave && !isSubmitted}">
+                                        <td></td>
+                                    </apex:outputText>                                 
+                                    <td colspan="7">
+                                    &nbsp;
+                                    </td>
+                                    
+                                    <td colspan="3" style="padding-left:10px !important;">
+                                        Total Price incl.<br/>
+                                        Additional Cost <br/>
+                                        per Item ({!po.Currency__r.Name})
+                                    </td>
+                                    
+                                    <td colspan="7" style="padding-left:10px !important;">
+                                    
+                                    <apex:outputText id="totalPriceInclTaxShipPanel" value="{0, number,###,###,###,##0.00}">
+                                        <!-- <apex:param value="{!po.Est_Tot_Price_Incl_Tax_Ship__c}" /> -->
+                                        <apex:param value="{!totalPriceInclTaxShip}" />
+                                    </apex:outputText>
+                                    </td>
+                                </tr>                                
+                            </tfoot>
+                       </table>
+                       <script>
+                       
+                           var $poTable = null;
+                           var $relatedPRTable = null;
+                           var $historyTable = null;
+                           var tableInit = dataTableInitSetting(1);
+                           var sortingColumn = 0;
+                           
+                           if({!isSave && !isSubmitted}) {
+                               sortingColumn = 1;
+                           }
+                           $.fn.dataTableExt.sErrMode = 'console';
+                           $(document).ready(function() {
+                               $poTable = $('#PRTable').DataTable(tableInit);
+                               tableInit = dataTableInitSetting(0);
+                               $relatedPRTable = $('#relatedPurchaseRequest').DataTable(tableInit);
+                               $historyTable = $('#receivingHistory').DataTable(tableInit);
+                           }); 
+                            window.addEventListener("beforeunload", function(event) {
+                                $poTable.state.clear();
+                                $relatedPRTable.state.clear();
+                                $historyTable.state.clear();
+                                this.preventDefault();
+                                return '';
+                            });
+                       </script> 
+                       <!--
+                         <script>
+                            var $PRTable = $("#PRTable");
+                            var PRTableInit = null;
+                            PRTableInit = dataTableInitSetting();
+                            $PRTable.DataTable(PRTableInit);
+                         </script>
+                        -->
+
+                        <!-- 
+                        Cancel POI function is removed on 04/01/2017
+                       <apex:repeat value="{!POLineList}" var="POItem">
+                            <script>
+                                  console.log('test1');
+                                  if({!POItem.isCancel} == true){
+                                      $('.{!POItem.poi.id}poiPrice').prop('disabled', 'disabled'); 
+                                      $('.{!POItem.poi.id}buyerRemark').prop('disabled', 'disabled');  
+                                      $('.{!POItem.poi.id}deliveriedDate').prop('disabled', 'disabled');
+                                      console.log('test2');
+                                  }  
+                            </script>
+                        </apex:repeat>
+                        -->
+                     </apex:outputPanel>
+                 </apex:pageBlock>
+              </div>
+          </div>
+          
+
+          <div id="tabs-2">
+                 <apex:pageBlock mode="maindetail"> <!--  id="headerBlock"-->
+                 <apex:outputPanel id="relatedPRDetail">
+                     <!-- id="PRDetail"-->
+                     <table id = 'relatedPurchaseRequest' class="display dataTable no-footer" cellspacing="0" width="100%">
+                         <!-- id="PRTable1"-->
+                        <thead>
+                            <tr>
+                                <th>PO Item No. </th>
+                                <th>Catalog</th>
+                                <th>Sub Catalog</th>
+                                <th>PO Item Name</th>
+                                <th class='no-sort'>Price/Unit (USD)</th>
+                                <th class='no-sort'>Qty</th>
+                                <th class='no-sort'>Amount (USD)</th>
+                                <th class='no-sort'>UOM</th>
+                                <th class='no-sort'>PR Ref. No.</th>
+                                <th class='no-sort'>PR Applicant</th>     
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!relatedPRIList}" var="relatedpri">
+                                <tr>
+                                    <td>
+                                        <apex:repeat value="{!POLineList}" var="POItem">
+                                            <apex:outputText value="{!POItem.poi.Number__c}" rendered="{!POItem.poi.Id == relatedpri.Purchase_Order_Item__c}"/>
+                                        </apex:repeat>
+                                    </td>
+                                    <td>{!relatedpri.Catalog_Item__r.Catalog__r.Parent_Catalog__r.Catalog_Name__c}</td>
+                                    <td>{!relatedpri.Catalog_Item__r.Catalog__r.Catalog_Name__c}</td>
+                                    <td>
+                                        <a href="/{!relatedpri.Catalog_Item__c}" target="_blank">{!relatedpri.Catalog_Item__r.Item_Name__c}</a>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number,###,###,###,##0.00}">
+                                            <apex:param value="{!relatedpri.Price__c * relatedpri.Budget_Exchange_Rate__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td>{!relatedpri.Quantity__c}</td>
+                                    <td>
+                                    <apex:outputText value="{0, number,###,###,###,##0.00}">
+                                        <apex:param value="{!relatedpri.Standard_Amount__c}" />
+                                    </apex:outputText>                                    
+                                    
+                                    </td>       
+                                    <td><apex:outputField value="{!relatedpri.Unit_of_Measure__c}"/></td>
+                                    <td>
+                                        <a href="/{!relatedpri.Purchase_Request__c}" target="_blank">{!relatedpri.Purchase_Request__r.Name}</a>
+                                    </td>
+                                    <td>
+                                      {!relatedpri.Purchase_Request__r.On_Behalf_of__r.Name}
+                                        <!-- <apex:outputField value="{!relatedpri.Purchase_Request__r.On_Behalf_of__c}"/> -->
+                                    </td>                                    
+                                </tr>                                          
+                            </apex:repeat> 
+                         </tbody>
+                         <tfoot>
+                             <tr>
+                                 <td colspan="4">
+                                 &nbsp;
+                                 </td>
+                                 <td colspan="2" style="padding-left:10px !important;">
+                                     Total (USD)
+                                 </td>
+                                 
+                                 <td colspan="4" style="padding-left:10px !important;">
+                                    <apex:outputText value="{0, number,###,###,###,##0.00}">
+                                        <apex:param value="{!priStandardAmount}" />
+                                    </apex:outputText>                                 
+                                 </td>                             
+                                 
+                             </tr>
+                         </tfoot> 
+                     </table>
+                     </apex:outputPanel>
+                 </apex:pageBlock>
+          </div> 
+        <div id="tabs-3">
+                 <apex:pageBlock mode="maindetail"> <!--  id="headerBlock"-->
+                 <apex:outputPanel id="historyDetail">
+                     <!-- id="PRDetail"-->
+                     <table id='receivingHistory' class="display dataTable no-footer" cellspacing="0" width="100%">
+                         <!-- id="PRTable1"-->
+                        <thead>
+                            <tr>
+                                <th>PO Item No.</th>
+                                <th>Catalog</th>
+                                <th>Sub Catalog</th>
+                                <th>PO Item Name</th>
+                                <th class='no-sort'>Receiving Date</th>
+                                <th class='no-sort'>Receiving Quantity</th>
+                                <th class='no-sort'>User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!receivingHistoryList}" var="history">
+                                <tr>
+                                    <td>{!history.Purchase_Order_Item__r.Number__c}</td>
+                                    <td>{!history.Purchase_Order_Item__r.Catalog_Item__r.Catalog__r.Parent_Catalog__r.Catalog_Name__c}</td>
+                                    <td>{!history.Purchase_Order_Item__r.Catalog_Item__r.Catalog__r.Catalog_Name__c}</td>
+                                    <td>{!history.Purchase_Order_Item__r.Catalog_Item__r.Item_Name__c}</td>
+                                    <td>
+                                        <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                                            <apex:param value="{!history.CreatedDate}" />
+                                        </apex:outputText>                                      
+                                    </td>
+                                    <td>{!history.Quantity__c}</td>
+                                    <td><apex:outputField value="{!history.CreatedById}"/></td>
+                                </tr>                                          
+                            </apex:repeat>
+                         </tbody> 
+                     </table>
+                     </apex:outputPanel>
+                 </apex:pageBlock>
+          </div>  
+        </div>
+        <br/>
+        <div id="tabs2">
+            <ul>
+                <li><a href="#tabs-1">PO Attachment</a></li>
+                <li><a href="#tabs-2">PR Attachment</a></li>
+            
+            </ul>          
+                          
+              
+                <div id="tabs-1">
+                     <apex:pageBlock mode="maindetail">
+                     <apex:outputPanel id="POAttachDetail">
+                         <table class="display dataTable no-footer" cellspacing="0" width="100%">
+                            
+                            <thead>
+                                <tr>
+                                    <th width="200px">Action</th>
+                                    <th>Attachment Title</th>
+                                    <th>Last Modified</th>
+                                    <th>Created By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+
+                                <apex:repeat value="{!poAttachmentList}" var="poAttachment">
+
+                                <apex:variable var="isExistAttachment" value="{!poAttachment!= null}"/>
+                                
+                                <apex:variable var="poId" value="{!poAttachment.ParentId}" rendered="{!isExistAttachment}"/>
+                                <apex:variable var="poName" value="" rendered="{!isExistAttachment}"/>
+                                                  
+
+                                <tr>                     
+                                    <td>
+                                        <a href="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!poAttachment.LatestPublishedVersionId}&operationContext=CHATTER" target="_blank" class="actionLink">View</a>
+                                        |
+                                        <a href="/sfc/servlet.shepherd/version/download/{!poAttachment.LatestPublishedVersionId}?asPdf=false&operationContext=CHATTER" target="_blank" class="actionLink">Download</a>
+
+                                        <apex:outputtext rendered="{!$User.Id == poAttachment.CreatedById}">
+                                            |
+                                            <a href="javascript:;" onclick="deletePOAttachment('{!poAttachment.Id}');">
+                                                Delete
+                                            </a>
+                                        </apex:outputtext>
+                                    </td>
+                                    <td>{!poAttachment.Title}</td>
+                                    <td>
+                                        <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                                            <apex:param value="{!poAttachment.LastModifiedDate}" />
+                                        </apex:outputText>                                      
+                                    </td>         
+                                    <td><apex:outputField value="{!poAttachment.CreatedById}" /></td>
+                                </tr> 
+                                                                     
+                                </apex:repeat> 
+                             </tbody> 
+                         </table>
+                        
+                         </apex:outputPanel>
+                     </apex:pageBlock>
+              </div>
+              
+                <div id="tabs-2">
+                     <apex:pageBlock mode="maindetail">
+                     <apex:outputPanel id="PRAttachDetail">
+                         
+                         <table class="display dataTable no-footer" cellspacing="0" width="100%">
+                            
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>PR Ref. No.</th>
+                                    <th>Attachment Title</th>
+                                    <th>Last Modified</th>
+                                    <th>Created By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <apex:repeat value="{!attachmentList}" var="attachment">
+                                
+                                <apex:variable var="isExistAttachment" value="{!attachment != null}"/>
+                                
+                                <apex:variable var="prId" value="{!attachment.parentId}" rendered="{!isExistAttachment}"/>
+                                <apex:variable var="prName" value="" rendered="{!isExistAttachment}"/>
+                                
+                                <apex:repeat value="{!relatedPRIMap}" var="priId" rendered="{!isExistAttachment}">
+                                    <apex:variable var="prName" value="{!relatedPRIMap[priId].Purchase_Request__r.Name}" rendered="{!relatedPRIMap[priId].Purchase_Request__c == prId}"/>
+                                </apex:repeat>                                                                  
+                                
+                                <tr>
+                                     <td>
+                                        <a href="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!attachment.LatestPublishedVersionId}&operationContext=CHATTER" target="_blank" class="actionLink">View</a>
+                                        |
+                                        <a href="/sfc/servlet.shepherd/version/download/{!attachment.LatestPublishedVersionId}?asPdf=false&operationContext=CHATTER" target="_blank" class="actionLink">Download</a>
+                                    </td>
+                                    <td><a href="/{!prId}" target="_blank">{!prName}</a></td>
+                                    <td>{!attachment.Title}</td>
+                                    <td>
+                                        <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                                            <apex:param value="{!attachment.LastModifiedDate}" />
+                                        </apex:outputText>                                      
+                                    </td>               
+                                    <td><apex:outputField value="{!attachment.CreatedById}" /></td> 
+                                </tr> 
+                                                                             
+                                </apex:repeat> 
+                             </tbody> 
+                         </table>
+
+                            
+                            
+                         </apex:outputPanel>
+                     </apex:pageBlock>
+              </div>                                            
+       </div>      
+ 
+      
+           
+       
+        <br/>
+        
+        <!--
+         <apex:pageBlock>
+                 <apex:outputPanel id="ShippingCostTable">
+                     <table id="PRTable1" class="display dataTable no-footer" cellspacing="0" width="30%">
+                        <thead>
+                            <tr>
+                                <th><apex:inputCheckbox onclick="selectAllCheckboxes(this,'inputId')"/></th>
+                                <th>PO Item</th>    
+                                <th>Name</th>
+                                <th>Currency</th>                           
+                                <th>Price/Unit</th>
+                            </tr>
+                        </thead> 
+                      </table>
+                     </apex:outputPanel>
+         </apex:pageBlock>                
+        
+         <apex:pageBlock>
+                 <apex:outputPanel id="TaxCostTable">
+                     <table id="PRTable1" class="display dataTable no-footer" cellspacing="0" width="30%">
+                        <thead>
+                            <tr>
+                                <th><apex:inputCheckbox onclick="selectAllCheckboxes(this,'inputId')"/></th>
+                                <th>PO Item</th>    
+                                <th>Name</th>
+                                <th>Currency</th>                           
+                                <th>Price/Unit</th>
+                            </tr>
+                        </thead> 
+                      </table>
+                     </apex:outputPanel>
+         </apex:pageBlock>
+       <br></br>   
+       -->     
+        
+      <!--
+        <apex:pageBlock Title="PR Notes & Attachments" mode="detail">
+            <apex:pageBlockTable columns="5" value="{!attachmentList}" var="attachment">
+                    
+                    <apex:variable var="isExistAttachment" value="{!attachment != null}"/>
+                    
+                    <apex:variable var="prId" value="{!attachment.ParentId}" rendered="{!isExistAttachment}"/>
+                    <apex:variable var="prName" value="" rendered="{!isExistAttachment}"/>
+                    
+                    <apex:repeat value="{!relatedPRIMap}" var="priId" rendered="{!isExistAttachment}">
+                        <apex:variable var="prName" value="{!relatedPRIMap[priId].Purchase_Request__r.Name}" rendered="{!relatedPRIMap[priId].Purchase_Request__c == prId}"/>
+                    </apex:repeat>
+                        
+                    
+                    <apex:column colspan="5" rendered="{!!isExistAttachment}">
+                        <apex:facet name="header">No Record to display.</apex:facet>
+                    </apex:column>
+                                                    
+                    <apex:column styleClass="actionColumn" rendered="{!isExistAttachment}">
+                        <apex:facet name="header">Action</apex:facet>
+                        <a href="/servlet/servlet.FileDownload?file={!attachment.Id}" target="_blank" class="actionLink">View</a>
+                    </apex:column>
+                    
+                    <apex:column rendered="{!isExistAttachment}">
+                        <apex:facet name="header">PR Ref. No.</apex:facet>
+                        <a href="/{!prId}" target="_blank">{!prName}</a>
+                    </apex:column>
+                    
+                    <apex:column rendered="{!isExistAttachment}">
+                        <apex:facet name="header">Attachment Title</apex:facet>
+                        <a href="/{!attachment.Id}" target="_blank">{!attachment.Name}</a>
+                    </apex:column>
+                    
+                    <apex:column rendered="{!isExistAttachment}">
+                        <apex:facet name="header">Last Modified</apex:facet>
+                        <apex:outputText value="{0, date, dd MMMM','  yyyy}">
+                            <apex:param value="{!attachment.LastModifiedDate}" />
+                        </apex:outputText>                        
+                    </apex:column>
+                    
+                    <apex:column rendered="{!isExistAttachment}"> 
+                        <apex:facet name="header">Created By</apex:facet>
+                        <apex:outputField value="{!attachment.CreatedById}"/>
+                    </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+        -->
+
+        <div id="dialog-confirm" title="Close PO" class="slds">      
+            <p>
+                The PO Items are fully received. <br/>
+                Do you want to close the PO?
+            </p>
+            <div align="center" style="padding-top:10px">
+                <apex:commandButton value="Yes" styleClass="slds-button slds-button--neutral" onclick="callClosePO();" oncomplete="hideConfirmDialog()"/>
+                &nbsp; &nbsp;
+                <apex:commandButton value="No" styleClass="slds-button slds-button--neutral" onclick="refreshPage()" oncomplete="hideConfirmDialog();"/>
+            </div>
+        </div>
+
+        <script>
+            $(function(){
+                 $("#dialog-confirm").dialog({
+                    autoOpen: false,
+                    height: 150,
+                    width: 240
+                });            
+            });
+        
+            function promptClosePO(){
+                $("#dialog-confirm").dialog("open");
+            }
+            
+            function hideConfirmDialog(){
+                $("#dialog-confirm").dialog("close");
+            }
+            
+            function callClosePO(){
+                closePO();
+            }
+
+            function initQtip() {
+                setTimeout(function(){
+                    $(".moqIcon").qtip({
+                        content: {
+                            text: 'Quantity is less than MOQ'
+                        }
+                    });
+                }, 100);
+            }
+
+            function initLeadTimeQtip() {
+                console.log('initLeadTime');
+                console.log($(".leadTimeIcon"));
+                $(".leadTimeIcon").each(function(){
+                    var leadTimeInfo = $(this).parent().data('leadtimeinfo');
+                    console.log($(this).parent());
+                    console.log('leadTimeInfo:'+leadTimeInfo);
+                    var leadTimeInfoStr = leadTimeInfo.length>0 ? leadTimeInfo : "No lead time info.";
+
+                    $(this).qtip({
+                        content: {
+                            title: "Lead Time",
+                            text: leadTimeInfoStr
+                        }
+                    });
+                });
+            }
+        </script>
+
+        
+    </apex:form>
+   
+
+    <br></br>
+    
+    
+    <div style="display:none">
+        <apex:relatedList list="AttachedContentDocuments" subject="{!pid}" title="PO Files"/>
+    </div>
+    <!-- <apex:relatedList list="Purchase_Order_Items__r" subject="{!pid}"/> -->
+
+    <!--
+        <apex:relatedList list="CombinedAttachments" subject="{!pid}" title="PO Files"></apex:relatedList>
+    -->
+
+</apex:page>

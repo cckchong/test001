@@ -1,0 +1,57 @@
+<apex:component >
+    <style>
+        .center-cropped {
+            width: 70px;
+            height: 70px;
+            background-position: center center;
+            background-repeat: no-repeat;
+            border-radius:2px;
+            -webkit-box-shadow: 0px 1px 2px 0px #B3B3B3;
+            -moz-box-shadow: 0px 1px 2px 0px #B3B3B3;
+            box-shadow: 0px 1px 2px 0px #B3B3B3;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .Tal-Placeholder-Img {
+            display:block; 
+            font-size:40px;
+            color:#F5F5F5; 
+            background: #EAEAEA; 
+            width: 70px; 
+            height: 70px;
+            border-radius:2px;
+            -webkit-box-shadow: 0px 1px 5px 0px #B3B3B3;
+            -moz-box-shadow: 0px 1px 5px 0px #B3B3B3;
+            box-shadow: 0px 1px 5px 0px #B3B3B3;
+            margin-left: auto;
+            margin-right: auto;
+        }
+            
+        .tal-highlight-wrapper {
+            text-align: center; 
+            display: inline-block;
+            width: 80px;
+        }
+        
+        td.td-highlight-item {
+            text-align: center;
+            padding-left: 3px;
+            padding-right: 3px;
+            border: none;
+        }
+        
+        @media only screen
+        and (min-device-width : 320px)
+        and (max-device-width : 480px) {
+            .tal-responsive-table {
+        		width: 290px;
+                white-space: nowrap;
+                overflow-y: hidden;
+                overflow-x: scroll;
+                -webkit-overflow-scrolling: touch;
+                padding: 1rem;
+        		border: 1px solid #EAEAEA;
+            }
+        }
+    </style>
+</apex:component>

@@ -1,0 +1,41 @@
+<apex:page standardController="Library_Item__c" extensions="LibraryFabricSamplePreviewCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <style>
+    	.bs .row {
+        	margin-left: 0px;
+        	margin-right: 0px;
+        }
+    </style>
+    <div class="bs container">
+        <div class="bs row">
+            <br/>
+            <div class="bs col-xs-12">
+                <apex:outputText value="No Photos Available" rendered="{!ISBLANK(Library_Item__c.Tech_Thumbnail_Id__c)}" style="color: #888;"/>
+                <table class="bs table table-bordered table-condensed">
+                    <thead>
+                    	<tr>
+                            <apex:repeat value="{!fieldSet}" var="fs">
+                            	<th>{!fs.Label}</th>
+                            </apex:repeat>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!fabricItemList}" var="fabricItem">
+                            <tr>
+                                <apex:repeat value="{!fieldSet}" var="fs">
+                                    <td>
+                                        <apex:outputPanel rendered="{! fs.fieldPath = 'Tech_Thumbnail_Id__c'}"> 
+                                            <a href="#"><img src="{!fabricItem[fs.fieldPath]}" class="bs img-thumbnail" style="height:70px;"/></a>
+                                        </apex:outputPanel>
+                                        
+                                        <apex:outputField value="{!fabricItem[fs.fieldPath]}" rendered="{! fs.fieldPath != 'Tech_Thumbnail_Id__c'}" />
+                                    </td>
+                                </apex:repeat>
+                            </tr>
+						</apex:repeat>
+                	</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</apex:page>

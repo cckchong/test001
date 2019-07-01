@@ -1,0 +1,4 @@
+<apex:page tabstyle="Expense_Application__c"> 
+    <apex:enhancedList type="Expense_Application__c"  height="500" customizable="true"/>
+    
+</apex:page>

@@ -1,0 +1,39 @@
+<apex:component layout="block">
+    <apex:attribute name="title" type="String" description="title of the Panel" required="true" />
+    <apex:attribute name="childDetailPage" description="Child Detail Page" type="String" required="true" />   
+ 	<apex:attribute name="recordRef" description="recordID" type="Id" required="true" />
+ 	<apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+ 	<apex:attribute name="pageContentCategory" type="String" description="page Content Category" required="true" />
+ 	<apex:attribute name="pageDistLevel" type="String" description="page Dist Level" required="true" />
+ 	<apex:attribute name="pageDistTarget" type="String" description="page Dist Target" required="true" />
+    <apex:attribute name="isMobile" type="Boolean" description="is Mobile Device" required="false" />
+ 	
+    <script type="text/javascript">
+		function autoResize(id){
+		    var newheight;
+		    var newwidth;
+		    if(document.getElementById){
+		        newheight=document.getElementById(id).contentWindow.document .body.offsetHeight+10;
+		        newwidth=document.getElementById(id).contentWindow.document .body.scrollWidth;
+		    }
+		
+		    document.getElementById(id).height= (newheight) + "px";
+		    document.getElementById(id).width= (newwidth) + "px";	    
+		}
+	</script>
+    <div class="bs wrapper">    
+	    <div class="bs panel panel-info panelClass">
+	        <div class="bs panel-heading">
+	            <h3 class="bs panel-title">{!title}</h3>
+	        </div>	        
+	        <div class="bs panel-body" id="thePanelBody">
+	        	<iframe src="/apex/ACGArticleListVFPage?title={!title}&articleDetailPage={!childDetailPage}&ContentCategory={!pageContentCategory}&DistLevel={!pageDistLevel}&DistTarget={!pageDistTarget}&isMobileDevice={!isMobile}"
+	        	        width="100%" height="300px" id="iframe1"  marginheight="0" frameborder="0"  onLoad="autoResize('iframe1');"/>
+   			</div>
+   			<apex:outputLink value="/{!recordRef}"
+				styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}"
+				target="_blank">{!$Label.ChangeContent}
+			</apex:outputLink>
+   		</div>
+   	</div>   
+</apex:component>

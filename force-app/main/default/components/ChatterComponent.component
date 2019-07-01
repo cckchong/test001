@@ -1,0 +1,57 @@
+<apex:component controller="ChatterController">
+    <apex:attribute name="chatterGroup" type="Id" description="chatter group ID" assignTo="{!chatterID}" required="true" />
+    <apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="true" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+    <apex:attribute name="isAccessible" description="control whether the user can access the group" type="Boolean" required="true" />    
+    <apex:attribute name="showChatterFeed" description="control whether the chatter group shows on the page" type="Boolean" required="true" />
+    <style>
+        .bs .panel-heading{
+            padding: 5px 10px;
+        }
+        .bs .panel {
+            margin-bottom: 5px;
+        }
+        .publishercontainer .bottomBar{
+            height:50px;
+        }
+        .zen .publisherTypeOverflow .zen-trigger{
+            height: 26px;
+        }
+        .publishercontainer a.publisherattach {
+            height: 30px;
+        }
+        
+        .publishercontainer ul.publisherFeedItemTypeChoices {
+            height: 30px;
+        }
+        
+        .publishercontainer .publisherattach span.pArrow {
+            bottom: -7px;
+        }
+        
+        .zen .publisherTypeOverflow.withArrowAttached span.pArrow {
+            bottom: -21px;
+        }
+
+    </style>
+    <div class="bs wrapper">  
+        <apex:outputPanel rendered="{!AND(isAccessible,showChatterFeed)}">
+            <div class="bs panel panel-info panelClass">
+                <div class="bs panel-heading">
+                    <h3 class="bs panel-title">{!chatterGroupName} {!$Label.ChatterFeed}</h3>
+                </div>
+                <div class="bs panel-body" >
+                    <chatter:feed entityId="{!chatterID}" showPublisher="{!bCanPost}"/>
+                </div>
+                <div class="bs panel-footer">
+                    <apex:outputLink value="/{!recordID}" styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}" target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+                </div>
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!AND(NOT(AND(isAccessible,showChatterFeed)),isEditable)}">
+            <div class="bs panel-footer">
+                <apex:outputLink value="/{!recordID}" styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}" target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+            </div>
+        </apex:outputPanel>
+    </div>
+</apex:component>

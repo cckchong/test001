@@ -1,0 +1,40 @@
+<apex:page showHeader="true" sidebar="false" controller="TechAdminUtils">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:form >
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-sm-12">
+                <h4><span class="glyphicon glyphicon-lock"></span> Secret Utilities</h4><br/><br/>
+                <apex:pagemessages />
+                <div class="bs well">
+                    <h4>Remove ContentDocument Data</h4><br/>
+                    Deletes ContentDocument data for the following users ({!users.size}):<br/><br/>
+                    <ul>
+                        <li>
+                            <apex:repeat value="{!users}" var="u">
+                                {!u.name}, 
+                            </apex:repeat>
+                        </li>
+                    </ul>
+                    <apex:commandButton action="{!deleteFiles}" value="Delete Files" onclick="if(!confirm('Are you sure?')){return false};" />
+                    
+                </div>
+                
+                <div class="bs well">
+                    <h4>Remove Chatter Group Data</h4><br/>
+                    Deletes Chatter Group data for the following users ({!users.size}):<br/><br/>
+                    <ul>
+                        <li>
+                            <apex:repeat value="{!users}" var="u">
+                                {!u.name},
+                            </apex:repeat>
+                        </li>
+                    </ul>
+                    <apex:commandButton action="{!deleteChatterGroup}" value="Delete Chatter Groups" onclick="if(!confirm('Are you sure?')){return false};" />
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    </apex:form>
+</apex:page>

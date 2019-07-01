@@ -1,0 +1,51 @@
+<apex:component controller="MobileReceiptInboxCtrl">
+    <script type="text/javascript">
+        /**
+         * @description initialize the actions
+         */
+        $(document).ready(function() {
+        
+            $('#teMobileNavUploadReceipts').click(function() {
+                getMobileReceiptInbox();
+            });
+            
+            $('#teMobileNavUserGuide').click(function() {
+                sforce.one.navigateToSObject('0696F000003EI8P');
+                //alert('User Guide has not been uploaded yet.');
+            });  
+        });
+        
+        /**
+         * @description get the user's mobile receipt inbox
+         */
+        function getMobileReceiptInbox() {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.MobileReceiptInboxCtrl.getMobileReceiptInbox}',
+                function(result, event){
+                    console.log(result);
+                    console.log(event);
+                    
+                    if (event.status) {
+                        
+                        if(result == null || result == '') {
+                            alert('Please try again later');
+                        } else {
+                            if(getIsSalesforceOne()) {
+                                //sforce.one.navigateToFeed(result, 'RECORD');
+                                sforce.one.navigateToSObject(result, 'chatter');
+                            } else {
+                                window.location.href = '/' + result;
+                            }
+                        }
+                    } else if (event.type === 'exception') {
+                        alert('Please try again later');
+                        
+                    } else {
+                        alert('Please try again later');                        
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+    </script>
+</apex:component>

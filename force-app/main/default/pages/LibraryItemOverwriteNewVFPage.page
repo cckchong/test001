@@ -1,0 +1,60 @@
+<apex:page StandardController="Library_Item__c" extensions="LibraryItemOverwriteNewCtrl" action="{!onload}">        
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+<apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <style>
+            .bs .row {
+                margin-left: 0px;
+                margin-right: 0px;
+            }
+    </style>
+    
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var isSalesforceOne = false;    
+            if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+                isSalesforceOne = true;
+            }           
+            if(isSalesforceOne){
+                var isEmpty = {!isSizeEmpty};
+                var isOne ={!isSizeOne};
+                
+                if(isEmpty){
+                    alert('{!$Label.Library_not_allowed_createRecords}');
+                    sforce.one.navigateToURL('/{!preFix}');
+                }else if(isOne){
+                    sforce.one.createRecord('Library_Item__c');
+                }
+                
+            }
+        });
+    </script>
+    
+    <apex:form >
+        <div class="bs container">
+            <div class="bs row">
+                <div class="bs col-sm-12">
+                    <br/>
+                    <h4>
+                        {!$Label.Library_Request_Record_Type_Select}
+                    </h4>
+                    <br/><br/>
+                    <div class="bs well">
+                        <apex:selectList value="{!selectedRecordType}" size="1" multiselect="false" styleclass="bs form-control TalLibraryCategorySelector" style="width:200px">
+                            <apex:selectOptions value="{!availableRecordTypes}" id="soRecordType"/>                                 
+                        </apex:selectList>
+                        
+                        <br/><br/>
+                        
+                        <apex:commandButton rendered="{!isSalesforceOne}" action="{!GoBtn}" styleclass="bs btn-primary btn-sm" oncomplete="Sfdc.canvas.publisher.publish({name: 'publisher.close', payload:{ refresh:'true'}});"  value="Continue" title="Continue" style="width:100px" />
+                        <apex:commandButton rendered="{!!isSalesforceOne}" action="{!GoBtn}"  styleclass="bs btn-primary btn-sm" value="Continue" title="Continue" style="width:100px" />
+                        &nbsp;
+                        <apex:commandButton rendered="{!isSalesforceOne}" action="{!CancelBtn}" styleclass="bs  btn-sm" oncomplete="Sfdc.canvas.publisher.publish({name: 'publisher.close', payload:{ refresh:'true'}});" value="Cancel" title="Cancel" style="width:100px" />
+                        <apex:commandButton rendered="{!!isSalesforceOne}" action="{!CancelBtn}" styleclass="bs  btn-sm" value="Cancel" title="Cancel" style="width:100px" />
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </apex:form>
+</apex:page>

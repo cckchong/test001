@@ -1,0 +1,190 @@
+<apex:page >
+<!-- <apex:page standardController="Portal_Content__c" extensions="ArticleEditPageController"  showHeader="true" id="thepageid">
+    <apex:includescript value="{!URLFOR($Resource.CKEDITOR, 'ckeditor/ckeditor.js')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    
+    <style>
+        .ErrorText {
+            color: Red;
+        }   
+    </style>
+    <apex:form id="theformid">
+        <apex:pageBlock id="thepageblockid" title="" mode="maindetail">
+            <apex:actionFunction name="refresh1" action="{!changeDept}" rerender="txtBlockSectionGeneral" status="asBUEdit"/>
+            <apex:pageBlockButtons id="thePageButtonid" location="top">
+                <script>             
+			        function preview() {
+			            window.open('/apex/PreviewPage?Id={!objPC.Id}&size=12&type=richtext&preview=true');
+			        } 		
+			        
+					function confirmPublish() {
+						return confirm('Are you sure you want to publish the article?');
+					}
+					
+					function confirmUnPublish() {
+						return confirm('Are you sure you want to unpublish the article?');
+					}
+					
+					function confirmDelete() {
+						return confirm('Are you sure you want to delete the article?');
+					}
+					
+					function confirmSendEmail() {
+						return confirm('Are you sure you want to send email notification now?');
+					}
+				</script>   
+                <apex:commandButton action="{!edit}" value="Edit" id="editButton" rendered="{!NOT(bEdit)}"/>
+                <apex:commandButton action="{!deleteRecord}" value="Delete" id="deleteButton" onclick="if(!confirmDelete()) return false;" rendered="{!AND(NOT(bEdit),bCanDelete)}"  rerender="redirectPanel"/>
+                <apex:commandLink action="{!cloneRecord}" style="text-decoration: none" id="cloneLink" rendered="{!NOT(bEdit)}" target="_parent"><apex:commandButton value="Clone"/></apex:commandLink>                
+                <apex:commandLink action="{!shareRecord}" style="text-decoration: none" id="shareButton" rendered="{!NOT(bEdit)}" target="_parent"><apex:commandButton value="Share Ownership"/></apex:commandLink>
+                <apex:commandButton action="{!previewArticle}" onclick="preview()" value="Preview" rendered="{!NOT(bEdit)}" />
+				<apex:commandButton action="{!publishArticle}" value="Publish" id="publishButton" onclick="if(!confirmPublish()) return false;" rendered="{!AND(NOT(bEdit),  objPC.Status__c ='Reviewed')}"/>
+                <apex:commandButton action="{!UnpublishArticle}" value="Unpublish" id="UnpublishButton" onclick="if(!confirmUnPublish()) return false;" rendered="{!AND(NOT(bEdit), objPC.Status__c ='Published')}"/>
+                <apex:commandButton action="{!post}" value="Send {!LanguageLabel} Notification Email Now"  onclick="if(!confirmSendEmail()) return false;" onComplete="alert('{!strEmailResult}');" rendered="{!NOT(bEdit)}" rerender="thePageButtonid"/>
+				<apex:commandButton action="{!save}" value="Save" id="saveButton" rendered="{!AND(bEdit, NOT(bClone), NOT(bCreate))}"/>
+				<apex:commandButton action="{!saveCreate}" value="Save" id="saveCreate" rendered="{!AND(bEdit, bCreate)}"/>
+				<apex:commandButton action="{!saveClone}" value="Save" id="saveCloneButton" rendered="{!AND(bEdit, bClone)}"/>  
+                <apex:commandButton action="{!cancel}" value="Cancel" id="cancelButton" rendered="{!bEdit}" rerender="theformid"/>  
+                <br/><br/>
+                <Strong><apex:outputText value="Error: {!strErrorMessage}" rendered="{!strErrorMessage!=''}" styleClass="ErrorText" escape="False"/></Strong>
+            </apex:pageBlockButtons>
+            <apex:pageMessages />
+            <apex:outputPanel id="redirectPanel" >
+	            <apex:outputText rendered="{!bShouldRedirect}">
+	                <script type="text/javascript">
+	                    window.top.location.href = '{!redirectUrl}';
+	                </script>
+	            </apex:outputText>
+        	</apex:outputPanel>
+            View Mode
+            <apex:pageBlockSection id="txtBlockSectionGeneralRead" title="" columns="2" rendered="{!NOT(bEdit)}">
+                <apex:outputField value="{!objPC.Name}"/>   
+                <apex:pageBlockSectionItem labelTitle="Owner">
+                	<apex:outputLabel value="Owner"/>
+                	<apex:outputPanel >
+	                	<apex:outputLink value="/{!objPC.Owner.Id}" target="_blank">{!objPC.Owner.Name}</apex:outputLink>&nbsp;
+	                	<apex:outputLink value="/{!objPC.Id}/a?retURL=/{!objPC.Id}" target="_blank">[Change]</apex:outputLink> 
+                	</apex:outputPanel>  
+                </apex:pageBlockSectionItem>                    
+                <apex:outputField value="{!objPC.Category__c}"/>
+            	<apex:outputField label="Record Type" value="{!objPC.RecordType.Name}"/>      	         	
+            	<apex:outputField value="{!objPC.Sub_Category__c}"/>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Status__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Status__c.Label}
+	            	<apex:outputField value="{!objPC.Status__c}"/>
+				</apex:pageBlockSectionItem>  
+            	<apex:outputField value="{!objPC.BU__c}"/>                	    
+            	<apex:outputLabel value=""/>   
+            	<apex:outputField value="{!objPC.Distribution_Grade__c}"/>
+            	<apex:outputLabel value=""/> 
+            	<apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.Label}
+	            	<apex:outputField value="{!objPC.Sticky_Scale__c}"/>
+				</apex:pageBlockSectionItem>    
+				<apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.Label}
+	            	<apex:outputField value="{!objPC.Expiry_Date__c}"/>
+				</apex:pageBlockSectionItem>      				
+				<apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Share_to_Group__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Share_to_Group__c.Label}
+	            	<apex:outputField value="{!objPC.Share_to_Group__c}"/>
+				</apex:pageBlockSectionItem>    	
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="txtBlockSectionContentsRead" title="Article Content" columns="1" rendered="{!NOT(bEdit)}">
+            	<apex:inputField value="{!objPC.Language__c}">
+                	<apex:actionSupport event="onchange" action="{!changeContents}"/>
+                </apex:inputField>                 
+                <apex:repeat value="{!Languages}" var="lang">
+            		<apex:outputField value="{!objPC[TitleLangVar[lang]]}" style="width:700px" rendered="{!IF(strLanguage=Lang,true, false)}"/>   		     
+	            	<apex:outputField value="{!objPC[SummaryLangVar[lang]]}" rendered="{!IF(strLanguage=Lang,true, false)}"/>    
+	            	<apex:outputField value="{!objPC[ContentsLangVar[lang]]}" rendered="{!IF(strLanguage=Lang,true, false)}"/>              	
+	            	<apex:outputField value="{!objPC[RevisedLangVar[lang]]}" rendered="{!IF(strLanguage=Lang,true, false)}"/>
+            	</apex:repeat>
+            </apex:pageBlockSection>
+            
+            
+            Edit Mode            
+            <apex:pageBlockSection id="txtBlockSectionGeneral" title="" columns="2" rendered="{!bEdit}">
+            <apex:outputField value="{!objPC.Name}"/>   
+                <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Owner"/>
+                	<apex:outputLink value="/{!objPC.Owner.Id}">{!objPC.Owner.Name}</apex:outputLink>   
+                </apex:pageBlockSectionItem>                    
+                <apex:inputField value="{!objPC.Category__c}"  required="true">
+                	<apex:actionSupport event="onchange" action="{!changeCategory}"/>
+                </apex:inputField> 
+            	<apex:outputField label="Record Type" value="{!objPC.RecordType.Name}"/>
+            	<apex:pageBlockSectionItem >
+            		{!$ObjectType.Portal_Content__c.fields.Sub_Category__c.Label}
+            		<apex:outputPanel id="itemSubCat" layout="none">
+		            	<c:MultiselectPicklist leftLabel="Available"
+												    leftOptions="{!availableSubCategory}"
+												    rightLabel="Chosen"
+												    rightOptions="{!selectedSubCategory}"
+												    size="5"
+												    width="150px"/>		
+						<apex:actionSupport event="onchange" action="{!changeSubCategory}"/>				
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Status__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Status__c.Label}
+	            	<apex:outputField value="{!objPC.Status__c}"/>
+				</apex:pageBlockSectionItem> 
+				
+            	<apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.BU__c.inlineHelpText}">
+            	    {!$ObjectType.Portal_Content__c.fields.BU__c.Label}
+            	    <apex:selectList value="{!selectedDepartment}" size="1"	onchange="refresh1();" multiselect="false">
+						<apex:selectOptions value="{!availableDepartment}" id="searchDept"/>
+					<apex:actionStatus id="asBUEdit">
+                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+                    </apex:actionstatus>
+					</apex:selectList>	 
+				</apex:pageBlockSectionItem>   
+				<apex:outputLabel value=""/>     
+            	<apex:inputField value="{!objPC.Distribution_Grade__c}"  required="true"/>     
+            	<apex:outputLabel value=""/>   
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.Label}
+	            	<apex:inputField value="{!objPC.Sticky_Scale__c}" required="true"/>
+				</apex:pageBlockSectionItem>  				
+            	<apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.Label}
+	            	<apex:inputField value="{!objPC.Expiry_Date__c}" required="true"/>
+				</apex:pageBlockSectionItem>    				
+				<apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Share_to_Group__c.inlineHelpText}">
+	            	{!$ObjectType.Portal_Content__c.fields.Share_to_Group__c.Label}
+	            	<apex:inputField value="{!objPC.Share_to_Group__c}"/>
+				</apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            	            
+            <apex:pageBlockSection id="txtBlockSectionContents" title="Article Content" columns="1" rendered="{!bEdit}">
+            	<apex:inputField value="{!objPC.Language__c}"> 
+                	<apex:actionSupport event="onchange" action="{!updateContents}"/>
+                </apex:inputField>
+                <script type="text/javascript">
+			        window.onload = function()
+			        {
+						var EditorId ='thepageid:theformid:thepageblockid:txtBlockSectionContents:html';
+						CKEDITOR.replace(EditorId, {
+						    filebrowserBrowseUrl : '{!$Page.SiteFileBrowser}',   
+						    filebrowserImageBrowseUrl: '{!$Page.SiteFileBrowser}'
+						    });					
+			        }
+	    		</script>                    
+           		<apex:inputField rendered="{!NOT(ISNULL(setEditorLang))}" value="{!objPC[TitleLangVar[setEditorLang]]}" style="width:700px"/>
+               	<apex:inputTextarea rendered="{!NOT(ISNULL(setEditorLang))}" value="{!objPC[SummaryLangVar[setEditorLang]]}" rows="3" cols="150"/>
+               	<apex:inputTextarea rendered="{!NOT(ISNULL(setEditorLang))}" id="html" value="{!objPC[ContentsLangVar[setEditorLang]]}" richtext="false"/>  
+               	<apex:inputField rendered="{!NOT(ISNULL(setEditorLang))}" value="{!objPC[RevisedLangVar[setEditorLang]]}" />
+            	
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="txtBlockSectionSystem" title="System Information" columns="2">
+            	<apex:outputField value="{!objPC.CreatedById}"/>
+            	<apex:outputField value="{!objPC.LastModifiedById}"/>  
+            	<apex:outputField value="{!objPC.CreatedDate}"/>
+            	<apex:outputField value="{!objPC.LastModifiedDate}"/>
+            </apex:pageBlockSection> 
+        </apex:pageBlock>
+    </apex:form> -->
+</apex:page>

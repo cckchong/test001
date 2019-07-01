@@ -1,0 +1,383 @@
+<apex:page standardcontroller="Education_Application__c"
+extensions="TEEducationApplicationProgressBarCtrl"
+showHeader="false"
+sidebar="false"
+applyBodyTag="false">
+
+<head>
+<style>
+body{
+    background: white;
+    margin:0!important;
+    padding:0 10px;
+}
+.table-block{
+    min-width:1024px;
+}
+.meter {
+    height: 8px;
+    position: relative;
+    background: #ededed;
+    border-radius: 8px;
+    padding: 17px 10px;
+    width: 90%;
+}
+.meter ol {
+    margin: 0;
+    padding: 0;
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    background-color: #FFF;
+    position: relative;
+    list-style: none;
+}
+.meter ol li {
+    float: left;
+    height:8px;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    width: 25%; /* ADJUST ME */
+    position: relative;
+}
+.meter ol li span {
+    right: 0;
+    display: block;
+    text-align: center;
+}
+.meter ol li .step {
+    top: -11px;
+    padding: 0;
+    border: 3px solid #47B4DB;
+    z-index: 99;
+    font-size: 12px;
+    color: #47B4DB;
+    width: 24px;
+    font-weight: 700;
+    position: absolute;
+    background-color: #FFF;
+    border-radius: 50%;
+    height: 24px;
+    line-height: 24px;
+}
+.meter ol li .stage {
+    color: #fff;
+    position: absolute;
+    top: -50px;
+    right: -45%;
+    width: 100%;
+}
+.meter ol li .stage p{
+    display:inline-block;
+    background:#29a4d0;
+    padding: 5px 5px;
+    border-radius: 2px;
+    font-size:11px;
+    margin:0;
+}
+.meter ol li.active {
+    height: 8px;
+    background: #47b5db;
+}
+.meter ol li.active:first-child{
+    border-radius: 10px 0 0 10px;
+}
+.meter ol li.active:last-child{
+    border-radius: 0 10px 10px 0;
+}
+.meter ol li.active span.step {
+    color: #47B4DB;
+    border: 3px solid #47b4db;
+}
+
+.meterChild {
+    height: 8px;
+    position: relative;
+    background: #ededed;
+    border-radius: 8px;
+    padding: 17px 10px;
+    width: 90%;
+}
+.meterChild ol {
+    margin: 0;
+    padding: 0;
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    background-color: #FFF;
+    position: relative;
+    list-style: none;
+}
+.meterChild ol li {
+    float: left;
+    height:8px;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    width: 25%; /* ADJUST ME */
+    position: relative;
+}
+.meterChild ol li span {
+    right: 0;
+    display: block;
+    text-align: center;
+}
+.meterChild ol li .step {
+    top: -11px;
+    padding: 0;
+    border: 3px solid #47B4DB;
+    z-index: 99;
+    font-size: 12px;
+    color: #47B4DB;
+    width: 24px;
+    font-weight: 700;
+    position: absolute;
+    background-color: #FFF;
+    border-radius: 50%;
+    height: 24px;
+    line-height: 24px;
+}
+.meterChild ol li .stage {
+    color: #fff;
+    position: absolute;
+    top: -50px;
+    right: -45%;
+    width: 100%;
+}
+.meterChild ol li .stage p{
+    display:inline-block;
+    background:#29a4d0;
+    padding: 5px 5px;
+    border-radius: 2px;
+    font-size:11px;
+    margin:0;
+}
+.meterChild ol li.active {
+    height: 8px;
+    background: #47b5db;
+}
+.meterChild ol li.active:first-child{
+    border-radius: 10px 0 0 10px;
+}
+.meterChild ol li.active:last-child{
+    border-radius: 0 10px 10px 0;
+}
+.meterChild ol li.active span.step {
+    color: #47B4DB;
+    border: 3px solid #47b4db;
+}
+
+
+.errorTd{
+    width: 0;
+    padding: 0;
+}
+.errorTr .errorTd{
+    width: 5%;
+    text-align:center;
+}
+.errorTdTwo{
+    width: 100%;
+    position:relative;
+}
+.errorTr .errorTdTwo{
+    width: 95%;
+}
+.table-block-no-width .meter ol li .stage{
+    display:none;
+}
+.mobile-text{
+    display:none;
+}
+.table-block-no-width .mobile-text{
+    display:block;
+    position:absolute;
+    top:-35px;
+    width:100%;
+    text-align:center
+}
+.mobile-text .stage{
+    display:none;
+}
+.mobile-text .stage.active{
+    display:block;
+}
+.mobile-text .stage p{
+    display:inline-block;
+    background:#29A4D0;
+    padding:5px 5px;
+    border-radius:2px;
+    font-size:11px;
+    margin:0;
+    color:#FFF
+}
+
+
+@keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 36px; } }
+
+@-moz-keyframes progress {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 36px; } }
+
+@-webkit-keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 31px; } }
+
+@-ms-keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 36px; } }
+
+@-o-keyframes "progress" {
+  0% {
+    background-position-x: 0px; }
+
+  100% {
+    background-position-x: 55px; } }
+
+</style>
+</head>
+<body style="background:white;">
+<table width="100%" id="table-block" class="table-block">
+    <tr>
+        <td colspan="2" width="100%" style="padding:20px 0 50px;">
+        </td>
+    </tr>
+    <tr>
+
+        <td class="errorTdTwo">
+            <div class="mobile-text">
+                <span class="stage {!IF(Step = 1,'active','')}"><p>Draft</p></span>
+                <span class="stage {!IF(Step = 2,'active','')}"><p>Not Submitted</p></span>
+                <span class="stage {!IF(Step = 3,'active','')}"><p>Pending Approval</p></span>
+                <span class="stage {!IF(Step = 4,'active','')}"><p>Pending HCM Approval</p></span>
+                <span class="stage {!IF(Step = 5,'active','')}"><p>Pending Applicant</p></span>
+                <span class="stage {!IF(Step = 6,'active','')}"><p>Cancel Not Submitted</p></span>
+                <span class="stage {!IF(Step = 7,'active','')}"><p>Approved</p></span>                
+                <span class="stage {!IF(Step = 8,'active','')}"><p>Reject</p></span>
+                <span class="stage {!IF(Step = 9,'active','')}"><p>Cancelled</p></span>
+                <!--<span class="stage {!IF(Step >= 9,'active','')}"><p>{!IF(Step < 10, 'Returned', MyRequest.Status__c)}</p></span> -->
+            </div>
+
+            <apex:outputpanel id="staffBar" rendered="{!staffType}">
+            <div class="meter">
+                <ol>
+                    <li class="active">
+                        <span class="step">1</span>
+                        <span class="stage"><p>Draft / Not Submitted</p></span>
+                    </li>
+                    <!--<li class="{!IF(Step >= 2,'active','')}">
+                        <span class="step">2</span>
+                        <span class="stage"><p>Pending Approval</p></span>
+                    </li>-->
+                    <li class="{!IF(Step >= 3,'active','')}">
+                        <span class="step">2</span>
+                        <span class="stage"><p>Pending Approval</p></span>
+                    </li>
+                    <li class="{!IF(Step >= 4,'active','')}">
+                        <span class="step">3</span>
+                        <span class="stage"><p>Pending HCM Approval</p></span>
+                    </li>
+                    <!--
+                    <li class="{!IF(Step >=5,'active','')}">
+                        <span class="step">4</span>
+                        <span class="stage"><p>Pending Applicant</p></span>
+                    </li>
+                    -->
+                     
+                    <!--<li class="{!IF(Step >= 6,'active','')}">
+                        <span class="step">6</span>
+                        <span class="stage"><p>Arrived</p></span>
+                    </li>
+                    <li class="{!IF(Step >= 7,'active','')}">
+                        <span class="step">7</span>
+                        <span class="stage"><p>Borrowed</p></span>
+                    </li> 
+                    <li class="{!IF(Step >= 8,'active','')}">
+                        <span class="step">8</span>
+                        <span class="stage"><p>In-Transit (I)</p></span>
+                    </li> -->
+                   
+                    
+                    <li class="{!IF(Step >= 6,'active','')}">
+                        <span class="step">4</span>
+                        <span class="stage"><p>
+                            {!IF(Step < 7, 'Approved', MyRequest.Status__c)}</p></span>
+                    </li>
+                </ol>
+            </div>
+            </apex:outputpanel>
+            
+            <apex:outputpanel id="childBar" rendered="{!!staffType}">
+            <div class="meterChild">
+                <ol>
+                    <li class="active">
+                        <span class="step">1</span>
+                        <span class="stage"><p>Draft / Not Submitted</p></span>
+                    </li>
+                    <!--<li class="{!IF(Step >= 2,'active','')}">
+                        <span class="step">2</span>
+                        <span class="stage"><p>Pending Approval</p></span>
+                    </li>-->
+                    <li class="{!IF(Step >= 3,'active','')}">
+                        <span class="step">2</span>
+                        <span class="stage"><p>Pending Approval</p></span>
+                    </li>
+                    <li class="{!IF(Step >= 4,'active','')}">
+                        <span class="step">3</span>
+                        <span class="stage"><p>Pending HCM Approval</p></span>
+                    </li>
+                    
+                     
+                    <!--<li class="{!IF(Step >= 6,'active','')}">
+                        <span class="step">6</span>
+                        <span class="stage"><p>Arrived</p></span>
+                    </li>
+                    <li class="{!IF(Step >= 7,'active','')}">
+                        <span class="step">7</span>
+                        <span class="stage"><p>Borrowed</p></span>
+                    </li> 
+                    <li class="{!IF(Step >= 8,'active','')}">
+                        <span class="step">8</span>
+                        <span class="stage"><p>In-Transit (I)</p></span>
+                    </li> -->
+                   
+                    
+                    <li class="{!IF(Step >= 6,'active','')}">
+                        <span class="step">4</span>
+                        <span class="stage"><p>
+                            {!IF(Step < 7, 'Approved', MyRequest.Status__c)}</p></span>
+                    </li>
+                </ol>
+            </div>
+            </apex:outputpanel>
+        </td>
+    </tr>
+</table>
+<script>
+var sUserAgent = navigator.userAgent.toLowerCase();
+var bIsIpad = sUserAgent.match(/ipad/i) == "ipad";
+var bIsIphoneOs = sUserAgent.match(/iphone os/i) == "iphone os";
+var bIsAndroid = sUserAgent.match(/android/i) == "android";
+if(bIsIphoneOs || bIsAndroid || bIsIpad){
+    document.getElementById("table-block").className="table-block-no-width";
+}
+</script>
+</body>
+</apex:page>

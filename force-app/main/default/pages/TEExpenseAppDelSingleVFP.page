@@ -1,0 +1,3 @@
+<!-- Purely for Del button linked to Visualforce page on Page Layout -->
+<apex:page standardController="Expense_Application__c" sidebar="false" showHeader="false" extensions="TEExpenseApplicationDelCtrl" action="{!action}">
+</apex:page>

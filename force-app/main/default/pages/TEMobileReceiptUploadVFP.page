@@ -1,0 +1,30 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <style>
+        .bs .panel {
+            border: 1px solid #ddd;
+        }
+        body { font-family: Arial; }
+    </style>
+    
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-md-12">
+                <div class="bs panel panel-primary">
+                    <div class="bs panel-heading">
+                        <h3 class="bs panel-title">{!$Label.TE_Name}</h3>
+                    </div>
+                    <div class="bs panel-body">
+                        <ul class="bs nav nav-pills nav-stacked">
+                            <li><a href="#" id="teMobileNavUploadReceipts">Upload Receipts</a></li>
+                            <li><a href="#" id="teMobileNavUserGuide">User Guide</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <c:JavascriptUtilsComponent />
+    <c:TEMobileReceiptUploadJs />
+</apex:page>

@@ -1,0 +1,35 @@
+<apex:page sidebar="false" showHeader="false">
+     <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <style>
+    	.slds {
+        	width: 80%;
+        	margin-left: auto;
+        	margin-right: auto;
+        }
+    </style>
+        <div class="slds">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-grid">
+                    <div class="slds-col">
+                        <img src="https://talgroup--c.ap4.content.force.com/servlet/servlet.ImageServer?id=01590000007dOIv&oid=00D90000000ralM" />
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid grid--flex-spread">
+                    <h2 class="slds-text-heading--small slds-truncate">TAL Group Communities</h2>
+                </div>
+                <div class="slds-card__body slds-p-horizontal--small">
+                    <div class="slds-text-align--left">
+                        <div>
+                            Are you trying to find the <a href="/travel">TAL Group Travel Portal</a>?
+                        </div>
+                        <br/><br/>
+                        <a href="http://www.talapparel.com/" class="slds-button slds-button--neutral">Go to www.talapparel.com</a>
+                    </div>
+                </div>
+            </div>   
+        </div>
+</apex:page>

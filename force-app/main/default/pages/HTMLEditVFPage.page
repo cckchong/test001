@@ -1,0 +1,86 @@
+<apex:page standardController="Portal_Content__c" extensions="HTMLEditVFPageController"  showHeader="true" id="thepageid">
+    <apex:includescript value="{!URLFOR($Resource.CKEDITOR, 'ckeditor/ckeditor.js')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    
+    <style>
+        .ErrorText {
+            color: Red;
+        }   
+    </style>
+    <apex:form id="theformid">
+        <apex:pageBlock id="thepageblockid" title="" mode="maindetail">
+            
+            <apex:pageBlockButtons id="thePageButtonid">
+                <script>             
+			        function preview() {
+			            window.open('/apex/ACGPreviewVFPage?Id={!objPC.Id}&size=12&type=html&preview=true');      
+			        } 					        
+					
+					function confirmDelete() {
+					return confirm('Are you sure you want to delete the article?');
+					}					        
+				</script>   
+                <apex:commandButton action="{!edit}" value="Edit" id="editButton" rendered="{!NOT(bEdit) && canEditRecord}"/>
+                <apex:commandButton action="{!deleteRecord}" value="Delete" id="deleteButton" onclick="if(!confirmDelete()) return false;" rendered="{!AND(NOT(bEdit),bCanDelete,canEditRecord)}"  rerender="redirectPanel"/>
+                <apex:commandLink action="{!cloneRecord}" style="text-decoration: none" id="cloneLink" rendered="{!NOT(bEdit)}" target="_parent"><apex:commandButton value="Clone"/></apex:commandLink>                
+                <apex:commandLink action="{!shareRecord}" style="text-decoration: none" id="shareButton" rendered="{!NOT(bEdit)}" target="_parent"><apex:commandButton value="Share Ownership"/></apex:commandLink>
+                <apex:commandButton onclick="preview()" value="Preview" rendered="{!NOT(bEdit)}" />
+				<apex:commandButton action="{!save}" value="Save" id="saveButton" rendered="{!AND(bEdit, NOT(bClone), NOT(bCreate))}"/>
+				<apex:commandButton action="{!saveCreate}" value="Save" id="saveCreate" rendered="{!AND(bEdit, bCreate)}"/>
+				<apex:commandButton action="{!saveClone}" value="Save" id="saveCloneButton" rendered="{!AND(bEdit, bClone)}"/>  
+                <apex:commandButton action="{!cancel}" value="Cancel" id="cancelButton" rendered="{!bEdit}" rerender="theformid"/>  
+                <br/><br/>
+                <Strong><apex:outputText value="Error: {!strErrorMessage}" rendered="{!strErrorMessage!=''}" styleClass="ErrorText" escape="False"/></Strong>
+            </apex:pageBlockButtons>
+            <apex:pageMessages />
+            <apex:outputPanel id="redirectPanel" >
+	            <apex:outputText rendered="{!bShouldRedirect}">
+	                <script type="text/javascript">
+	                    window.top.location.href = '{!redirectUrl}';
+	                </script>
+	            </apex:outputText>
+        	</apex:outputPanel>      
+        	<apex:pageBlockSection id="txtBlockSectionContentsInfo" title="HTML Information" columns="2">            	
+            	<apex:outputField value="{!objPC.Name}"/>
+            	<apex:pageBlockSectionItem >  
+            		<apex:outputLabel value="Owner"/>
+                	<apex:outputPanel >
+	                	<apex:outputLink value="/{!objPC.Owner.Id}" target="_blank">{!objPC.Owner.Name}</apex:outputLink>&nbsp;
+	                	<apex:outputLink value="/{!objPC.Id}/a?retURL=/{!objPC.Id}" target="_blank">[Change]</apex:outputLink> 
+                	</apex:outputPanel>                  	
+                </apex:pageBlockSectionItem>
+                <apex:outputField rendered="{!NOT(bEdit)}" value="{!objPC.Description__c}"/>
+                <apex:inputField rendered="{!bEdit}" value="{!objPC.Description__c}"/>
+                <apex:pageBlockSectionItem >  
+            		<apex:outputLabel value="Record Type"/>
+                	<apex:outputLink value="/{!objPC.RecordTypeId}">{!objPC.RecordType.Name}</apex:outputLink>                   	
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>         
+            <apex:pageBlockSection id="txtBlockSectionContentsRead" columns="1" rendered="{!NOT(bEdit)}"> 
+               	<apex:outputField value="{!objPC.Contents__c}"/> 
+            </apex:pageBlockSection>          
+            <!-- Edit Mode -->                     
+            <apex:pageBlockSection id="txtBlockSectionContents" columns="1" rendered="{!bEdit}">
+            	<script type="text/javascript">
+		        window.onload = function()
+		        {
+					var EditorId ='thepageid:theformid:thepageblockid:txtBlockSectionContents:html';
+					CKEDITOR.replace(EditorId, {
+					    filebrowserBrowseUrl : '{!$Page.SiteFileBrowser}',   
+					    filebrowserImageBrowseUrl: '{!$Page.SiteFileBrowser}'
+					    });					
+		        }
+		    	</script>     		    	
+            	<apex:inputTextarea id="html" value="{!objPC.Contents__c}" richtext="false"/>          	
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="txtBlockSectionSystem" title="System Information" columns="2">
+            	<apex:outputField value="{!objPC.CreatedById}"/>
+            	<apex:outputField value="{!objPC.LastModifiedById}"/>  
+            	<apex:outputField value="{!objPC.CreatedDate}"/>
+            	<apex:outputField value="{!objPC.LastModifiedDate}"/>
+            	<apex:outputField value="{!objPC.System_Setting__c}" rendered="{!!bEdit && $Profile.Name == 'System Administrator'}"/>
+            	<apex:inputField value="{!objPC.System_Setting__c}" rendered="{!bEdit  && $Profile.Name == 'System Administrator'}"/>
+            </apex:pageBlockSection> 
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

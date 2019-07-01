@@ -1,0 +1,182 @@
+<apex:page showHeader="true" sidebar="true" title="T&E Expense Reports" docType="html-5.0" id="expensereportvfp" controller="TEExpenseReportsCtrl" action="{!previewPrnPayrollReport}">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+    
+    <script>
+        var showbtn = null;
+
+        $(document).ready(function(){            
+            $('span.dateFormat').each(function(index) {
+                $(this).hide();    
+            });
+
+            progressbar = $(".progressbar");
+            tableDiv = $("#tableDiv");
+            showbtn = $('.showbtn');
+
+            progressbar.hide();
+            tableDiv.removeClass('hideTable');
+
+            tableInit();  
+        });
+        
+        function setFocusOnLoad() {}
+
+        function tableInit() {
+            previewResultTable = $('#previewResultTable').DataTable({
+                                "scrollY":        "450px",
+                                "scrollCollapse": true,
+                                "paging":         true,
+                                "bFilter":        true,
+                                "order": [[ 0, "asc" ]],
+                                "columnDefs": [ {
+                                  "targets"  : 'no-sort',
+                                  "orderable": false,
+                                }], 
+                                "iDisplayLength" : 25,        //default show XX entries
+                                "bLengthChange": false        //hide 'show XX entries'       
+                            });
+        }
+        
+        function startLoadTable() {
+            <!-- tdtable.destroy(); //-->
+            tableDiv.addClass('hideTable');
+            progressbar.show();
+            showbtn.attr('disabled', true);
+        }
+        
+        function completeLoadTable() {
+            tableDiv.removeClass('hideTable');
+            progressbar.hide();
+            tableInit();
+            showbtn.attr('disabled', false);
+        }
+                
+    </script>
+    
+    <style type="text/css" class="init">
+        .slds input {
+            width: 110px;
+        }
+        
+        .hideTable {
+                    position: absolute !important;
+                    opacity: 0 !important;
+                }
+                
+        
+        .outer {
+            position: relative;
+        }
+        
+        .progressbar {
+            position: relative;
+            left: 50%;
+            margin-top: 200px;
+            margin-bottom: 200px;
+            margin-left: -25px;
+        }
+        
+        span {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+
+    <apex:form id="expenseForm">
+        <div class="slds" id="OutDiv">
+            <div class="slds-page-header">
+                <div class="slds-grid">
+                    <div class="slds-media__body">
+                        <h1 class="slds-text-heading--medium">T&amp;E Expense Payroll Report</h1> 
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid grid--flex-spread">
+                    <h2 class="slds-text-heading--small slds-truncate">Generate PRN Payroll File</h2>
+                </div>
+                <div class="slds-card__body slds-p-horizontal--small">
+                    <div class="slds-text-align--left">
+                        <div>
+                            <apex:outputPanel >
+                                From: &nbsp;<apex:inputField value="{!proxyDateFrom.Receipt_Date__c}" id="queryFromDate" styleClass="width: 300px;"/>
+                                &nbsp;
+                                To: &nbsp;<apex:inputField value="{!proxyDateTo.Receipt_Date__c}" id="queryToDate"/>
+                                &nbsp;
+                                Grade: &nbsp;
+                                <apex:selectList value="{!selectedPrnFilter}" multiselect="false" size="1">
+                                    <apex:selectOptions value="{!prnFilterOptions}" />
+                                </apex:selectList>
+                            </apex:outputPanel>
+                            
+                            <apex:commandButton styleClass="slds-button slds-button--neutral showbtn" 
+                                                action="{!previewPrnPayrollReport}" 
+                                                value="Preview"
+                                                reRender="previewResultTableBlock" 
+                                                onclick="startLoadTable()" 
+                                                oncomplete="completeLoadTable()"
+                                                
+                                                style="margin-left: 15px;"/>
+                            <apex:commandButton styleClass="slds-button slds-button--neutral" 
+                                                action="{!generatePrnPayrollReport}"
+                                                value="Generate" 
+                                                reRender="previewResultTableBlock" 
+                                                style="margin-left: 15px;"/>
+
+                        </div>
+                    </div>
+                </div>
+            </div>   
+        </div>
+        <div id="main" style="padding-top: 0px; margin-top: 10px;">
+            <div class="progressbar">
+                <apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" />
+            </div>
+            <div id="tableDiv" class="hideTable">
+                <apex:pageBlock mode="maindetail" id="previewResultTableBlock">
+                <table id="previewResultTable" class="display" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Original Employee No.</th>
+                            <th>Full Name</th>
+                            <th>Site</th>
+                            <th>Local Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <apex:repeat value="{!previewResultList}" var="pr">
+                            <tr>
+                                <td style = "width : 25%;">
+                                        <apex:outputText value="{!pr.origEmployeeNo}" />
+                                </td>
+                                <td style = "width : 25%;">
+                                        <apex:outputText value="{!pr.fullName}" />
+                                </td>
+                                <td style = "width : 25%;">
+                                        <apex:outputText value="{!pr.site}" />
+                                </td>
+                                <td style = "width : 25%;">
+                                        <apex:outputText value="{!pr.localAmount}" />
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+                </apex:pageBlock>
+            </div>
+        </div>        
+        
+    </apex:form>
+</apex:page>

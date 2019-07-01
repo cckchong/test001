@@ -1,0 +1,32 @@
+<apex:component controller="HTMLController">
+    <apex:attribute name="Id" description="htmlID" type="Id" assignTo="{!htmlID}" required="true" />
+    <apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="true" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+	<style>
+		.htmlBlock {           
+			word-wrap:break-word;
+			word-break:break-word;
+		}   
+		.bs .panel {
+			margin-bottom: 5px;
+		}
+		
+		.bs .panel-body {
+			padding: 5px 10px;
+		} 
+		
+    </style>
+	<div class="bs wrapper">
+		<div class="bs panel panel-info panelClass">
+			<div class="bs panel-body">
+				<div class="htmlBlock">
+					<apex:outputText value="{!htmlText.Contents__c}" escape="false" />
+				</div>
+			</div>
+			<apex:outputLink value="/{!recordID}"
+				styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}"
+				target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+		</div>
+	</div>
+</apex:component>

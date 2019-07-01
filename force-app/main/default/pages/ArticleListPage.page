@@ -1,0 +1,177 @@
+<apex:page >
+<!-- <apex:page controller="ArticleListPageController" showHeader="false">
+
+    <style>
+        .panelClass {
+            height: 100%;
+        }
+    	table.dataTable thead .sorting {
+		  background: url("{!$Resource.sort_both}") no-repeat center right;
+		}
+		table.dataTable thead .sorting_asc {
+		  background: url("{!$Resource.sort_asc}") no-repeat center right;
+		}
+		table.dataTable thead .sorting_desc {
+		  background: url("{!$Resource.sort_desc}") no-repeat center right;
+		}
+		.Author {
+            color: #555;
+            font-family: arial;
+            font-size: 0.8em;
+            font-style:italic;
+            word-break:keep-all;
+            align:center;
+        } 
+        .RevisedOn {
+            color: #990000;
+            font-family: arial;
+            font-size: 0.8em;
+            font-style:italic;
+            align: left;
+        }
+        .priorityStar {
+        	font-size: 10pt;
+        }
+    </style>
+    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+	<apex:includeScript value="{!$Resource.jQueryUIMin_1_10_3}" />
+	<apex:includeScript value="{!$Resource.jQueryDataTables}" />
+	<apex:stylesheet value="{!$Resource.jQueryDataTablesCSS}" />
+	<apex:includeScript value="{!$Resource.jQueryDataTables_tableTools}" />
+	<apex:stylesheet value="{!$Resource.jQueryDataTables_tableToolsCSS}" />
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap, '/css/bootstrap.css')}"/>
+    <script type="text/javascript">
+    function refreshTable(){
+        $j = jQuery.noConflict();
+        $j(document).ready(function(){
+            $j('#activeArticlesTable').dataTable( {            
+            	"bLengthChange": false,
+            	"paging": false,
+            	"bInfo" : false,
+                "order": [[ 0, "asc" ],[ 1, "asc" ],[2, "desc"]],
+                "oLanguage": {
+						      "sSearch": "Filter:"
+						    },                
+				 "columnDefs": [ {
+				      "targets": 0,
+				      "searchable": false,
+				      "visible": false
+				    },
+				    { "targets": 1,
+				      "searchable": false,
+				      "visible": false
+				    },
+                    { "targets": 2,
+				      "searchable": false,
+				      "visible": false
+				    },
+				    { "width": "80%",
+				      "targets": 3,
+				      "searchable": true
+				    },				    
+				    { "width": "20%",
+				      "targets": 4
+				    }
+				 ],
+            } );
+        } );
+    }    
+    window.onload=refreshTable();
+    
+    </script>
+    <style>
+    .pos_left {
+    position: fixed;
+        top: 25px;
+    	left: 30px; 
+    	z-index:1;
+	}
+   	</style>
+    <div class="bs wrapper">     
+    <apex:form id="theform">
+			<apex:pageBlock id="thePanel" > 
+	        <div class="bs panel-body"> 
+	        	<div class="pos_left">
+	            	<apex:outputLabel value="Show"/>&nbsp;
+                    <apex:selectList size="1" value="{!size}">     
+                    	<apex:selectOption itemValue="5" itemLabel="5"/>                   
+                        <apex:selectOption itemValue="10" itemLabel="10"/>
+                        <apex:selectOption itemValue="20" itemLabel="20"/>
+                        <apex:selectOption itemValue="50" itemLabel="50"/>
+                        <apex:selectOption itemValue="100" itemLabel="100"/>
+                        <apex:actionSupport event="onchange" oncomplete="refreshTable();parent.autoResize('iframe1');" action="{!refresh}" status="asRefresh"/>
+                    </apex:selectList>&nbsp;   
+                    <apex:outputLabel value="entries"/>             
+					<apex:actionStatus id="asRefresh">
+                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}" alt="Loading..."/></apex:facet>  
+                    </apex:actionstatus>  
+	            </div>
+	            <table id="activeArticlesTable" class="display" cellspacing="0" width="100%">
+	                <thead>
+			        	<tr>         
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+							<th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!articleFeeds}" var="articleContent">
+                            <tr>
+                                <td>
+				                	<apex:outputText value="{!articleContent.objpc.Article_Priority__c}"/>
+				                </td>
+                            	<td>
+				                	<apex:outputText value="{!articleContent.objpc.Sticky_Scale__c}"/>
+				                </td>
+				                <td>
+                                    <apex:outputText value="{0, date, yyyyMMddHHmmss}">
+									    <apex:param value="{!articleContent.objpc.Tech_LastUpdateDateTime__c}" /> 
+									</apex:outputText>
+
+				                </td>
+                                <td>
+	                                <apex:outputPanel rendered="{!IF((articleContent.picUrl=''), true, false)}">
+					                	<c:ArticleComponent Title="{!articleContent.objpc.Title__c}" Summary="{!articleContent.objpc.Summary__c}" ContentURL="{!articleDetailPageURL}&Id={!articleContent.objpc.Tech_Id__c}&title={!panelTitle}&department={!strDepartment}&Category={!Category}&SubCategory={!SubCategory}"  PublishDate="{!articleContent.objpc.CreatedDate}" LastUpdateDate="{!articleContent.objpc.LastModifiedDate}" PublishBy="{!articleContent.objpc.Owner.Name}" PublishById="{!articleContent.objpc.OwnerId}" PicURL="{!$Resource.DefaultPicture}" revised="{!articleContent.objpc.Revised__c}" Feedsize="{!articleContent.feedsize}" ArticleId="{!articleContent.articleId}" fromArticleList="true" FromDept="{!articleContent.objpc.BU__c}"/>
+					                </apex:outputPanel>
+					                <apex:outputPanel rendered="{!IF((articleContent.picUrl=''), false, true)}">
+					                	<c:ArticleComponent Title="{!articleContent.objpc.Title__c}" Summary="{!articleContent.objpc.Summary__c}" ContentURL="{!articleDetailPageURL}&Id={!articleContent.objpc.Tech_Id__c}&title={!panelTitle}&department={!strDepartment}&Category={!Category}&SubCategory={!SubCategory}"  PublishDate="{!articleContent.objpc.CreatedDate}" LastUpdateDate="{!articleContent.objpc.LastModifiedDate}" PublishBy="{!articleContent.objpc.Owner.Name}" PublishById="{!articleContent.objpc.OwnerId}" PicURL="/servlet/servlet.FileDownload?file={!articleContent.picUrl}" revised="{!articleContent.objpc.Revised__c}" Feedsize="{!articleContent.feedsize}" ArticleId="{!articleContent.articleId}" fromArticleList="true" FromDept="{!articleContent.objpc.BU__c}"/>
+					                </apex:outputPanel>
+				                </td>
+				                <td valign="top" align="center">
+									<apex:outputPanel rendered="{!VALUE(articleContent.objpc.Sticky_Scale__c) < 5}">
+                                        <span class="priorityStar"><span class="bs label label-warning"><span class="bs glyphicon glyphicon-star"></span> {!articleContent.objpc.Sticky_Scale__c}</span></span>
+                                        <br/>
+                                        <br/>
+                                    </apex:outputPanel>
+				                	<apex:outputText value="Published: {0, date, dd MMM yyyy}" styleClass="Author">
+									    <apex:param value="{!articleContent.objpc.Tech_CreatedDate__c}" /> 
+									</apex:outputText>
+									<br/>
+									<apex:outputText rendered="{!articleContent.objpc.Revised__c}" value="Revised: {0, date, dd MMM yyyy}" styleClass="RevisedOn">
+									    <apex:param value="{!articleContent.objpc.Tech_LastUpdateDate__c}" /> 
+									</apex:outputText>
+									<br/><br/>
+									<apex:outputText value="{!articleContent.distributeGrade}" styleClass="Author"/>
+                                    <br/>
+                                    <apex:outputPanel rendered="{!articleContent.objpc.Article_Priority__c = 2}">
+                                        <span class="bs glyphicon glyphicon-time" style="color: #EAEAEA;"></span>
+                                    </apex:outputPanel>
+				                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+            	</table>
+	           next, previous and page info
+	           <Strong><apex:commandLink action="{!doPrevious}" rendered="{!hasPrevious}" value="Previous" /></Strong>
+	           <apex:outputLabel rendered="{!NOT(hasPrevious)}" value="Previous" />	
+	           &nbsp;<apex:outputLabel value="(Page {!pageNumber} of {!totalPages})" />&nbsp;	
+	           <Strong><apex:commandLink action="{!doNext}" rendered="{!hasNext}" value="Next" /></Strong>
+	           <apex:outputLabel rendered="{!NOT(hasNext)}" value="Next" /> 
+	        </div>
+	        </apex:pageBlock> 
+	    </apex:form>
+    </div> -->
+</apex:page>

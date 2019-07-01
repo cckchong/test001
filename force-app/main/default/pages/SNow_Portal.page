@@ -1,0 +1,11 @@
+<!--
+<apex:page sidebar="false" showHeader="true" controller="SNowPortalController">
+    <apex:iframe src="{!url}" height="1000px" width="100%" scrolling="true"/>
+</apex:page>
+https://talapparel.service-now.com/tal/itsm_salesforce.do
+-->
+<apex:page sidebar="false" showHeader="true" controller="SNowPortalController">
+     <script>
+        window.open("{!url}", "_self");
+    </script>
+</apex:page>

@@ -1,0 +1,62 @@
+<apex:component >
+<style>
+    <!-- Favourite List, Catalog Item List, Shopping Cart Purchase Item List style-->
+    .hidethead thead {
+      display: none;
+    }
+    <!--remove the sorting arrow in the thead-->
+    .dataTable > thead > tr > th[class*="sort"]:after{
+        content: "" !important;
+    }    
+    
+    .button-sortby-margin-top {
+    
+        margin-top: 5px;
+    
+    }
+    
+    .sortby-float {
+        float: right;
+    }
+    <!-- Moving the Page Length to the right style-->
+    .dataTables_length {
+//        text-align: right !important; 
+        width: 100%;
+    }
+    .page-length-right {
+        float:right;
+    }    
+    
+    .col-sm-6{
+        width: 100%;
+        
+    }
+    
+    <!-- Spacing between the buttons style-->
+    .divider{
+        width:5px;
+        height:auto;
+        display:inline-block;
+    }
+    
+    <!-- align mass button to the left style-->
+    .button-text-align {
+        text-align: left;
+    }
+    
+    <!-- align the checkbox to the center style-->
+    .checkbox-align-center {
+        text-align: center;
+    }
+
+    <!-- solving the override of salesforce standard CSS and lightning font size problem-->
+    body {
+        font-size: 121%
+    } 
+    
+    <!-- vertical align all the th to middle-->
+    #itemTable th {
+        vertical-align: middle; 
+    }
+</style>
+</apex:component>

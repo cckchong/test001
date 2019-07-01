@@ -1,0 +1,31 @@
+<apex:page controller="CustomerOrderLogController" contentType="application/vnd.ms-excel#CustomerOrderEnquiryLogs.xls" cache="true" showheader="false">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    </head>
+    <apex:pageBlock title="{!$Label.ExcelReportHeader}">
+        <apex:pageBlockTable value="{!logs}" var="log">
+            <apex:column value="{!log.Status}" headerValue="Status"/>
+            <apex:column value="{!log.Name}" headerValue="Sequence"/>
+            <apex:column value="{!log.Version}" headerValue="Version"/>
+            <apex:column value="{!log.CreatedDate}" headerValue="Created Date"/>
+            <apex:column value="{!log.Customer}" headerValue="Customer"/>
+            <apex:column value="{!log.Brand}" headerValue="Brand"/>
+            <apex:column value="{!log.Product}" headerValue="Product"/>
+            <apex:column value="{!log.Plant}" headerValue="Factory"/>
+            <apex:column value="{!log.Dipping_Flag}" headerValue="Dipping Flag"/>
+            <apex:column value="{!log.Requested_Qty}" headerValue="Requested Qty"/>
+            <apex:column value="{!log.Requested_Delivery}" headerValue="Requested Delivery"/>
+            <apex:column value="{!log.Reserved_Qty}" headerValue="Reserved Qty"/>
+            <apex:column value="{!log.Meet_Customer_Requirement}" headerValue="Meet Customer Requirement"/>
+            <apex:column value="{!log.From_Customer_to_TGA}" headerValue="From Customer to TGA"/>
+            <apex:column value="{!log.KPI_3_days}" headerValue="KPI (3 days)"/>
+            <apex:column value="{!log.Confirmed_Delivery}" headerValue="Confirmed Delivery"/>
+            <apex:column value="{!log.Impacted_Customer}" headerValue="Impacted Customer"/>
+            <apex:column value="{!log.Impacted_Volume}" headerValue="Impacted Volume"/>
+            <apex:column value="{!log.Factory_transfer_if_any}" headerValue="Factory transfer (if any)"/>
+            <apex:column value="{!log.Gap_Confirmed_vs_Expected_dely}" headerValue="Gap (Confirmed vs Expected dely)"/>
+            <apex:column value="{!log.Customer_Confirmation}" headerValue="Customer Confirmation"/>
+            <apex:column value="{!log.Owner_Name}" headerValue="Owner"/>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+</apex:page>

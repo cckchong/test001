@@ -1,0 +1,13 @@
+<apex:page controller="SurveyOverrideTabController">
+    <apex:form id="myForm">
+        <apex:outputPanel id="myPanel">
+            <apex:outputLabel value="{!$Label.LABS_SF_Views}" style="font-weight: bold;" />
+            <apex:selectList value="{!listViewId}" size="1" style="margin-right: 5px;" id="mySelectList">
+                <apex:actionSupport event="onchange" action="{!navigateToListView}" />
+                <apex:selectOptions value="{! listViewOption }" />
+            </apex:selectList>
+            <apex:commandButton action="{!navigateToListView}" value="{!$Label.LABS_SF_Go}" />
+        </apex:outputPanel>
+    </apex:form>
+    <apex:enhancedList listId="{!selectedListId}" customizable="false" height="730" rowsPerPage="25" />
+</apex:page>

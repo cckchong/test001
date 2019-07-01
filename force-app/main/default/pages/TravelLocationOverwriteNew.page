@@ -1,0 +1,3 @@
+<apex:page StandardController="Travel_Location__c" extensions="TravelLocationOverwriteNewController" action="{!redirectIfOnlySingleRecordType}">
+     
+</apex:page>

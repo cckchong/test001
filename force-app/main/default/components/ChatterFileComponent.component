@@ -1,0 +1,46 @@
+<apex:component >
+    <apex:attribute name="chatterId" type="String" description="chatter Id" required="false" />
+    <apex:attribute name="chatterFiles" type="ContentVersionWrapper[]"  description="chatter photos" required="false" />
+    <apex:attribute name="fileSize" type="String"  description="chatter photo size" required="false" /> 
+    <apex:attribute name="isAccessible" description="control whether the user can access the group" type="Boolean" required="true" />    
+    <apex:attribute name="showChatterFile" description="control whether the chatter file section shows on the page" type="Boolean" required="true" />
+    <style>
+        .chatter_pos_right {
+            float: right;
+            position:relative;
+            right: 5px; 
+            top: 2px; 
+            z-index:1;
+        }
+        .Component_ChatterFile {
+            padding-bottom: 3px;
+        }
+    </style>
+    <div class="bs wrapper">  
+        <apex:outputPanel rendered="{!AND(isAccessible,showChatterFile)}">
+            <div class="bs panel panel-info panelClass">
+                <div class="bs panel-heading">
+                    <h3 class="bs panel-title">{!$Label.ChatterFiles}</h3>
+                    <div class="chatter_pos_right">
+                        <h7><a href="/_ui/core/chatter/content/GroupFileListPage?g={!chatterId}" target="_parent">{!$Label.ShowAll} ({!fileSize})</a></h7> 
+                    </div>                  
+                </div>
+                <div class="bs panel-body">
+                    <apex:outputPanel id="Component_ChatterFiles" layout="block">
+                        <apex:repeat id="rDocs" value="{!ChatterFiles}" var="Doc">
+                            <div class="Component_ChatterFile">
+                                <span class="fileTypeIcon"> <img src="/s.gif"
+                                    alt="{!Doc.friendlyFileType}" width="16" height="16"
+                                    class="{!Doc.fileTypeStyle}"
+                                    style="vertical-align: middle; margin-right: 0.4em;"
+                                    title="{!Doc.friendlyFileType}" />&nbsp;
+                                </span>
+                                <a href="/{!Doc.Id}" target="_top">{!IF(LEN(Doc.FileName) > 30, LEFT(Doc.FileName, 30) & '...', Doc.FileName)}</a>
+                            </div>
+                        </apex:repeat>
+                    </apex:outputPanel>
+                </div>
+            </div>
+        </apex:outputPanel>
+    </div>
+</apex:component>

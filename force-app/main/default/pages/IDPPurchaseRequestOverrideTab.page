@@ -1,0 +1,4 @@
+<apex:page tabstyle="Purchase_Request__c"> 
+    <apex:enhancedList type="Purchase_Request__c"  height="500" customizable="true"/>
+    
+</apex:page>

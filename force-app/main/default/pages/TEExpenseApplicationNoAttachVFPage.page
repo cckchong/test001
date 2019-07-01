@@ -1,0 +1,41 @@
+<apex:page standardcontroller="Expense_Application__c"
+extensions="TEExpenseApplicationProgressBarCtrl"
+showHeader="false"
+sidebar="false"
+applyBodyTag="false">
+
+<head>
+<style>
+ 
+.alertlabel {
+  background-color: #f0ad4e;
+  color: black;   
+  padding: 4px;
+  //border-radius:10px;
+  -moz-border-radius:10px;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  color : #FFFFFF;
+}
+ 
+</style>
+</head>
+    
+    
+    <body style = "padding-top: 0px" >
+        
+        <apex:outputText rendered="{!numOfAttachment <= 0 }" >
+            <label class="alertlabel " >    
+                <font color="Red"><B>NO. Please upload your attachments.</B></font>
+            </label>
+        </apex:outputText>
+        
+        
+        <apex:outputText rendered="{!numOfAttachment > 0 }" >
+            
+                <font color="Green"><B>Yes</B></font>
+            
+        </apex:outputText>
+
+    </body>
+</apex:page>

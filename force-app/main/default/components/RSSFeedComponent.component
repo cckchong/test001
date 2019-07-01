@@ -1,0 +1,61 @@
+<apex:component controller="RSSFeedController">
+    <apex:attribute name="rssLink" type="String" description="rss feed link" assignTo="{!rssURL}" required="true" />
+    <apex:attribute name="title" type="String" description="title of the Panel" assignTo="{!panelTitle}" required="true" />
+    <apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="true" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="true" />
+
+	<apex:includeScript value="{!$Resource.GoogleJSAPI}" />
+	<script type="text/javascript">  
+		google.load("feeds", "1");
+	</script>
+	<apex:outputPanel id="jsFeedPanel">
+		<script type="text/javascript">  
+          function rssfeedsetup(){
+            var feedpointer=new google.feeds.Feed("{!rssURL}");
+            feedpointer.setNumEntries({!numColumn});
+            feedpointer.load(displayfeed);
+          }
+          function displayfeed(result){
+            if (!result.error){
+                var thefeeds=result.feed.entries;
+                var rssoutput="<ul>";
+                var feedcontainer = document.getElementById("feed");
+                for (var i=0; i<thefeeds.length; i++)
+                    rssoutput+="<li><a href='" + thefeeds[i].link + "' target='_blank'>" + thefeeds[i].title + "</a></li>";
+                rssoutput+="</ul>";
+                feedcontainer.innerHTML=rssoutput;
+            }
+            else
+                alert("Error fetching feeds!")
+          }
+          $(document).ready(function() {
+          	rssfeedsetup();          	
+          });
+      </script>
+	</apex:outputPanel>
+
+	<style>
+		.panel-body {
+			color: #555;
+			font-family: arial;
+			font-size: 1em;
+		}
+		
+		ul {
+			left: 0;
+		}
+	</style>
+	<div class="bs wrapper">
+		<div class="bs panel panel-info panelClass">
+			<div class="bs panel-heading">
+				<h3 class="bs panel-title">{!panelTitle}</h3>
+			</div>
+			<div id="feed" class="bs panel-body"></div>
+			<div class="bs panel-footer">
+				<apex:outputLink value="/{!recordID}"
+					styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}"
+					target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+			</div>
+		</div>
+	</div>
+</apex:component>

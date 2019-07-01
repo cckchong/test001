@@ -1,0 +1,2 @@
+<apex:page StandardController="Purchase_Order_Item__c" extensions="IDPPurchaseOrderItemOverwriteViewCtrl" action="{!redirect}">
+</apex:page>

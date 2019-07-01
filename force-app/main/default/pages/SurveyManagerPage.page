@@ -1,0 +1,583 @@
+<apex:page standardController="Survey__c" extensions="SurveyManagerController" showHeader="true" id="editPage" action="{!checkAccessRight}">
+    <!-- added by Connie -->
+    <apex:includescript value="{!URLFOR($Resource.CKEDITOR, 'ckeditor/ckeditor.js')}" />
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+  
+
+ <!--   
+<apex:stylesheet value="{!$Page.labs_survey_css}" />
+-->
+<!-- add by Connie. Bootstrap CSS and Bootstrap JS -->
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+<!-- end -->
+
+    <!-- added by Connie. include jQuery script --> 
+    <!-- apex:includeScript value="{!URLFOR($Resource.SurveyForce, 'jquery.js')}" -->
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+
+        $j(document).ready(function () {
+            var thxTxt = $j(".thxTxt").val();
+            $j( "#dialog" ).dialog(
+                {
+                    autoOpen: false,
+                    height: 300
+                }
+            );
+            if ( thxTxt == '' ){
+                $j(".thxTxt").val('{!$Label.LABS_SF_ThankYouText_Def}')
+            }
+            
+            // added by Connie. replace textarea with CK editor -->
+            // var surveyHeaderEditorId ='editPage:theForm:editPageBlock:editorBlockSection:txtAreaSurveyHeader';
+            // id is updated due to text editor is wrapped in PageBlockSectionItem
+            var surveyHeaderEditorId ='editPage:theForm:editPageBlock:editorBlockSection:surveyHeaderBlockItem:txtAreaSurveyHeader';
+            CKEDITOR.replace(surveyHeaderEditorId, {
+                filebrowserBrowseUrl : '{!$Page.SurveySiteFileBrowser}',   
+                filebrowserImageBrowseUrl: '{!$Page.SurveySiteFileBrowser}'
+            }); 
+            console.log('CKEDITOR name: ' + surveyHeaderEditorId + ' replaced.');
+            
+            //var ThankYouTextEditorId ='editPage:theForm:editPageBlock:editorBlockSection:txtAreaThankYouText';
+            // id is updated due to text editor is wrapped in PageBlockSectionItem
+            var ThankYouTextEditorId ='editPage:theForm:editPageBlock:editorBlockSection:thankYouTextBlockItem:txtAreaThankYouText';
+            CKEDITOR.replace(ThankYouTextEditorId, {
+                filebrowserBrowseUrl : '{!$Page.SurveySiteFileBrowser}',   
+                filebrowserImageBrowseUrl: '{!$Page.SurveySiteFileBrowser}'
+            }); 
+            console.log('CKEDITOR name: ' + ThankYouTextEditorId  + ' replaced.');
+            // end replace textarea with CK editor
+
+            window.$Label = window.$Label || {};
+            $Label.CopyToClipboardSuccess = '{!JSENCODE($Label.LABS_SF_CopyToClipboardSuccess)}';
+            $Label.CopyToClipboardFailure = '{!JSENCODE($Label.LABS_SF_CopyToClipboardFailure)}';
+            $Label.EnableSurvey = '{!JSENCODE($Label.LABS_SF_Enable_Survey)}';
+            $Label.DisableSurvey = '{!JSENCODE($Label.LABS_SF_Disable_Survey)}';
+            $Label.ConfirmEnableSurvey = '{!JSENCODE($Label.LABS_SF_Confirm_Enable_Survey)}';
+            $Label.ConfirmDisableSurvey = '{!JSENCODE($Label.LABS_SF_Confirm_Disable_Survey)}';
+            $Label.Yes = '{!JSENCODE($Label.LABS_SF_Yes)}';
+            $Label.No = '{!JSENCODE($Label.LABS_SF_No)}';
+
+            var chatterLink = $j("span[id$='chatterLink']").text();
+            $j("input[id$='copyText']").val(chatterLink);      
+
+            $j("input[id$='btnClipboard']").click(function copyClipboard() {
+                // copy the selection
+                var succeed = false;
+                try {
+                    var $copyText = $j("input[id$='copyText']");
+                    if ($copyText) {
+                        $copyText.focus().select();
+                        succeed = document.execCommand("copy");
+                    } else {
+                        console.log('cannot find copyText dom element.');
+                    }
+                } catch(e) {
+                    succeed = false;
+                }
+                if (succeed === true) {
+                    alert($Label.CopyToClipboardSuccess);
+                } else {
+                    alert($Label.CopyToClipboardFailure);
+                }
+                return false;
+            });
+
+            $j("input[id$='btnPreview']").click(function previewSurvey() {
+                window.open('{!surveyURLBase + surveyURL}&preview=true', "_blank");
+                return false;
+            });
+
+            var updateSurveyButtonText = function _updateSurveyButtonText() {                
+                var $toggleHiddenInput = $j("input[id$='toggleHiddenInput']");
+                var toggleValue = $toggleHiddenInput.val();
+                var $btnToggleSurvey = $j("span[id$='btnToggleSurvey']");
+                //var $btnToggleSurvey = $j("id$=btnToggleSurvey");
+                var $txtToggle = $j("span[id$='toggleText']");
+                if (toggleValue === 'true') {
+                    //$btnToggleSurvey.val($Label.DisableSurvey);
+                    //$btnToggleSurvey.prop("title", $Label.DisableSurvey);
+                    $btnToggleSurvey.text($Label.DisableSurvey);
+
+                    //$txtToggle.css('color', 'green');
+                    //$txtToggle.text($Label.Yes);
+                } else {
+                    //$btnToggleSurvey.val($Label.EnableSurvey);
+                    //$btnToggleSurvey.prop("title", $Label.EnableSurvey);
+                    $btnToggleSurvey.text($Label.EnableSurvey);
+                    //$txtToggle.css('color', 'red');
+                    //$txtToggle.text($Label.No);
+                }
+                return false;
+            }
+            
+            /*
+            $j("span[id$='btnToggleSurvey']").click(function toggleSurveyCheckbox() {
+                return _toggleSurveyCheckbox();
+            });
+            */
+
+            $j.isBlank = function (obj) {
+                if (!obj || $j.trim(obj) === "") return true;
+                if (obj.length && obj.length > 0) return false;
+
+                for (var prop in obj) if (obj[prop]) return false;
+                return true;
+            };
+
+            var $endDate = $j("input[id$='endDate']");
+            var defaultTime = function _defaultTime() {
+                var $focusElement = $j(document.activeElement);
+                if ($focusElement.attr('id') === $endDate.attr('id')) {
+                    var dateTimeVal = $endDate.val();   
+                    dateTimeVal = $j.trim(dateTimeVal);         
+                    if ($j.isBlank(dateTimeVal) === false) {
+                        console.log("Datetime value before = " + dateTimeVal);   
+                        // value = 7/21/2016 9:45 PM
+                        // default to 11:59 PM
+                        var dateTimeArray = dateTimeVal.split(' ');
+                        if (dateTimeArray.length > 1) {
+                            dateTimeArray[1] = '11:59';
+                            dateTimeArray[2] = 'PM';
+                            dateTimeVal = dateTimeArray.join(' ');
+                        }
+                        console.log("Datetime value after = " + dateTimeVal);   
+                        $endDate.val(dateTimeVal);
+                    }
+                }
+            }
+
+            // capture event when date is selected
+            $j("#datePicker table[id$='datePickerCalendar'] td").click(defaultTime);
+            $j("#datePicker div.buttonBar a.calToday").click(defaultTime);
+            
+            // initialize enable survey button text 
+            //alert('testing: ' + '{! $CurrentPage.URL}');
+            //updateSurveyButtonText();
+        });
+        
+        function openAssignTakersList(){
+             $j( "#dialog" ).dialog( "open" );
+        }
+        
+        function toggleSurveyCheckbox(){
+            var $toggleHiddenInput = $j("input[id$='toggleHiddenInput']");
+            var toggleValue = $toggleHiddenInput.val();
+            var confirmMsg = '';
+            if (toggleValue === 'true') {
+                toggleValue = 'false';
+                confirmMsg =  $Label.ConfirmDisableSurvey;
+            } else {
+                toggleValue = 'true';
+                confirmMsg =  $Label.ConfirmEnableSurvey;
+            }
+            
+            if (confirm(confirmMsg)) {
+                $toggleHiddenInput.val(toggleValue);
+                console.log('toggleHiddenInput after value: ' + $toggleHiddenInput.val());
+                //modify by Connie. auto save survey record
+                //return updateSurveyButtonText();
+                saveToggleFlag(toggleValue);
+                return true;
+                // end 
+            } else {
+                return false;
+            }
+        }
+        
+        function showHideAssignedTakerBlockItem() {
+            //var $isPublicInput = $j("input[id$='isPublic']");
+            var $isPublicInput = $j('.isPublic')
+            var isPublicValue = $isPublicInput.val();
+            //alert(isPublicValue);
+            if (isPublicValue == 'E') {
+                //alert('E');
+                $j('#assignedTakerBlockItemDiv').hide();
+            } else {
+                $j('#assignedTakerBlockItemDiv').show();
+            }
+        }
+
+    </script>
+    <!-- end -->
+
+    <style>
+    
+    .activeTab {background-color: #236FBD; color:white; background-image:none}
+    .inactiveTab { background-color: lightgrey; color:black; background-image:none}
+    
+    /* added by Connie. make tab look rounder and have larger font-size */
+    .rich-tab-header {
+        font-size:14px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    /* end */
+
+     /* added by Connie. remove border top on page block */
+    .editPage > .bPageBlock {
+        border-top-color: #eaeaea !important;
+    }
+    /* end  */
+
+    /* added by Connie */    
+    .bPageBlock .labelCol {
+        font-family: Arial,Helvetica,sans-serif !important;
+        text-align: right;
+        font-size: 11px; 
+    }
+
+    .bPageBlock .data2Col {
+        font-family: Arial,Helve    
+    }
+ 
+    /* hide current date link */
+    .dateFormat {
+        display:none;
+    }
+    /* end */
+    </style>
+    <div id="labs_container">
+        <!--<h2><apex:outputtext value="{!Survey__c.Name}" id="surveyTitle" /></h2> -->
+    </div>
+     
+    <!-- Create Tab panel --> 
+    <apex:tabPanel switchType="client" selectedTab="name1" id="SurveyTabPanel" tabClass="activeTab" inactiveTabClass="inactiveTab">
+        <!-- commented out by Connie. Move to survey setting tab  -->
+        <!--
+        <apex:tab label="{!$Label.LABS_SF_Share}" name="name1" id="tabOne">
+            <c:viewShareSurveyComponent surveyId="{!Survey__c.Id}" id="shareComp" />
+             <apex:actionSupport event="ontabenter" rerender="shareComp"/>
+            
+        </apex:tab>
+        -->
+        <!-- end -->
+    <apex:tab label="{!$Label.LABS_SF_SurveySettings}" name="name2" id="tabTwo">
+        <!--
+        <apex:form >
+        -->
+        <!-- added by Connie. Use Bootstrap CSS styling -->
+        <div class="bs container" id="editDiv">
+        <apex:form id="theForm">
+            <apex:pageBlock mode="edit" id="editPageBlock">
+                <apex:pageBlockButtons >
+                    <apex:commandButton action="{!save}" id="saveButton" value="{!$Label.LABS_SF_Save}" styleClass="bs btn btn-default btn-sm" title="Save Survey Settings" />
+                    <!-- added by Connie. Move Preview and Enable buttons to the top -->
+                    <apex:commandButton id="btnPreview" value="{!$Label.LABS_SF_Preview_Survey}" styleClass="bs btn btn-default btn-sm" title="Preview questions in Chatter link" />
+                    <!--
+                    
+                    -->
+                    <!-- end -->
+                    <!-- added by Connie. Add sharing and assign taker buttons -->
+                    <apex:commandButton id="btnSharing" value="{!$Label.LABS_SF_Sharing}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Sharing}" action="{!showSharedSetting}"   />
+                   
+                   
+                   
+                    <!--
+                    <apex:commandButton id="btnAssignedTakers" value="{!$Label.LABS_SF_Assigned_Takers}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Assigned_Takers}" action="{!showAssignedTaker}"   />
+                    -->
+                    <!-- end  -->                    
+                </apex:pageBlockButtons>
+                <!-- added by Connie. Show error message returned by save operation -->
+                <apex:outputPanel id="msgPanel">
+                    <apex:pageMessages id="showMsg" /> 
+                </apex:outputPanel>
+                <!-- added by Connie. Show chatter link here -->
+                <apex:pageblocksection columns="1">
+                    <!--<apex:pageblocksectionitem >
+                        <apex:outputLabel for="urlOptions" value="{!$Label.LABS_SF_Sharing_Options}" />
+                        <apex:selectList id="urlOptions" value="{!selectedURLType}" size="1">
+                            <apex:selectOptions value="{!urlType}" />
+                            <apex:actionSupport event="onchange" rerender="theForm"/>
+                        </apex:selectList>
+                    </apex:pageblocksectionitem>
+                    Above and Below Commented by Carmen as Sharing Options is not used
+                    <apex:pageblocksectionItem rendered="{!selectedURLType == 'Chatter'}" >-->
+                    
+                    <apex:pageblocksectionItem helpText="{!$Label.LABS_SF_Chatter_Link}" labelstyle="padding-top: 10px;">
+                        <apex:outputLabel for="chatterLink" value="{!$Label.LABS_SF_Chatter_Link}" />
+                        <!-- mod by Connie. Wrap chatter link inside outputpanel. add command button and opaque text input begins -->
+                        <apex:outputPanel id="linkPanel">
+                            <apex:outputText id="chatterLink" value="{!surveyURLBase + surveyURL}"  style="float:left; margin-right: 10px;padding-top: 8px" /> 
+                            <apex:commandButton id="btnClipboard" value="{!$Label.LABS_SF_CopyToClipboard}"  style="float:left;margin-right: 10px;"
+                                    styleClass="bs btn btn-default btn-sm" title="Copy Chatter link" />
+                            <input id="copyText" value="" style='opacity:0;filter:alpha(opacity=0);float:left;'  />
+                        </apex:outputPanel>
+                        <!-- ends -->
+                    </apex:pageblocksectionItem>
+                </apex:pageblocksection>
+                <apex:pageblocksection columns="1" rendered="{!selectedURLType != 'Chatter'}">
+                    <apex:pageblocksectionitem >
+                        <apex:outputLabel for="sitesList" value="Select Site " /> 
+                        <apex:selectList value="{!surveySite}" multiselect="false" id="sitesList" required="true"  size="1">
+                            <apex:selectOptions value="{!sitesPicklist}"/>
+                            <apex:actionSupport event="onchange" rerender="emailLink"/>            
+                        </apex:selectList>
+                    </apex:pageblocksectionitem>
+                    <apex:pageblocksectionitem >
+                        <apex:outputLabel for="emailLink" value="Emailable Link " />
+                        <apex:outputText id="emailLink" value="{!surveyURLBase + surveyURL}" /> 
+                    </apex:pageblocksectionitem>
+                </apex:pageblocksection>
+                <!-- end -->
+                <apex:pageBlockSection columns="1" >
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_SurveyName}">
+                        <apex:outputLabel value="{!$Label.LABS_SF_SurveyName}" />
+                        <!-- mod by Connie. Make the field longer by adding style -->
+                        <apex:inputField value="{!Survey__c.Name}" style="width:95%;"/>
+                    </apex:pageBlockSectionItem>
+                    <!--<apex:inputField value="{!Survey__c.Hide_Survey_Name__c}" /> Not Used-->
+                    <!-- added by Connie. Add helptext -->
+                    
+                    
+                    <!--                    
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_IsPublic}">
+                        <apex:outputLabel value="{!$Label.LABS_SF_IsPublic}" />
+                        <apex:inputField value="{!Survey__c.Is_Public__c}" label="{!$Label.LABS_SF_IsPublic}" styleclass="isPublic" onchange="showHideAssignedTakerBlockItem();" />
+                    </apex:pageBlockSectionItem>                
+                    -->
+                    <!-- modify by Connie. Move up to below Allow Anonymouse -->
+                    <apex:variable var="counter" value="{!1}"/>
+                    
+                    <!--
+                        <apex:outputPanel id="linkPanel">
+                            <apex:commandButton id="btnAssignedTakers" value="{!$Label.LABS_SF_Assigned_Takers}" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Assigned_Takers}" action="{!showAssignedTaker}"   />
+                        </apex:outputPanel>                    
+                    
+                    -->
+                     
+
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_Assigned_Takers_Description}" id="assignedTakerBlockItem" >
+                                            
+                          
+                            <apex:outputLabel value="{!$Label.LABS_SF_Assigned_Takers}" />
+                            
+                    
+                       
+                            <!--
+                              <apex:repeat value="{!surveyAssignmentResult}" var="row">                                       
+                                   <apex:outputText value="{!TEXT(counter) + ', '+  row.UserOrGroupName + ''}" rendered="{!counter < 11}" />
+                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                   <apex:outputText value="more...." rendered="{!counter == 11}" />
+                                   <apex:outputText rendered="{!counter == 5}" >
+                                   <BR/>
+                                   </apex:outputText>
+                                   <apex:variable var="counter" value="{!counter + 1}"/>
+                               </apex:repeat>
+                               -->
+                       
+
+                       <apex:outputPanel id="AssignPanel">
+                           <apex:inputField value="{!Survey__c.Is_Public__c}" label="{!$Label.LABS_SF_IsPublic}" styleclass="isPublic" onchange="showHideAssignedTakerBlockItem();" />
+                           <div id="assignedTakerBlockItemDiv">
+                       
+                       <!--{!totalSurveyAssignment} {!$Label.LABS_SF_Assigned_Takers_Description}   {!$Label.LABS_SF_Assigned_Type} -->
+                        <B>{!totalSurveyAssignment} Assigned Taker(s)</B>
+                       
+                        &nbsp;&nbsp;
+                                      
+                         <apex:commandButton id="btnAssignedTakers" value="Assign Takers" styleClass="bs btn btn-default btn-sm" title="{!$Label.LABS_SF_Assigned_Takers}" action="{!showAssignedTaker}"   />
+                        <!-- Add by DTT Support Team-->        
+                        <apex:actionFunction name="showassignedTakers" action="{!showAssignedTaker}"/>
+                       
+                        <apex:dataTable rows="5" value="{!surveyAssignmentResultTopFive}" var="row" id="theTable" styleClass="bs table-striped table-bordered table-hover"  width="100%"> 
+                                                                        
+                            <apex:column headerValue="Name" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4" rendered="{!totalSurveyAssignment != 0}">
+                                <apex:outputText value="{!row.UserOrGroupName}" /> 
+                            </apex:column>
+                            
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Type}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4" rendered="{!totalSurveyAssignment != 0}" >
+                                <apex:outputText value="{!row.Type} " />
+                                <apex:outputText rendered="{!counter == 5}" >
+                                    <a onclick="showassignedTakers()">( more....)</a>
+                                </apex:outputText>
+                                <apex:variable var="counter" value="{!counter + 1}"/>
+                            </apex:column>
+                        </apex:dataTable> 
+                       
+                       <!--
+                       <apex:dataTable rows="5" value="{!surveyAssignmentResult}" var="row" id="theTable" styleClass="bs table-striped table-bordered table-hover" > 
+                            <apex:column headerValue="0 Assigned Taker(s)" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4" rendered="{!totalSurveyAssignment == 0}">
+                                                        
+                            </apex:column>                                   
+                                                
+                            <apex:column headerValue="{!totalSurveyAssignment} {!$Label.LABS_SF_Assigned_Takers_Description}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4" rendered="{!totalSurveyAssignment != 0}">
+                                <apex:outputText value="{!row.UserOrGroupName}" /> 
+                            </apex:column>
+                            
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Type}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4" rendered="{!totalSurveyAssignment != 0}" >
+                                <apex:outputText value="{!row.Type} " />
+                                <apex:outputText rendered="{!counter == 5}" >
+                                    <a href="javascript:openAssignTakersList()">( more....)</a>
+                                </apex:outputText>
+                                <apex:variable var="counter" value="{!counter + 1}"/>
+                            </apex:column>
+                         
+                        </apex:dataTable> 
+                        -->  
+                        </div>
+                        </apex:outputPanel> 
+                         
+                        
+                       <!--
+                       <apex:dataTable value="{!surveyAssignmentResult}" var="row" id="theTable" styleClass="bs table-striped table-bordered table-hover" > 
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Takers_Description}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.UserOrGroupName}" />
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Type}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.Type}" />
+                            </apex:column>
+                        </apex:dataTable>
+                        -->
+                    </apex:pageBlockSectionItem>
+                  <!--*******************************************************************************-->
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_AllowAnonymous_Helptext}">
+                        <apex:outputLabel value="{!$Label.LABS_SF_AllowAnonymous}" />
+                        <apex:inputCheckbox value="{!Survey__c.Allow_Anonymous__c}" label="{!$Label.LABS_SF_AllowAnonymous}" disabled="{!disableAnonymous}" />
+                    </apex:pageBlockSectionItem>
+                    <!-- add by DTT -->
+                    <!-- <apex:pageBlockSectionItem helpText="{!$Label.Is_Shuffle}">
+                        <apex:outputLabel value="Is Shuffle" />
+                        <apex:inputCheckbox value="{!Survey__c.Is_Shuffle__c}" label="Is Shuffle" />
+                    </apex:pageBlockSectionItem> -->
+
+                    <!-- add by DTT -->
+                    <!-- <apex:pageBlockSectionItem helpText="{!$Label.Randomize_Questions}">
+                        <apex:outputLabel value="Randomize Questions" />
+                        <apex:inputCheckbox value="{!Survey__c.Randomize_Questions__c}" label="Randomize Questions" />
+                    </apex:pageBlockSectionItem>  -->
+
+
+                    <!-- <apex:pageBlockSectionItem helpText="{!$Label.Randomize_Answers}">
+                        <apex:outputLabel value="Randomize Answers" />
+                        <apex:inputCheckbox value="{!Survey__c.Randomize_Answers__c}" label="Randomize Answers" />
+                    </apex:pageBlockSectionItem>-->      
+                   
+                    
+                    <!-- end -->
+                    <!-- modify by Connie. Make toggle checkbox readonly -->
+                    <!--
+                    <apex:inputField value="{!Survey__c.Survey_Toggle__c}" label="{!$Label.LABS_SF_Toggle}" />
+                    -->
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_Toggle}" labelstyle="padding-top: 10px;" >
+                        <apex:outputLabel value="{!$Label.LABS_SF_Toggle}"  />
+                        <apex:outputPanel id="EnableSurveyPanel">
+                            <!-- modify by Connie. Add hidden input field to store the value of toggle and display toggle value in text -->
+                            <!--apex:inputField id="chkSurveyToggle" value="{!Survey__c.Survey_Toggle__c}"  label="{!$Label.LABS_SF_Toggle}" -->
+                            <div style="vertical-align=center;">
+                                <apex:outputText rendered="{!bToggleValue}">
+                                    <!--
+                                    <font color="green" style=" width: 104px;height: 12px;display: inline-block;text-align: center;">{!JSENCODE($Label.LABS_SF_Yes)}</font>
+                                    -->
+                                    <font color="green" style="height: 12px;display: inline-block;text-align: center;">{!JSENCODE($Label.LABS_SF_Yes)}</font>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!!bToggleValue}">
+                                    <!--
+                                    <font color="red" style=" width: 104px;height: 12px;display: inline-block;text-align: center;">{!JSENCODE($Label.LABS_SF_No)}</font>
+                                    -->
+                                    <font color="red" style="height: 12px;display: inline-block;text-align: center;">{!JSENCODE($Label.LABS_SF_No)}</font>
+                                </apex:outputText>
+                                <!--
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                         
+                                
+                                <apex:inputHidden value="{!Survey__c.Survey_Toggle__c}" id="toggleHiddenInput"/>  &nbsp;&nbsp;
+                                -->
+                                <apex:inputHidden value="{!Survey__c.Survey_Toggle__c}"  />  &nbsp;&nbsp;
+                                <apex:inputCheckbox value="{!bToggleValue}" id="toggleHiddenInput" style="display: none;"/>  &nbsp;&nbsp;                                   
+                                <span id="btnToggleSurvey"  Class="bs btn btn-default btn-sm" onClick="toggleSurveyCheckbox();" style="vertical-align=center;margin-left: -10px;">                                     
+                                    <apex:outputText rendered="{!!bToggleValue}"  >{!JSENCODE($Label.LABS_SF_Enable_Survey)}</apex:outputText>
+                                    <apex:outputText rendered="{!bToggleValue}">{!JSENCODE($Label.LABS_SF_Disable_Survey)}</apex:outputText>                                    
+                                </span>
+                            </div>
+                        </apex:outputPanel>    
+                    </apex:pageBlockSectionItem>
+                    <!-- end make toggle checkbox readonly -->
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="2" id="dateTimeBlockSection">
+                    <apex:pageBlockSectionItem helpText="Start date and time">
+                        <apex:outputLabel value="{!$Label.LABS_SF_StartDate}"/>
+                        <apex:inputField value="{!Survey__c.Survey_Start_DateTime__c}" label="{!$Label.LABS_SF_StartDate}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem helpText="End date and time" id="endDateBlockSectionItem">
+                        <apex:outputLabel value="{!$Label.LABS_SF_EndDate}"/>
+                        <!-- Modify by Connie. Default end time to 11:59 PM if date is selected from date picker  -->
+                        <!-- apex:inputField value="{!Survey__c.Survey_End_DateTime__c}" label="{!$Label.LABS_SF_EndDate}" -->
+                        <apex:inputField value="{!Survey__c.Survey_End_DateTime__c}" label="{!$Label.LABS_SF_EndDate}" id="endDate" />
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1" id="editorBlockSection">
+                <!--  commented out by Connie. Replace with CKEditor
+                     <apex:inputField value="{!Survey__c.Survey_Header__c}"  />
+                      <apex:inputField value="{!Survey__c.Thank_You_Text__c}" />
+                     -->
+                <!-- mod by Connie Leung, 2016. Use text area. Replace by CKEditor -->
+                    <!-- mod by Connie. Wrap editors to pageBlockSectionItem to display help text-->
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_SurveyHeader}" id="surveyHeaderBlockItem">
+                       <apex:outputLabel value="{!$Label.LABS_SF_SurveyHeader}" />
+                       <apex:inputTextarea id="txtAreaSurveyHeader" value="{!Survey__c.Survey_Header__c}" richtext="false" />  
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_ThankYouText}" id="thankYouTextBlockItem">
+                       <apex:outputLabel value="{!$Label.LABS_SF_ThankYouText}" />
+                       <apex:inputTextarea id="txtAreaThankYouText" value="{!Survey__c.Thank_You_Text__c}" styleClass="thxTxt"  richtext="false" />  
+                    </apex:pageBlockSectionItem>
+                <!-- end -->
+                <!-- end -->
+                </apex:pageBlockSection>
+                <!-- added by Connie. Show User and Group who can take the survey -->
+                <!--
+                <apex:pageBlockSection columns="1" id="assignedTakerBlockSection">
+                    <apex:pageBlockSectionItem helpText="{!$Label.LABS_SF_Assigned_Takers_Description}" id="assignedTakerBlockItem">
+                       <apex:outputLabel value="{!$Label.LABS_SF_Assigned_Takers}" />
+                       <apex:dataTable value="{!surveyAssignmentResult}" var="row" id="theTable" styleClass="bs table-striped table-bordered table-hover" > 
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Takers_Description}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.UserOrGroupName}" />
+                            </apex:column>
+                            <apex:column headerValue="{!$Label.LABS_SF_Assigned_Type}" styleClass="bs col-md-4 col-sm-4 col-lg-4 col-xs-4">
+                                <apex:outputText value="{!row.Type}" />
+                            </apex:column>
+                        </apex:dataTable>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                -->
+                <!-- end -->
+            </apex:pageBlock>
+            <!-- added by Connie. Allow JavaScript to call controller's method to save toggle custom field 
+            <apex:actionFunction name="saveToggleFlag" action="{!saveEnableFlag}" reRender="editPageBlock">-->
+            <apex:actionFunction name="saveToggleFlag" action="{!saveEnableFlag}" reRender="EnableSurveyPanel , msgPanel">
+                <apex:param name="toggleValue" value="" />
+            </apex:actionFunction>
+            <!-- end -->
+        </apex:form>    
+        </div>            
+    </apex:tab>        
+    <apex:tab label="{!$Label.LABS_SF_EditQuestions}" name="name4" id="tabFour">
+                 <apex:iframe src="SurveyPage?id={!Survey__c.Id}" scrolling="True" id="editSurvey" height="1000"/>  
+    </apex:tab>
+    <apex:tab label="{!$Label.LABS_SF_Results}" name="name3" id="tabThree">
+        <c:viewSurveyResultsComponent surveyId="{!Survey__c.Id}" />
+                     <apex:actionSupport event="onclick" rerender="tabThree"/>
+       
+    </apex:tab>
+    </apex:tabPanel>
+    
+    <script type="text/javascript">
+        showHideAssignedTakerBlockItem();
+    </script>
+    
+   <!--   <div id="dialog" title="Assign Takers">
+         <apex:dataTable value="{!surveyAssignmentResult}" var="row" id="theTable"  width="100%"> 
+            <apex:column headerValue="User / Group" >
+                <apex:outputText value="{!row.UserOrGroupName}" />
+            </apex:column>
+            <apex:column headerValue="Type" >
+                <apex:outputText value="{!row.Type} " />
+                
+            </apex:column>       
+             
+        </apex:dataTable>        
+      
+    </div> -->
+    
+</apex:page>

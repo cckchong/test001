@@ -1,0 +1,35 @@
+<apex:page standardController="Library_Item__c" extensions="LibraryItemDetailImageCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <style>
+        .bs .row {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+    </style>
+    <div class="bs container">
+        <div class="bs row">
+            <br/>
+            <div class="bs col-xs-12 well" style="height: 180px;">
+                <apex:outputPanel rendered="{!Library_Item__c.RecordType.Name != 'Fabric'}">
+                    <apex:outputText value="No Photos Available" rendered="{!photoAttachmentList.empty && feedPhotoAttachmentList.empty}" style="color: #888;"/>
+                    <apex:repeat value="{!photoAttachmentList}" var="photo" rendered="{!!photoAttachmentList.empty}">
+                        <a href="/servlet/servlet.FileDownload?file={!photo.Id}" target="_blank">
+                            <img src="/servlet/servlet.FileDownload?file={!photo.Id}" class="bs img-thumbnail" style="height:100%; width:auto;"/>
+                        </a>
+                    </apex:repeat>
+                    <apex:repeat value="{!feedPhotoAttachmentList}" var="photo" rendered="{!!feedPhotoAttachmentList.empty}">
+                        <a href="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!photo.ContentDocument.LatestPublishedVersionId}&operationContext=CHATTER&contentId={!photo.ContentDocument.Id}" target="_blank">
+                            <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId={!photo.ContentDocument.LatestPublishedVersionId}&operationContext=CHATTER&contentId={!photo.ContentDocument.Id}" class="bs img-thumbnail" style="height:100%; width:auto;"/>
+                        </a>
+                    </apex:repeat>
+                    
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!Library_Item__c.RecordType.Name = 'Fabric'}">
+                    <a href="{!$Label.Library_Fls_Photo_Path_Start}{!Library_Item__c.Fabric_ID__c}/{!Library_Item__c.Color_ID_1__c}/" target="_blank">
+                        <img src="{!$Label.Library_Fls_Photo_Path_Start}{!Library_Item__c.Fabric_ID__c}/{!Library_Item__c.Color_ID_1__c}/thumbnail/200" class="bs img-thumbnail" style="height:100%; width:auto;"/>
+                    </a>
+                </apex:outputPanel>
+            </div>
+        </div>
+    </div>
+</apex:page>

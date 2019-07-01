@@ -1,0 +1,261 @@
+<apex:page controller="IDPPhotoMappingPhotoToItemCtrl"  cache="false" showHeader="false" standardStylesheets="true" sidebar="false" tabstyle="Expense_Application__c" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0">
+    
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/dataTables.bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+ 
+    <apex:outputPanel >
+        <style type="text/css" class="init">
+        
+            
+            #accordion table tr td {
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td input {
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td textarea{
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td select{
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }   
+            .ui-accordion-header.ui-state-active { background-color: #dfeffc; }
+            .ui-state-focus:focus { outline:none }
+            .ui-dialog .ui-button-text {font-family: Salesforce Sans, Arial, sans-serif; font-style: normal;}
+            
+            .ui-state-default{
+              background-color: #dfeffc;
+              background-image: none;
+            }
+            
+            .ui-accordion .ui-accordion-content {padding: 0;}
+            .bPageBlock .bDetailBlock .secondaryPalette {padding: 0;}
+        </style>
+
+
+    </apex:outputPanel>
+    <style type="text/css">
+        
+       .ui-dialog-title{
+            //color: #e17009;
+            color: white;
+            font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px; 
+        }    
+        .ui-tabs-anchor{
+            font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px; 
+        }
+        .alertlabel {
+            background-color: #f0ad4e;
+            color: black;
+            padding: 4px;
+            border-radius: 10px;
+            -moz-border-radius: 10px;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            color: #FFFFFF;
+        }
+        
+        .page-length-right {
+            float:right;
+        }
+        
+        table.dataTable thead th, table.dataTable thead td {
+        	padding: 10px 10px;
+        }
+    </style> 
+    <script>
+        function selectAll(){
+            $('.itemselect').prop('checked', $('#itemselect').is(':checked'));
+        }
+        
+        function clearFilterValue(){
+            $("[id*='filterText']").val('');
+        }
+    </script>
+   <script>
+   
+       var $imageTable = null;
+       var tableInit = dataTableInitSetting();
+       $.fn.dataTableExt.sErrMode = 'console';
+       function setDataTable() {
+           $poTable = $('#itemTable').DataTable(tableInit);
+       }
+       
+       function dataTableInitSetting() {
+            return {
+                "dom": '<"page-length-right"l>rtip',
+                "paging":   true,
+                "info":     false,
+                "searching" : false,
+                "stateSave": false,
+                "order" :  [[ 1, "asc" ]],
+                "orderClasses" : false,
+                "columnDefs": [ {  
+                "targets": 'no-sort',
+                "orderable": false
+                } ]
+            };        
+        }
+   </script>
+   
+    <apex:form id="mainform">
+        <p id="responseErrors"></p>
+        <div class="slds">
+            
+            <div class="slds-col slds-no-flex slds-align-middle btngp">
+                <apex:outputPanel id="itemPanel">
+                <table align="center">
+                    <tr>
+                        <td rowspan="2">
+                            <img id="theImage" src="/servlet/servlet.FileDownload?file={!docItem.Id}" width="100" height="100"/>                            
+                        </td> 
+                        <td rowspan="2">
+                            <B>Selected Photo: </B> {!docItem.Name} <BR/>
+                            <B>Created Date: </B> 
+                            <apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+                                <apex:param value="{!docItem.CreatedDate}"/>
+                            </apex:outputText>
+                            
+                            <BR/>
+                            <B>Last Modified Date: </B>
+                            <apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+                                <apex:param value="{!docItem.LastModifiedDate}"/>
+                            </apex:outputText> 
+                        </td>
+                    </tr>
+                </table>
+             
+                </apex:outputPanel>
+                 <!-- <apex:commandButton value="Cancel" styleClass="actionbtn slds-button slds-button--neutral" action="{!cancel}" />-->
+            </div>
+               
+            <apex:outputPanel id="msg">
+                <apex:pageMessages id="showmsg" escape="false"></apex:pageMessages>
+            </apex:outputPanel>
+                
+            <BR/>
+            <!--<apex:outputPanel rendered="{!TextId != ''}">-->
+            <div style = "margin-bottom:-10px; ">
+            
+           
+            <apex:pageBlock mode="maindetail" id="headerBlock">
+            <div id="accordion" style = "width:99.5%; margin-top:-18px;">
+               <label class="slds-form-element__label details-toggle" style="font-size:14px;">
+               <span class="edit-toggle">
+                   
+               
+               </span>
+               </label>
+               
+               <div style="margin-bottom:25px;">
+                    <table style="width: 100%;margin-top:5px;" border = "0px;" id = "headerTable">                        
+                        <tr>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                            <!--<apex:actionFunction name="reloadPhotoTbl" action="{!getAllCatItems}" rerender="photoTable" status="loading..."/>-->
+                            
+                            <apex:actionFunction name="getCatalogItem" action="{!getCatalogItemList}" rerender="photoTable,msg"/>
+                            
+                            
+                            <label>Catalog:&nbsp;</label>
+                            <apex:selectList value="{!seletedCatItem}" size="1" style="width:20%;margin-top:10px;margin-right:10px;" styleclass="catalogSel" onchange="clearFilterValue(),getCatalogItem();">
+                                <apex:selectOptions value="{!CatalogOpt}"/>
+                            </apex:selectList>                                   
+
+                            <apex:outputPanel id="photoSrch">
+                                <apex:inputText value="{!searchPhotoString}" onKeyUp="getCatalogItem();" id="filterText"><label>Filter:&nbsp;</label></apex:inputText>
+                                &nbsp;&nbsp;  
+                                <apex:commandButton action="{!save}" value="Save" id="btn3" />
+                            </apex:outputPanel>
+                                     
+                            <apex:outputPanel id="photoTable">
+                                                  
+                                <table id="itemTable" class="display dataTable no-footer">
+                                    <thead>
+                                        <tr style="border-bottom:1pt solid black;">
+                                            <th class="no-sort"><div style = "width:30px" /> <input type="checkbox" id = "itemselect" onclick = "selectAll();"/></th>
+                                            <th>Item Name</th>
+                                            <th>Photo Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>  
+                                         
+                                        <apex:variable value="{!0}" var="counter" />
+                                      
+                                        <apex:repeat value="{!catItemWrapperList}" var="ciw">
+
+                                            <apex:variable value="{!(counter + 1)}" var="counter" />
+                                            
+                                            <tr>
+                                            <!--
+                                            <td>
+                                            
+                                            </td>
+                                            -->
+                                                <td>    
+                                                    <apex:inputCheckbox value="{!ciw.isSelected}" selected="{!ciw.isSelected}" styleClass="itemselect"/>
+                                                </td>
+                                                <td>
+                                                   
+                                                    <apex:outputText value="{!ciw.ci.Catalog__r.Display_Name__c} / {!ciw.ci.Item_Name__c}" title="{!ciw.ci.Catalog__r.Parent_Catalog_Name__c} - {!ciw.ci.Catalog__r.Catalog_Name__c } - {!ciw.ci.Description__c }">
+                                                        
+                                                    </apex:outputText>
+                                                </td>
+                                                <td>
+                                                    <apex:outputText >
+                                                        {!ciw.ci.Photo_Name__c}
+                                                    </apex:outputText>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                                <script>
+                                setDataTable();
+                                </script>
+                                
+                                <!--
+                                <apex:outputPanel rendered="{!catItemWrapperList.size==0}"> 
+                                 <label>No record to display</label>
+                                </apex:outputPanel>  
+                                -->                            
+                            </apex:outputPanel>
+                           
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </div>
+                
+            </div>
+            </apex:pageBlock>
+           
+            </div>
+            
+        </div>
+
+        <br/>
+
+
+        
+    </apex:form>
+
+</apex:page>

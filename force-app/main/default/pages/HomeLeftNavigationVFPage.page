@@ -1,0 +1,425 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false" cache="true" controller="HomeLeftNavigationCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.jQuery_UI_Theme_Shortcut, 'jquery-ui-1.10.4.custom.min.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.jqueryui, 'jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.min.js')}"/>
+    <style>
+        body {
+        background: none;
+            font-size: 8pt;
+        }
+        .sub-menu li > a {
+            padding: 1px 0px 1px 10px !important;
+        }
+        #homepage-shortcut-accordion h3 {
+            padding-top: 7px;
+            padding-bottom: 7px;
+            margin-top: 1px;
+            font-weight: bold;
+        }
+        
+        #homepage-shortcut-accordion .accordion-content {
+            background: #FFF;
+            padding: 0px !important;
+            overflow: hidden;
+        }
+
+        #homepage-shortcut-accordion .sub-menu em {
+            margin-right: 4px;
+            color: #a6a6a6;
+            font: normal 12px/32px Arial, sans-serif;
+        }
+        
+        #homepage-shortcut-accordion .sub-menu {
+            border: 0px !important;
+        }
+        
+        #homepage-shortcut-accordion .ui-menu-item a {
+            padding: 1px 0.4em;
+        }
+        
+        #homepage-shortcut-accordion h3 img {
+            padding-right: 7px;
+            margin-bottom: -3px;
+        }
+        
+        #homepage-shortcut-accordion .sub-menu a > img {
+            padding-right: 7px;
+        }
+        
+        #homepage-shortcut-accordion .sub-menu a {
+            vertical-align: top;
+        }
+        
+        #homepage-shortcut-accordion img {
+            border: 0px; /* for IE */
+        }
+        .tal-special-menu {
+            padding-left: 10px;
+            display: block;
+            text-transform: uppercase;
+            font-size: 10px;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+    
+    <div id="homepage-shortcut-accordion">
+        <apex:actionRegion rendered="{!if($Profile.Name !='System Administrator', false, true)}">
+            <!--
+            <h3><img src="/img/icon/plane16.png" /> Service-Now</h3>
+            <div class="accordion-content">
+                <ul class="sub-menu">
+                    <li><a href="https://talappareldev.service-now.com" target="_blank" >Service-Now</a></li>
+                </ul>
+            </div>
+            -->
+            <!--
+            <h3><img src="http://siliconangle.com/files/2014/05/servicenow-icon.png" width="16px" />
+                <a href="https://talappareldev.service-now.com/navpage.do">
+                    Service-Now
+                </a>
+            </h3>
+            <div class="accordion-content"/>
+            
+            <h3><img src="http://siliconangle.com/files/2014/05/servicenow-icon.png" width="16px" />
+                <a href="https://talappareldev.service-now.com/tal/itsm_salesforce.do">
+                    ESS
+                </a>
+            </h3>
+            <div class="accordion-content"/>
+            -->
+            <!--
+            <h3><img src="http://siliconangle.com/files/2014/05/servicenow-icon.png" width="16px" />
+                <a href="https://talappareldev.service-now.com/tal/login.do">
+                    Login Service-Now
+                </a>
+            </h3>
+                <div class="accordion-content"/>
+            -->
+            <!--
+                <h3><img src="http://siliconangle.com/files/2014/05/servicenow-icon.png" width="16px" /> Service-Now</h3>
+    <div class="accordion-content">
+                <ul class="sub-menu">
+                    <li><a href="#" onclick="window.open('https://talappareldev.service-now.com/tal/Close.do');" >Login Service-Now</a></li>
+                    <li><a href="#" onclick="window.open('https://talappareldev.service-now.com/navpage.do');" >Service-Now</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/apex/SNow_Portal?sfdc.tabName=01rO00000000l5L';" >ESS</a></li>
+                    <li><a href="#" onclick="window.open('https://talappareldev.service-now.com/logout.do');" >Logout Service-Now</a></li>
+                </ul>
+            </div>
+            -->
+        </apex:actionRegion>
+        <apex:actionRegion rendered="{!selectedApp = 'Library'}">
+        <h3><img src="/img/icon/custom51_100/books16.png" /> Library</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">
+                <li><a href="#" onclick="top.parent.location.href = '/apex/LibraryItemRequestViewVFPage';" >My Cart</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/a0H?fcf=00B90000009M54p';" >My Requests</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/00O90000008tobJ';" >My Items Location</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/a0H?fcf=00B90000009M54r';" >My Overdue Items</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/04i';" >My Items to Approve</a></li>                
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/LibraryQrCodeScanVFP';" >Library QR Scan</a></li>
+                <!--<li Style="{!IF(CONTAINS($Profile.Name,'Burberry'),'Display:none;','')}"><a href="#" onclick="top.parent.location.href = '/apex/LibraryBookScanPage';" >Library Book QR Scan</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$ObjectType.Library_Inventory__c.KeyPrefix}';" >Inventory</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$ObjectType.Location__c.KeyPrefix}';" >Locations</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/LibraryDetailedLocationExportVFP';" >Print All Locations</a></li>
+                <hr/>                
+                <li><a href="#" onclick="top.parent.location.href = '/00O90000008tobL';" >{!$Label.Sidebar_New_Items_For_Check_In}</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/00O90000008tobO';" >{!$Label.Sidebar_Picking_List}</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/00O90000008tobM';" >{!$Label.Sidebar_Outbound_Delivery_Arrival_List}</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/00O90000008tobE';" >{!$Label.Sidebar_Inbound_Delivery_Arrival_List}</a></li>                
+                <li><a href="#" onclick="top.parent.location.href = '/00O?fcf=00l900000027ByX';" >{!$Label.Sidebar_All_Library_Reports}</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/01Z?fcf=00l900000027ByY';" >{!$Label.Sidebar_All_Library_Dashboards}</a></li>
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/06990000001tq4p';" >Application Manual</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/06990000001tlle';" >Rules &amp; Regulations</a></li>
+            </ul>
+        </div>
+        </apex:actionRegion>
+        
+        <apex:actionRegion rendered="{!selectedApp = 'Sample'}">
+        <h3><img src="/img/icon/custom51_100/books16.png" /> Sample</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">
+                <li><a href="#" onclick="top.parent.location.href = '/0696F000004xL5h';" >Application Manual</a></li>
+            </ul>
+        </div>
+        </apex:actionRegion>
+        
+        <apex:actionRegion rendered="{!$Permission.Leave_Is_Leave_User && selectedApp = 'E-Leave'}">                                            
+            <h3><img src="/img/icon/plane16.png" /> E-Leave</h3>
+            <div class="accordion-content">
+                <ul class="sub-menu">
+                    <li><a href="#" onclick="top.parent.location.href = '/apex/LeaveRequestOverwriteNew';">New Leave Request</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.leave_request__c.keyPrefix}?fcf=00B90000009MKbE';">My Drafted Leave</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.leave_request__c.keyPrefix}?fcf=00B90000009MKbJ';">My Submitted Leave</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.leave_request__c.keyPrefix}?fcf=00B90000009MKbC';">My Approved Leave</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.leave_request__c.keyPrefix}?fcf=00B90000009MKbI';">My Rejected Leave</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.leave_request__c.keyPrefix}?fcf=00B90000009MKbD';">My Cancelled Leave</a></li>
+                    <apex:actionRegion rendered="{!$Permission.Leave_HK_User}">
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Leave_Request__c.keyPrefix}?fcf=00B90000009MKbF';">My Flexible Time</a></li>
+                    </apex:actionRegion>
+                    <li><a href="#" onclick="top.parent.location.href = '/apex/LeaveBalanceTabVFPage?sfdc.tabName=01r90000001DddL';">My Leave Balances</a></li>
+                    <hr/>
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Leave_Request__c.keyPrefix}?fcf=00B90000009MKbB';">My Items to Approve</a></li>                
+                    <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Holiday__c.keyPrefix}?fcf=00B90000009MKom';">Holidays</a></li>    
+                    <li><a href="#" onclick="top.parent.location.href = '/00l900000027YHY';">Reports</a></li>            
+                    <!-- <li><a href="#" onclick="top.parent.location.href = '/a0E?fcf=00BO00000017H0H';">Delegate Approval</a></li> -->
+                    <apex:actionRegion rendered="{!$Permission.Leave_Sidebar_Is_HCM}">
+                        <hr/>
+                        <li class="tal-special-menu">HCM Menu</li>
+                        <li><a href="#" onclick="top.parent.location.href = '/apex/ELeaveAdjustmentVFP';" >New Adjustment</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Leave_request_log__c.keyPrefix}?fcf=00B90000009MKnA';" >Adjustments</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/apex/ELeaveBatchVFP';" >New Mandatory Leave</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Leave_Application__c.keyPrefix}?fcf=00B90000009MKb6';" >Mandatory Leave</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Leave_Policy__c.keyPrefix}';">Manage Leave Policies</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Leave_Type__c.keyPrefix}?fcf=00B90000009eCsh';">Manage Leave Types</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Employee__c.keyPrefix}';">Manage Employees</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Employee_administrator__c.keyPrefix}';" >Manage Employee Admins</a></li>
+                        <li><a href="#" onclick="top.parent.location.href = '/00l900000027YHs';">Integration Reports</a></li>                                      
+                    </apex:actionRegion>
+                    <hr/>
+                    <li><a href="#" onclick="top.parent.location.href = '/06990000001uBqN';">Application Manual (101) </a></li> 
+                    <li><a href="#" onclick="top.parent.location.href = '/0696F000003aOU1QAM';">Application Manual (201)</a></li> 
+                </ul>
+            </div>
+        </apex:actionRegion>
+        
+        <!-- *************T&E Start************** -->
+        
+        <apex:actionRegion rendered="{!$Permission.TE_Is_TE_User && selectedApp = 'T&E'}">
+                                            
+        <h3><img src="/img/icon/car16.png" />Travel</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">
+                
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}/e?retURL=%2F{!$objectType.travel_application__c.keyPrefix}';">New Travel Applications</a></li>
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}?fcf=00B6F000009Knaj';">My Drafted Travel App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}?fcf=00B6F000009Knap';">My Pending Travel App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}?fcf=00B6F000009Knal';">- Pending Applicant to Select</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}?fcf=00B6F000009Knak';">- Pending Applicant to Confirm</a></li>
+                
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}?fcf=00B6F000009Knar';">My Confirmed Travel App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_application__c.keyPrefix}?fcf=00B6F000009Knai';">My Cancelled Travel App.</a></li>
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Travel_Application__c.keyPrefix}?fcf=00B6F000009Knaq';">Pending Site Admin to Arrange</a></li>
+                </apex:outputText>
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.travel_detail__c.keyPrefix}?fcf=00B6F000009Knat';">Outstanding Shuttle Requests</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEShuttleAssignmentVFP';">Shuttle Schedules</a></li>
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.cash_advance__c.keyPrefix}?fcf=00B6F000009KnZb';">Manage Cash Advances</a></li>
+            </ul>
+        </div>
+        <h3><img src="/img/icon/cash16.png" />Expense</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">        
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEExpenseApplicationVFP?rt=general';">New General Expenses</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEExpenseApplicationVFP?rt=travel';">New Travel Expenses</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEExpenseApplicationVFP?rt=education';">New Education Expenses</a></li>
+                <hr/>
+                <li><b>Travel / Education Expenses:</b></li>  
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_application__c.keyPrefix}?fcf=00B6F000009KnaB';">My Expense Applications</a></li>  -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_application__c.keyPrefix}?fcf=00B6F000009Kna8';">My Drafted Expense App.</a></li>   
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_application__c.keyPrefix}?fcf=00B6F000009KnaG';">My Pending Expense App.</a></li>   
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_application__c.keyPrefix}?fcf=00B6F000009KnaA';">My Confirmed Expense App.</a></li> 
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_application__c.keyPrefix}?fcf=00B6F000009Kna9';">My Closed Expense App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_application__c.keyPrefix}?fcf=00B6F000009KnaC';">Pending Mgt. To Approve</a></li>
+                <apex:outputText rendered="{!$Permission.TE_Is_HCM}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Application__c.keyPrefix}?fcf=00B6F000009KnaE';">Pending HCM to Approve</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Application__c.keyPrefix}?fcf=00B6F000009KnaD';">Pending Finance to Approve</a></li>
+                </apex:outputText>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Application__c.keyPrefix}?fcf=00B6F000009KnaH';">Pending Applicant to Confirm</a></li>
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Application__c.keyPrefix}?fcf=00B6F000009KnaF';">Pending Finance to Close</a></li>
+                </apex:outputText>
+                
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00BO0000001BCAj';">My General Expenses</a></li>-->
+                <li><b>General Expenses:</b></li>
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00B6F000009KnaT';">My Expense Details</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00B6F000009KnaJ';">My Drafted Expense Details</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00B6F000009KnaL';">My Pending Expense Details</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00B6F000009KnaN';">My Confirmed Expense Details</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00B6F000009KnaP';">My Closed Expense Details</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}?fcf=00B6F000009KnaQ';">Pending Mgt. To Approve</a></li>
+                <apex:outputText rendered="{!$Permission.TE_Is_HCM}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Detail__c.keyPrefix}?fcf=00B6F000009KnaR';">Pending HCM to Approve</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Detail__c.keyPrefix}?fcf=00B6F000009KnaS';">Pending Admin to Approve</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Detail__c.keyPrefix}?fcf=00B6F000009KnaK';">Pending Finance to Approve</a></li>
+                </apex:outputText>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Detail__c.keyPrefix}?fcf=00B6F000009KnaM';">Pending Applicant to Confirm</a></li>
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Detail__c.keyPrefix}?fcf=00B6F000009KnaO';">Pending Finance to Close</a></li>
+                </apex:outputText>
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/MobileReceiptInboxVFP';">Receipts Organizer</a></li>
+                <!--<hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}/e?retURL=%2Fa0x';">New Expense Detail</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.expense_detail__c.keyPrefix}';">All Expense Details</a></li> -->
+            </ul>
+        </div>
+        <h3><img src="/img/icon/desk16.png" />Education</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEEducationApplicationVFP?rt=staff';">New Staff Education</a></li>
+                <apex:outputText rendered="{!childEducationApplicable}">
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEEducationApplicationVFP?rt=child';">New Child Education</a></li> 
+                </apex:outputText>
+                <hr/>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf=00B6F000009KnZj';">My Drafted Education App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf=00B6F000009KnZl';">My Pending Education App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf=00B6F000009KnZh';">My Approved Education App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf=00B6F000009KnZi';">My Cancelled Education App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf=00B6F000009KnZm';">My Rejected Education App.</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf=00B6F000009KnZg';">Pending Mgt. To Approve</a></li>
+                <apex:outputText rendered="{!EducationHCMLinkId != '' && $Permission.TE_Is_HCM}"> 
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Application__c.keyPrefix}?fcf={!EducationHCMLinkId}';">Pending HCM to Approve</a></li>
+                </apex:outputText>
+            </ul>
+        </div>
+        <h3><img src="/img/icon/service_contracts16.png" />General Admin</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">
+                
+                <!-- reports and Dashboards: -->
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/00l6F000001ypcd';">Financial Report</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/apex/TEExpenseReportsVFP';">Financial Payroll Report</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_HCM}">
+                <li><a href="#" onclick="top.parent.location.href = '/00l6F000001ypcc';">HCM Reports</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/00l6F000001yqIT';">Local Admin Reports</a></li>
+                </apex:outputText>
+                <li><a href="#" onclick="top.parent.location.href = '/00l6F000001ypci';">General Dashboards</a></li>
+                <apex:outputText rendered="{!$Permission.TE_Is_HCM||$Permission.TE_Is_Admin||$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/00l6F000001ypcj';">HCM &amp; Admin Dashboards</a></li>
+                </apex:outputText>
+                <hr/>
+                
+                <!-- general management: -->
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Travel_Policy__c.keyPrefix}'">Manage Travel Policies</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance || $Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Expense_Policy__c.keyPrefix}'">Manage Expense Policies</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_HCM || $Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Education_Policy__c.keyPrefix}'">Manage Education Policies</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_HCM}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Employee__c.keyPrefix}';">Manage Employees</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Account_Info__c.keyPrefix}';">Manage Account Numbers</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin}">
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Company_Car__c.keyPrefix}';">Manage Cars</a></li>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Route__c.keyPrefix}';">Manage Routes</a></li>
+                </apex:outputText>
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin || $Permission.TE_Is_Finance || $Permission.TE_Is_HCM}">
+                <hr/>
+                </apex:outputText>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Exchange_Rate__c.keyPrefix}'">View Exchange Rate</a></li>
+                
+            </ul>
+        </div>
+        </apex:actionRegion>
+        
+        <apex:actionRegion rendered="{!($Permission.TE_Is_Carbon_Emission_User || $Permission.TE_Is_Admin) && selectedApp = 'T&E'}">
+        <h3><img src="/img/icon/dashboards16.png" />GHG Admin</h3>
+        <div class="accordion-content">
+            <ul class="sub-menu">
+            
+                <apex:outputText rendered="{!$Permission.TE_Is_Carbon_Emission_User}">
+                <li><a href="#" onclick="top.parent.location.href = '/00l6F000001ypcg';">Sustainability Reports</a></li>
+                <hr/>
+                </apex:outputText>
+
+             
+                <apex:outputText rendered="{!$Permission.TE_Is_Admin}">
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/apex/TravelLocationOverwriteNew';">New Travel Location</a></li>-->
+                </apex:outputText>
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Travel_Location__c.keyPrefix}';">All Travel Locations</a></li>
+                                     
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.AirPort__c.keyPrefix}/e?retURL=%2F{!$objectType.AirPort__c.keyPrefix}';">New Airport</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.AirPort__c.keyPrefix}';">All Airports</a></li>
+                
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/apex/TravelDistanceOverwriteNew';">New Travel Distance</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Travel_Distance__c.keyPrefix}';">All Travel Distances</a></li>
+                <li><a href="https://world-airport-codes.com/dist/" target="_blank">Calculate Airport Distance</a></li>
+                <hr/>
+                
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/apex/GhgFactorOverwriteNew';">New GHG Emission Factor</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.GHG_Factor__c.keyPrefix}';">All GHG Emission Factors</a></li>
+
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Cabin_Class__c.keyPrefix}/e?retURL=%2F{!$objectType.Cabin_Class__c.keyPrefix}';">New Cabin Class</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Cabin_Class__c.keyPrefix}';">All Cabin Classes</a></li>
+  
+                
+                <!-- <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Flight_Type__c.keyPrefix}/e?retURL=%2F{!$objectType.Flight_Type__c.keyPrefix}';">New Flight Type</a></li> -->
+                <li><a href="#" onclick="top.parent.location.href = '/{!$objectType.Flight_Type__c.keyPrefix}';">All Flight Types</a></li>
+            </ul>
+        </div>
+        </apex:actionRegion>
+        <apex:actionRegion rendered="{!selectedApp = 'T&E'}">
+        <h3><img src="/img/icon/reports16.png" />General Report</h3>
+            <div class="accordion-content">
+                <ul class="sub-menu">
+                    <li><a href="#" onclick="top.parent.location.href = '/00O6F000008rfjG';">Closed Expense Report</a></li>
+                    <li><a href="#" onclick="top.parent.location.href = '/00O6F000008rc7i';">Expense Detail Report</a></li>
+                </ul>
+            </div>
+        </apex:actionRegion>
+        <apex:actionRegion rendered="{!selectedApp = 'T&E'}">
+        <h3><img src="/img/icon/contracts16.png" />User Manual</h3>
+            <div class="accordion-content">
+                <ul class="sub-menu">
+                    <li><a href="#" onclick="top.parent.location.href = '/0696F000003EEiT';">General Users, Approvers Manual</a></li>
+                    <apex:outputText rendered="{!$Permission.TE_Is_HCM || $Permission.TE_Is_Admin}">
+                    <li><a href="#" onclick="top.parent.location.href = '/0696F000003EEid';">Site Admin, HCM Manual</a></li>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!$Permission.TE_Is_Finance}">
+                    <li><a href="#" onclick="top.parent.location.href = '/0696F000003EEii';">Finance Manual</a></li>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!$Permission.TE_Is_Carbon_Emission_User}">
+                    <li><a href="#" onclick="top.parent.location.href = '/0696F000003EEin';">Sustainability Manual</a></li>
+                    </apex:outputText>
+                </ul>
+            </div>
+        </apex:actionRegion>
+        
+        
+        <!-- *************T&E End************** -->
+    </div>
+    <script type="text/javascript">
+        $j = jQuery.noConflict();
+        $j('body').css('overflow', 'hidden');
+        $j('#homepage-shortcut-accordion').accordion({
+            icons: null,
+            collapsible: true,
+            animate: 100,
+            active: false,
+            heightStyle: 'content',
+            beforeActivate: function( event, ui ) {
+                // if the header contains an anchor element, emulate clicking on it
+                var anchor = $j(ui.newHeader).find('a:first');
+                if ($j(anchor).length > 0) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    window.open($j(anchor).attr('href'), '_blank');
+                }
+            }
+        });
+        $j('.sub-menu').menu();
+    </script>
+</apex:page>

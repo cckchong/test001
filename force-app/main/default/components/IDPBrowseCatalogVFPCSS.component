@@ -1,0 +1,105 @@
+<apex:component >
+    <style>
+    
+
+#wrapper {
+  transition: all 0.4s ease 0s;
+  height:100%;
+  min-width: 1100px;
+}
+
+#sidebar-wrapper {
+  width: 250px;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: all 0.4s ease 0s;
+  float: left;
+}
+
+#wrapper.active {
+  padding-left: 0;
+}
+
+#wrapper.active #sidebar-wrapper {
+  left: -200px;
+}
+
+#page-content-wrapper {
+  padding-top: 15px;
+  height:100%;
+  width: -webkit-calc(100% + -250px);
+  transition: all 0.4s ease 0s;
+  float: left;
+}
+#wrapper.active #page-content-wrapper{
+  padding-left: 0;   // new
+}
+
+#menu-toggle {
+    text-decoration: none;
+    float: left;
+    //color: #fff;
+    padding-right: 15px;
+}
+
+<!--set the catalog select list in header-->
+div.form-group.col-sm-3 {
+    margin-top:11px;
+    margin-bottom:11px;
+}
+
+<!--set the searchbox in header-->
+div.input-group.col-sm-3.col-md-3 {
+    margin-top:8px;
+    margin-bottom:8px;
+}
+
+
+.navbar-without-margin-bottom-border-color {
+    margin-bottom: 0;
+    border-color: transparent;
+}
+    
+<!--
+
+@media (max-width:767px) {
+
+#wrapper {
+  //padding-left: 0;
+  
+}
+
+#sidebar-wrapper {
+  top: 239.5px;
+  //left: -200px;
+}
+
+#wrapper.active {
+  position: relative;
+  left: 0;
+}
+
+#wrapper.active #sidebar-wrapper {
+  top: 237px;
+  left: 240px;
+  width: 250px;
+  transition: all 0.4s ease 0s;
+}
+#page-content-wrapper {
+//  padding-left: 0;
+//  padding-left: 250px;
+}
+
+#wrapper.active #page-content-wrapper {
+
+  padding-left: 250px;
+
+}
+#menu-toggle {
+  display: inline-block;
+}
+
+}
+-->
+</style>
+</apex:component>

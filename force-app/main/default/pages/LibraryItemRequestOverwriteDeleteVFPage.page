@@ -1,0 +1,27 @@
+<apex:page StandardController="Library_Item_Request__c" extensions="LibraryItemRequestOverwriteDeleteCtrl" action="{!onload}">
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+<apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+<apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+<script type="text/javascript">
+
+$(document).ready(function() {
+    
+    var isSalesforceOne = false;    
+    if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+        isSalesforceOne = true;
+    }
+    
+    var isErr = {!isError};
+    if(isErr) {
+        alert('{!$Label.Library_Delete_Request_Warning}');
+    }
+    if(isSalesforceOne){
+        sforce.one.navigateToSObject('{!Library_Item_Request__c.Bulk_Request__c}');
+    } else {            
+        window.location = '/'+'{!Library_Item_Request__c.Bulk_Request__c}'; 
+    }
+    
+});
+
+</script>
+</apex:page>

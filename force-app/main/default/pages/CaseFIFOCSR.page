@@ -1,0 +1,2 @@
+<apex:page standardController="Case" extensions="CaseFIFOController" recordSetVar="cases" action="{!executeCSR}">
+</apex:page>

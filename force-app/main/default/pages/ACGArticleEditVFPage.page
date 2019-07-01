@@ -1,0 +1,441 @@
+<apex:page standardController="Portal_Content__c" extensions="ACGArticleEditCtrl"  showHeader="true" id="thepageid" sidebar="false">
+    <apex:includescript value="{!URLFOR($Resource.CKEDITOR, 'ckeditor/ckeditor.js')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <script type="text/javascript">
+         
+    </script>
+    <style>
+        .ErrorText {
+            color: Red;
+        }
+    </style>
+    <apex:form id="theformid">
+       
+        <apex:pageBlock id="thepageblockid" title="" mode="maindetail">
+            <apex:pageBlockButtons id="thePageButtonid" location="top">
+                <script>     
+                    $(document).ready(function() {
+                        var EditorId ='thepageid:theformid:thepageblockid:txtBlockSectionContents:html';
+                        CKEDITOR.replace(EditorId, {
+                            filebrowserBrowseUrl : '{!$Page.SiteFileBrowser}',   
+                            filebrowserImageBrowseUrl: '{!$Page.SiteFileBrowser}'
+                            }); 
+                    });
+                    function preview() {
+                        window.open('/apex/ACGPreviewVFPage?Id={!objPC.Id}&size=12&type=richtext&preview=true');
+                    }                   
+                    function confirmPublish() {
+                        return confirm('Are you sure you want to publish the article?');
+                    }
+                    function confirmUnPublish() {
+                        return confirm('Are you sure you want to unpublish the article? This will delete all related Chatter Posts and Comments.');
+                    }
+                    function confirmDelete() {
+                        return confirm('Are you sure you want to delete the article?');
+                    }
+                    function confirmSendEmail() {
+                        return confirm('Are you sure you want to send email notification now?');
+                    }
+                </script>   
+                <apex:commandButton action="{!edit}" value="Edit" id="editButton" rendered="{!NOT(bEdit) && canEditRecord}"/>
+                <apex:commandButton action="{!deleteRecord}" value="Delete" id="deleteButton" onclick="if(!confirmDelete()) return false;" rendered="{!AND(NOT(bEdit),bCanDelete, canEditRecord)}"  rerender="redirectPanel"/>
+                <apex:commandLink action="{!cloneRecord}" style="text-decoration: none" id="cloneLink" rendered="{!NOT(bEdit)}" target="_parent"><apex:commandButton value="Clone"/></apex:commandLink>                
+                <apex:commandLink action="{!shareRecord}" style="text-decoration: none" id="shareButton" rendered="{!NOT(bEdit)}" target="_parent"><apex:commandButton value="Share Ownership"/></apex:commandLink>
+                <apex:commandButton action="{!previewArticle}" onclick="preview()" value="Preview" rendered="{!NOT(bEdit)}" />
+                <apex:commandButton action="{!publishArticle}" value="Publish" id="publishButton" onclick="if(!confirmPublish()) return false;" rendered="{!AND(NOT(bEdit),  objPC.Status__c ='Reviewed')}"/>
+                <apex:commandButton action="{!UnpublishArticle}" value="Unpublish" id="UnpublishButton" onclick="if(!confirmUnPublish()) return false;" rendered="{!AND(NOT(bEdit), objPC.Status__c ='Published')}"/>
+                <apex:commandButton action="{!sendNotificationEmail}" value="Send {!LanguageLabel} Notification Email Now"  onclick="if(!confirmSendEmail()) return false;" onComplete="alert('{!strEmailResult}');" rendered="{!NOT(bEdit)}" rerender="thePageButtonid"/>
+                <apex:commandButton action="{!save}" value="Save" id="saveButton" rendered="{!AND(bEdit, NOT(bCreate))}"/>
+                <apex:commandButton action="{!saveCreate}" value="Save" id="saveCreate" rendered="{!AND(bEdit, bCreate)}"/> 
+                <apex:commandButton action="{!cancel}" value="Cancel" id="cancelButton" rendered="{!bEdit}"/>
+                <br/><br/>
+                <Strong><apex:outputText value="Error: {!strErrorMessage}" rendered="{!strErrorMessage!=''}" styleClass="ErrorText" escape="False"/></Strong>
+            </apex:pageBlockButtons>
+            <apex:pageMessages />
+            <apex:outputPanel id="redirectPanel" >
+                <apex:outputText rendered="{!bShouldRedirect}">
+                    <script type="text/javascript">
+                        window.top.location.href = '{!redirectUrl}';
+                    </script>
+                </apex:outputText>
+            </apex:outputPanel>
+            
+            <!-- View Mode -->
+            <apex:pageBlockSection id="txtBlockSectionGeneralRead" title="Distribution" columns="2" rendered="{!NOT(bEdit)}">
+                <apex:pageBlockSectionItem HelpText="Select Article Type" id="theArticleType">
+                    Article Type<apex:outputText value="{!objPC.Article_Type__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Status__c.inlineHelpText}">
+                    {!$ObjectType.Portal_Content__c.fields.Status__c.Label}
+                    <apex:outputField value="{!objPC.Status__c}"/>
+                </apex:pageBlockSectionItem>      
+                <apex:outputField value="{!objPC.Content_Category__c}"/>                
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.inlineHelpText}">
+                    {!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.Label}
+                    <apex:outputField value="{!objPC.Sticky_Scale__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:outputText value="" rendered="{!bIsBlog}"/>
+                <apex:outputField value="{!objPC.Distribution_Level__c}" rendered="{!!bIsBlog}"/>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.inlineHelpText}">
+                    {!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.Label}
+                    <apex:outputField value="{!objPC.Expiry_Date__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!objPC.Distribution_Target__c}" rendered="{!!bIsBlog}"/>
+                <apex:outputField value="{!objPC.Publish_Datetime__c}"/>                
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="txtBlockSectionContentsRead" title="Article Content" columns="1" rendered="{!NOT(bEdit)}">
+                <apex:inputField value="{!objPC.Language__c}">
+                    <apex:actionSupport event="onchange" action="{!switchLanguageInReadMode}"/>
+                </apex:inputField>                 
+                <apex:repeat value="{!Languages}" var="lang">
+                    <apex:outputField value="{!objPC[TitleLangVar[lang]]}" style="width:700px" rendered="{!IF(strLanguage=Lang,true, false)}"/>              
+                    <apex:outputField value="{!objPC[SummaryLangVar[lang]]}" rendered="{!IF(strLanguage=Lang,true, false)}"/>    
+                    <apex:outputField value="{!objPC[ContentsLangVar[lang]]}" rendered="{!IF(strLanguage=Lang,true, false)}"/>                  
+                    <apex:outputField value="{!objPC[RevisedLangVar[lang]]}" rendered="{!IF(strLanguage=Lang,true, false)}"/>
+                </apex:repeat>
+            </apex:pageBlockSection>
+            <!--***add by DTT*** start-->
+            <!--
+            <apex:pageBlockSection >
+                <apex:outputField value="{!objPC.Attached_File_Name1__c}" />
+                <apex:outputField value="{!objPC.Attached_File_ID1__c}" />
+                <apex:outputField value="{!objPC.Attached_File_Name2__c}" />
+                <apex:outputField value="{!objPC.Attached_File_ID2__c}" />
+                <apex:outputField value="{!objPC.Attached_File_Name3__c}" />
+                <apex:outputField value="{!objPC.Attached_File_ID3__c}" />
+                <apex:outputField value="{!objPC.Attached_File_Name4__c}" />
+                <apex:outputField value="{!objPC.Attached_File_ID4__c}" /> 
+                <apex:outputField value="{!objPC.Attached_File_Name__c}" />
+                <apex:outputField value="{!objPC.Attached_File_ID__c}" />
+            </apex:pageBlockSection>
+            -->
+            <!--***add by DTT*** end-->
+            <!--
+            <apex:actionFunction name="refreshArticleType" action="{!refreshAllDistributionOnChangeArticleType}" rerender="theformid" status="asArticleType"/>
+            <apex:actionFunction name="refreshLeft1" action="{!refreshAllDistributionOnChangeConCat}" rerender="theformid" status="asLeft1"/>
+            <apex:actionFunction name="refreshLeft2" action="{!refreshAllDistributionOnChangeConCat}" rerender="theformid" status="asLeft2"/>
+            -->
+            <apex:actionFunction name="refreshArticleType" action="{!refreshAllDistributionOnChangeArticleType}" status="asArticleType"/>
+            <apex:actionFunction name="refreshLeft1" action="{!refreshAllDistributionOnChangeConCat}" status="asLeft1"/>
+            <apex:actionFunction name="refreshLeft2" action="{!refreshAllDistributionOnChangeConCat}" status="asLeft2"/>
+            
+            <!-- Edit Mode -->                      
+            <apex:pageBlockSection id="txtBlockSectionGeneral" title="Distribution" columns="2" rendered="{!bEdit}">
+                <apex:pageBlockSectionItem HelpText="Select Article Type" id="theArticleType">
+                    Article Type
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:selectList value="{!selectedArticleType}" size="1" onchange="refreshArticleType();" multiselect="false">
+                                <apex:selectOptions value="{!availableArticleType}"/>
+                                <apex:actionStatus id="asArticleType">
+                                    <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+                                </apex:actionstatus>
+                            </apex:selectList>                          
+                        </div>                      
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Status__c.inlineHelpText}">
+                    {!$ObjectType.Portal_Content__c.fields.Status__c.Label}
+                    <apex:outputField value="{!objPC.Status__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Content_Category__c.inlineHelpText}" id="theContentCateogry">
+                    {!$ObjectType.Portal_Content__c.fields.Content_Category__c.Label}
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:selectList value="{!selectedContentCategory}" size="1" onchange="refreshLeft1();" multiselect="false">
+                                <apex:selectOptions value="{!availableContentCategory}"/>
+                                <apex:actionStatus id="asLeft1">
+                                    <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+                                </apex:actionstatus>
+                            </apex:selectList>                          
+                        </div>                      
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.inlineHelpText}">
+                    {!$ObjectType.Portal_Content__c.fields.Sticky_Scale__c.Label}
+                    <apex:inputField value="{!objPC.Sticky_Scale__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Distribution_Level__c.inlineHelpText}" id="theDistributionLevel" rendered="{!!bIsBlog}">
+                    {!$ObjectType.Portal_Content__c.fields.Distribution_Level__c.Label}
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock {!IF(bIsBlog, 'hidden', '')}"></div>
+                            <apex:selectList value="{!selectedDistLevel}" size="1" onchange="refreshLeft2();" multiselect="false">
+                                <apex:selectOptions value="{!availableDistLevel}"/>
+                                <apex:actionStatus id="asLeft2">
+                                    <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+                                </apex:actionstatus>
+                            </apex:selectList>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:outputText value="" rendered="{!bIsBlog}"/>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.inlineHelpText}">
+                    {!$ObjectType.Portal_Content__c.fields.Expiry_Date__c.Label}
+                    <apex:inputField value="{!objPC.Expiry_Date__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem HelpText="{!$ObjectType.Portal_Content__c.fields.Distribution_Target__c.inlineHelpText}" id="theDistributionTarget"  rendered="{!!bIsBlog}">
+                    {!$ObjectType.Portal_Content__c.fields.Distribution_Target__c.Label}
+                    <apex:outputPanel >                    
+                        <div class="requiredInput">
+                            <div class="requiredBlock {!IF(bIsBlog, 'hidden', '')}"></div>
+                            <apex:outputPanel layout="none" id="TaldistTarget">
+                                <c:MultiselectPicklist leftLabel="Available" rightLabel="Chosen" size="{!IF( IF(selectedDistTarget.size > availableDistTarget.size,selectedDistTarget.size, availableDistTarget.size) >10, 10, IF(selectedDistTarget.size > availableDistTarget.size,selectedDistTarget.size, availableDistTarget.size))}" width="150px"
+                                        leftOptions="{!availableDistTarget}" rightOptions="{!selectedDistTarget}" uniqueId="TaldistTarget"
+                                        disableComponent="{! AND(availableDistTarget.size = 0, selectedDistTarget.size = 1) || bIsBlog}" />
+                            </apex:outputPanel>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!objPC.Publish_Datetime__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="txtBlockSectionContents" title="Article Content" columns="1" rendered="{!bEdit}">
+                <apex:pageBlockSectionItem >
+                    {!$ObjectType.Portal_Content__c.fields.Language__c.Label}
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField value="{!objPC.Language__c}">
+                                <apex:actionSupport event="onchange" action="{!switchLanguageInEditMode}"/>
+                            </apex:inputField>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    {!$ObjectType.Portal_Content__c.fields.Title__c.Label}
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField rendered="{!NOT(ISNULL(setEditorLang))}" value="{!objPC[TitleLangVar[setEditorLang]]}" style="width:700px"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    {!$ObjectType.Portal_Content__c.fields.Summary__c.Label}
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputTextarea rendered="{!NOT(ISNULL(setEditorLang))}" value="{!objPC[SummaryLangVar[setEditorLang]]}" rows="3" cols="150"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:inputTextarea rendered="{!NOT(ISNULL(setEditorLang))}" id="html" value="{!objPC[ContentsLangVar[setEditorLang]]}" richtext="false"/>  
+                <apex:inputField rendered="{!NOT(ISNULL(setEditorLang))}" value="{!objPC[RevisedLangVar[setEditorLang]]}" /> 
+               
+
+               <!-- add by DTT start -->  
+                  <apex:pageBlockSectionItem id="items1">
+
+                  
+                     <apex:outputPanel >
+
+                      <div class='SectionItems'>
+                        <apex:outputText value="Add Attachment (5MB max)" rendered="{!objPC.Attached_File_Name1__c = ''}"  />
+                        <apex:outputText value="Replace Attachment (5MB max)" rendered="{!objPC.Attached_File_Name1__c != ''}" />
+                         </div>        
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                    <div class='FileItems'>
+                        <apex:outputText value="Current File: ({!objPC.Attached_File_Name1__c})" rendered="{!objPC.Attached_File_Name1__c != ''}" /><br/>
+                        <apex:inputFile required="false" value="{!documentContent1}" filename="{!documentName1}" onchange="add(0);"   />
+
+                        </div>
+                    </apex:outputPanel>
+                    
+                     </apex:pageBlockSectionItem>
+                   
+
+
+                   
+                       <apex:pageBlockSectionItem id="items2">
+                       
+                     <apex:outputPanel >
+                     <div class='SectionItems'>
+                        <apex:outputText value="Add Attachment (5MB max)" rendered="{!objPC.Attached_File_Name2__c = ''}"  />
+                        <apex:outputText value="Replace Attachment (5MB max)" rendered="{!objPC.Attached_File_Name2__c != ''}" />
+                    </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                    <div class='FileItems'>
+                        <apex:outputText value="Current File: ({!objPC.Attached_File_Name2__c})" rendered="{!objPC.Attached_File_Name2__c != ''}" /><br/>
+                        <apex:inputFile required="false" value="{!documentContent2}" filename="{!documentName2}" onchange="add(1)"  />
+                        </div>
+                    </apex:outputPanel>
+                       
+                     </apex:pageBlockSectionItem>
+                  
+
+
+
+
+                   
+                   <apex:pageBlockSectionItem id="items3">
+                   
+                     <apex:outputPanel >
+                     <div class='SectionItems'>
+                        <apex:outputText value="Add Attachment (5MB max)" rendered="{!objPC.Attached_File_Name3__c = ''}"  />
+                        <apex:outputText value="Replace Attachment (5MB max)" rendered="{!objPC.Attached_File_Name3__c != ''}" />
+                    </div>     
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                        <div class='FileItems'>
+                        <apex:outputText value="Current File: ({!objPC.Attached_File_Name3__c})" rendered="{!objPC.Attached_File_Name3__c != ''}" /><br/>
+                        <apex:inputFile required="false" value="{!documentContent3}" filename="{!documentName3}" onchange="add(2)"   />
+                         </div>
+                    </apex:outputPanel>
+                    
+                     </apex:pageBlockSectionItem>
+                    
+
+                    
+                     <apex:pageBlockSectionItem id="items4">
+                    
+                     <apex:outputPanel >
+                      <div class='SectionItems'>
+                        <apex:outputText value="Add Attachment (5MB max)" rendered="{!objPC.Attached_File_Name4__c = ''}"  />
+                        <apex:outputText value="Replace Attachment (5MB max)" rendered="{!objPC.Attached_File_Name4__c != ''}" />
+                       </div>                   
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                     <div class='FileItems'>
+                        <apex:outputText value="Current File: ({!objPC.Attached_File_Name4__c})" rendered="{!objPC.Attached_File_Name4__c != ''}" /><br/>
+                        <apex:inputFile required="false" value="{!documentContent4}" filename="{!documentName4}" onchange="add(3)"   />
+                      </div>
+                    </apex:outputPanel>
+                    
+                     </apex:pageBlockSectionItem>
+                     
+
+                     
+                     <apex:pageBlockSectionItem id="items5">
+                     
+                     <apex:outputPanel >
+                     <div class='SectionItems'>
+                        <apex:outputText value="Add Attachment (5MB max)" rendered="{!objPC.Attached_File_Name__c = ''}"  />
+                        <apex:outputText value="Replace Attachment (5MB max)" rendered="{!objPC.Attached_File_Name__c != ''}" />
+                     </div>            
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                     <div class='FileItems'>
+                        <apex:outputText value="Current File: ({!objPC.Attached_File_Name__c})" rendered="{!objPC.Attached_File_Name__c != ''}" /><br/>
+                        <apex:inputFile required="false" value="{!documentContent}" filename="{!documentName}" onchange="add(4)"   />
+                        </div>
+                    </apex:outputPanel>
+                    
+                     </apex:pageBlockSectionItem>
+                     <!-- add by DTT end -->  
+                    
+<!--***add by DTT*** start-->
+<script>
+
+var items=[
+            {!objPC.Attached_File_Name1__c = ''},
+            {!objPC.Attached_File_Name2__c = ''},
+            {!objPC.Attached_File_Name3__c = ''},
+            {!objPC.Attached_File_Name4__c = ''},
+            {!objPC.Attached_File_Name__c = ''}
+          ]
+    
+    console.log(items);
+    var  SectionItems=document.getElementsByClassName('SectionItems');
+    var FileItems=document.getElementsByClassName('FileItems');
+    console.log(SectionItems);
+    
+
+    for(var i=0;i<items.length;i++){
+
+         
+         if(items[i]==true){
+              if(i==0){
+                 }
+                 else{
+                FileItems[i].style.display='none';
+                SectionItems[i].style.display='none';}
+         }
+        
+
+    }
+
+
+  
+
+
+    function add(num){
+            
+        
+            FileItems[num+1].style.display='block';
+           SectionItems[num+1].style.display='block';
+            
+                              
+    }
+
+
+  var k;
+    var last=0;
+    for(k=0;k<items.length;k++){
+            
+            if(items[k]==false){
+                 last=k;
+            }
+
+
+    }
+     console.log(last);
+     
+ 
+
+   // FileItems[last+1].style.display='block';
+   // SectionItems[last+1].style.display='block';
+
+
+
+
+  for(var v=0;v<last;v++){
+    FileItems[v].style.display='block';
+    SectionItems[v].style.display='block';
+    }
+
+    if(last==0&&items[0]==false){
+    FileItems[1].style.display='block';
+    SectionItems[1].style.display='block';
+    }
+    else if(last==0&&items[0]==true){
+       FileItems[0].style.display='block';
+    SectionItems[0].style.display='block';
+
+    }
+    else{FileItems[last+1].style.display='block';
+    SectionItems[last+1].style.display='block';
+   }
+
+   <!--***add by DTT*** end-->
+
+</script>
+
+
+
+
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection id="txtBlockSectionSystem" title="System Information" columns="2" rendered="{!NOT(bCreate)}">
+                <apex:outputField value="{!objPC.Name}"/>   
+                <apex:pageBlockSectionItem labelTitle="Owner">
+                    <apex:outputLabel value="Owner"/>
+                    <apex:outputPanel >
+                        <apex:outputLink value="/{!objPC.Owner.Id}" target="_blank">{!objPC.Owner.Name}</apex:outputLink>&nbsp;
+                        <apex:outputLink value="/{!objPC.Id}/a?retURL=/{!objPC.Id}" target="_blank">[Change]</apex:outputLink> 
+                    </apex:outputPanel>  
+                </apex:pageBlockSectionItem> 
+                <apex:outputField value="{!objPC.CreatedById}"/>
+                <apex:outputField value="{!objPC.LastModifiedById}"/>  
+                <apex:outputField value="{!objPC.CreatedDate}"/>
+                <apex:outputField value="{!objPC.LastModifiedDate}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <span style="color:white;word-wrap:break-word;">{!UrlToAnnouncement}</span>
+    </apex:form>
+</apex:page>

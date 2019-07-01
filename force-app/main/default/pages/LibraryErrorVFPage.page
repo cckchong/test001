@@ -1,0 +1,12 @@
+<apex:page controller="LibraryErrorPageCtrl">
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+
+<div class="bs container">
+    <div class="bs alert alert-warning">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Warning!</strong> {!message}
+    </div>
+    
+    <a href="javascript:window.history.back();" class="bs btn btn-primary">&laquo; Back</a>
+</div>
+</apex:page>

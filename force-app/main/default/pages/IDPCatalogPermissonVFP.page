@@ -1,0 +1,315 @@
+<apex:page controller="IDPCatalogPermissonCtrl" showHeader="true" standardStylesheets="true" sidebar="false" applyHtmlTag="true" applyBodyTag="true" tabStyle="Catalog_Item_Permission__c" docType="html-5.0"   >
+
+    <meta name="viewport" content="width=device-width, user-scalable=no" />    
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <!--
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />   
+    -->
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />
+    
+    
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    
+    
+    <style>
+        
+        table.result{
+            
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        th.result, td.result {
+            text-align: left;
+            padding: 8px;
+        }
+        
+        .resulrtr:nth-child(even){background-color: #f2f2f2}
+        
+        .alertlabel {
+          background-color: #f0ad4e;
+          color: black;   
+          padding: 4px;
+          border-radius:10px;
+          -moz-border-radius:10px;
+          font-family: Verdana, Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+          color : #FFFFFF;
+        }
+        
+        .ui-accordion-header.ui-state-active { background-color: #dfeffc; }
+        .ui-state-focus:focus { outline:none }
+        .ui-dialog .ui-button-text {font-family: Salesforce Sans, Arial, sans-serif; font-style: normal;}
+        
+        .ui-state-default{
+          background-color: #dfeffc;
+          background-image: none;
+        }
+        
+        .ui-accordion .ui-accordion-content {padding: 0;}
+        
+    </style>
+    
+    <style>
+        .SearchBlock .bPageBlock{
+                border-top: 1px solid #eaeaea;
+                box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+                -webkit-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+                -moz-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+                -o-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+                border-radius: 2px;
+    
+            } 
+    </style>
+    
+    <apex:form >
+        <div class="slds">
+            <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                <div class="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-1 slds-large-size--1-of-1 " >
+                     
+                     <div class="slds-page-header" role="banner" >
+                        <div class="slds-grid">
+                            <div class="slds-media__body">              
+                                <h1 class="slds-text-heading--medium">Catalog Permission</h1>                
+                            </div>
+                            
+                            <div class="slds-col slds-no-flex slds-align-middle">
+                                <div class="slds-button-group" role="group">
+                                    <apex:commandButton value="Save" styleClass="slds-button slds-button--neutral" action="{!save}" reRender="result" onclick="saveOnClick()" oncomplete="saveOnComplete()"/>
+                                    <!--
+                                    <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" />
+                                    -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <BR/>
+        <apex:outputPanel id="msg">
+            <apex:pageMessages id="showmsg" escape="false"></apex:pageMessages>
+        </apex:outputPanel>
+        <div style = "display:none"  id = "searchPanel">
+        <fieldset  >
+            <legend>Search Criteria</legend>    
+            <div style = "background-color:#eee;padding-bottom: 1px"  >
+                <div class="slds"  >
+                <BR/>
+                <apex:pageBlock mode="maindetail" id="headerBlock">
+                <table border = "0" style = "border: 0px solid black;" width = "100%" class = "result">
+                    <tr>
+                        <td  style="text-align:right; width:150px" valign="top">Permission Matrix:&nbsp;&nbsp;</td>
+                        <td style="width:300px" valign="top">
+                            <div class="requiredInput">
+                                <div class="requiredBlock"></div>
+                                <apex:selectList value="{!permissionMatrixSelect}" styleClass="js-basic-single" size="1"  style="width:100%" onchange="PermissionChange(this)" >
+                                    <apex:selectOptions value="{!permissionMatrixList}"></apex:selectOptions>                            
+                                </apex:selectList>
+                            </div>
+                        </td>
+                        <td style="text-align:right; width:150px"  valign="top">
+                            <div id="policy_label">
+                                Site:&nbsp;&nbsp;
+                            </div>
+                        </td>
+                        <td  style="width:500px"  valign="top">
+                            <div id="policy_sel">
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList style="width:100%" styleclass="js-basic-single policy-select" value="{!policySelect}">
+                                        <apex:selectOptions value="{!policyList}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td  style = " text-align: right; "></td>
+                    </tr>
+                    
+                     <tr>
+                        <td  style="text-align:right;" valign="top">
+                            <div id="dep_label">
+                                Department:&nbsp;&nbsp;
+                            </div>
+                            <div id="user_label">
+                                User:&nbsp;&nbsp;
+                            </div>
+                        </td>
+                        
+                        <td  valign="top">
+                            <div id = "dep_sel">
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList style="width:300px" styleclass="js-basic-multi department-select" value="{!depSelect}" size="1"  multiselect="true">
+                                        <apex:selectOptions value="{!depList}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                            </div>
+                            
+                            <div id = "user_sel">
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList styleClass="js-basic-multi" size="1" style="width:300px" multiselect="true" value="{!userSelect}">
+                                        <apex:selectOptions value="{!userList1}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList2}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList3}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList4}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList5}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList6}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList7}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList8}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList9}"></apex:selectOptions>
+                                        <apex:selectOptions value="{!userList10}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td  style="text-align:right"  valign="top">
+                            <div id="cat_label">
+                                Catalog:&nbsp;&nbsp;
+                            </div>
+                            <div id="item_label">
+                                Item:&nbsp;&nbsp;
+                            </div>
+                            
+                        </td>
+                        <td  valign="top">
+                           <div id="cat_sel">
+                               <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                    <apex:selectList styleClass="js-basic-multi" size="1" style="width:100%" multiselect="true" value="{!catalogSelect}">
+                                        <apex:selectOptions value="{!catlogOptList}"></apex:selectOptions>
+                                    </apex:selectList>
+                                </div>
+                            </div>
+
+
+                            <div id="item_sel">
+                                <div class="requiredInput">
+                                    <div class="requiredBlock"></div>
+                                        <apex:selectList styleClass="js-basic-multi" size="1" style="width:100%" multiselect="true" value="{!catalogItemSelect}" >
+
+                                            <apex:selectOptions value="{!catlogItemOptList1}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList2}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList3}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList4}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList5}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList6}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList7}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList8}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList9}"></apex:selectOptions>
+                                            <apex:selectOptions value="{!catlogItemOptList10}"></apex:selectOptions>
+                                        </apex:selectList>
+                                </div>
+                            </div>
+                        </td>
+                        <td  style = " text-align: left; "  valign="top">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <apex:commandButton value="Search" styleClass="slds-button slds-button--neutral" action="{!result}" reRender="result , msg " onclick="searchOnClick();"  oncomplete="searchOnComplete();"/>
+                        </td>
+                    </tr>
+                </table>
+                </apex:pageBlock>
+                </div>
+            </div> 
+        </fieldset>
+        </div>
+        <BR/>
+ 
+        <div id ="loading" style="display:none;width:100%" align="center">
+            <apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" />
+        </div>
+            <div id = "resultTable">
+                <apex:outputPanel id="result"  styleClass="result">
+                
+                
+                    <apex:outputText rendered="{!showResult}">
+                        <fieldset>
+                        <legend>Result</legend>   
+                        <div class = "slds" > 
+                        <table  width="100%"  border="0" class="result" >
+                            <tr class = "result">
+                                <td class = "result">
+                                    <apex:outputText rendered="{!permissionMatrixSelect == 'opt1'}">
+                                        Department / Catalog
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!permissionMatrixSelect == 'opt2'}">
+                                        User / Catalog
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!permissionMatrixSelect == 'opt3'}">
+                                        User / Item
+                                    </apex:outputText>
+                                    &nbsp;&nbsp;
+                                    <apex:outputText rendered="{!isSave}"><label class="alertlabel " >Saved!</label></apex:outputText>
+                                </td>
+                                <apex:repeat value="{!tableMap}" var="key" rows="1">
+                                    <apex:repeat value="{!tableMap[key]}" var="row">
+                                        <td class = "result">
+                                            <input type="checkBox" onclick="rowCheckAll('{!row}');" id = "{!row}"/>
+                                            <apex:outputText rendered="{!permissionMatrixSelect == 'opt1'}">
+                                                {!catlogMap[row].Display_Name__c}
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!permissionMatrixSelect == 'opt2'}">
+                                                {!catlogMap[row].Display_Name__c}
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!permissionMatrixSelect == 'opt3'}">
+                                                {!catlogItemMap[row].Item_Name__c }
+                                            </apex:outputText>
+                                        </td>
+                                    </apex:repeat>
+                                </apex:repeat>
+                            </tr>
+                          
+                            <apex:repeat value="{!tableMap}" var="key" >
+                                <tr class = "resulrtr">
+                                    <td class = "result" >
+                                        <input type="checkBox" onclick="rowCheckAll('{!key}');" id = "{!key}"/>
+                                        <apex:outputText rendered="{!permissionMatrixSelect == 'opt1'}">
+                                            {!depTranslate[key]}
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!permissionMatrixSelect == 'opt2'}">
+                                            {!userTranslate[key]}
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!permissionMatrixSelect == 'opt3'}">
+                                            {!userTranslate[key]}
+                                        </apex:outputText>
+                                    </td>
+                                    <apex:repeat value="{!tableMap[key]}" var="row">
+                                        <td class = "result">
+                                            <apex:inputCheckbox value="{!tableMap[key][row]}" styleClass="{!row} {!key}" 
+                                                                rendered="{!(tableMap[key][row] && fakeDisabledCheckedTableMap[key][row]) ||
+                                                                            (!tableMap[key][row] && !fakeDisabledCheckedTableMap[key][row])}"
+                                                                onchange="rowCheckSelectAllCheckbox('{!row}');rowCheckSelectAllCheckbox('{!key}');"/>
+                                            <apex:inputCheckbox value="{!fakeDisabledCheckedTableMap [key][row]}" disabled="true" 
+                                                                rendered="{!!tableMap[key][row] && fakeDisabledCheckedTableMap[key][row]}"/> 
+                                                   
+                                                                <!-- disabled="true" rendered="{!!tableMap[key][row] && fakeDisabledCheckedTableMap[key][row]}"/> 
+                                                                 styleClass="{!row} {!key}"/>
+                                                                -->
+                                                  
+                                        </td>
+                                    </apex:repeat>
+                                </tr>
+                            </apex:repeat> 
+                        
+                        </table> 
+                        </div>
+                        </fieldset>
+                    </apex:outputText>
+                </apex:outputPanel>
+            </div>
+        <BR/><BR/>
+    </apex:form>
+    <c:IDPCatalogPermissonJSComponent />
+
+</apex:page>

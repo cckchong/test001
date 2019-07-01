@@ -1,0 +1,540 @@
+<apex:page controller="IDPShoppingCartVFPCtrl" sidebar="false" standardStylesheets="true" showHeader="true"  >
+
+<head>
+
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>Indirect Procurement Application</title>
+   <!--
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestsbadmin2,'/bower_components/jquery/dist/jquery.min.js')}"/>
+    -->
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap_v3_3_7, '/css/bootstrap.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/dataTables.bootstrap.min.css')}" />  
+    <!-- MetisMenu CSS 
+    <apex:stylesheet value="{!URLFOR($Resource.IDPTestsbadmin2, '/bower_components/metisMenu/dist/metisMenu.min.css')}" /> 
+    -->
+    
+    <!-- Custom Fonts
+    <apex:stylesheet value="{!URLFOR($Resource.IDPTestsbadmin2, '/bower_components/font-awesome/css/font-awesome.min.css')}" /> 
+     -->
+    <apex:stylesheet value="{!URLFOR($Resource.font_awesome_4_7_0, '/font-awesome-4.7.0/css/font-awesome.min.css')}" /> 
+    <!-- Select 2 CSS -->
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <!--Button CSS-->
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/dataTables.bootstrap.min.js')}" />
+    <!-- Custom CSS 
+    <apex:stylesheet value="{!URLFOR($Resource.IDPTestsbadmin2, '/dist/css/sb-admin-2.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap_v3_3_7, '/js/bootstrap.min.js')}" />
+    -->
+    <!-- Metis Menu Plugin JavaScript
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestsbadmin2,'/bower_components/metisMenu/dist/metisMenu.min.js')}"/>
+    Custom Theme JavaScript 
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestsbadmin2,'/dist/js/sb-admin-2.js')}"/>
+    -->
+    <!-- Select 2 Javascript-->
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <c:IDPVFPCommonCSS />
+    
+</head>
+
+<body>
+    <div id="wrapper">
+        <apex:form >
+            
+        <!--
+        <apex:commandButton action="{!debug}" value="test" reRender="debugText"/>
+        <apex:outputText value="Debug: {!selectedPurchaseRequest}" id="debugText" />
+        -->
+            <apex:outputPanel id="actionFunctionPanel">
+
+                <apex:actionFunction action="{!massAction}" name="MassActionParaFunction"  oncomplete="alert('{!message}');">
+                    <apex:param id="checkedCIIdQuantityJSON" name="checkedCatalogItemIdQuantityJSON" value="" />
+                    <apex:param id="massMode" name="mMode" value="" />
+                </apex:actionFunction>    
+                
+                <apex:actionFunction action="{!singleRemoveFromCart}" name="singleRemoveFromCartParaFunction" oncomplete="return false;">
+                    <apex:param id="cartCItemId" name="removeFromCartCatalogItemId" value="" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction action="{!updateShoppingCartAssignTo}" name="updateShoppingCartAssignTo" oncomplete="window.location.reload(true);">
+                    <apex:param id="updateAddignCartCItemId" name="updateAddignCartCItemId" value="" />
+                </apex:actionFunction> 
+                
+                <apex:actionFunction action="{!updateShoppingCartItemQuantity}" name="updateShoppingCartItemQuantityParaFunction" oncomplete="return false;">
+                    <apex:param id="updateQuantityCartCItemId" name="updateQuantityCatalogItemId" value="" />
+                    <apex:param id="updateCartCItemQuantity" name="updateCatalogItemQuantity" value="" />
+                </apex:actionFunction>
+                
+<!--                 <apex:actionFunction action="{!updateShoppingCartItemUOM}" name="updateShoppingCartItemUOMParaFunction" oncomplete="return false;">
+                    <apex:param id="updateUOMCartCItemId" name="updateUOMCatalogItemId" value="" />
+                    <apex:param id="updateCartCItemUOM" name="updateCatalogItemUOM" value="" />
+                </apex:actionFunction>     --> 
+                
+                <apex:actionFunction action="{!closeShoppingCartItems}" name="closeShoppingCartItemsParaFunction" reRender="actionFunctionPanel">
+                    <apex:param id="closedSCItemJSON" name="checkedCatalogItemIdQuantityJSON" value="" />
+                    <apex:param id="prMode" name="{!$Label.IDP_Create_Purchase_Request_Mode_Parameter_Name}" value="" />
+                </apex:actionFunction>
+                
+                <apex:actionFunction name="reRenderPurchaseRequestPanel" reRender="purchaseRequestPanel,purchaseRequestPanel2, newPOButtonGroupPanel"/>
+                
+                <apex:actionFunction name="redirectToPageParaFunction" action="{!redirectToPage}" oncomplete="return false;">
+                    <apex:param id="redirectPage" name="{!$Label.IDP_Parameter_Name_Redirect_Page}" value="" assignTo="{!redirectPage}"/>
+                </apex:actionFunction>
+                <apex:actionFunction name="viewExistingPRFunction" action="{!viewExistingPurchaseRequest}" oncomplete="return false;"/>
+                <!--
+                <apex:actionFunction name="viewExistingPurchaseRequestFunction" action="{!viewExistingPurchaseRequest}"/>
+                    <apex:param id="assignedCatalogName" name="assignedCatalogName" value="{!$Label.IDP_Field_Empty_Label}" assignTo="{!selectedCatalogName}"/>
+
+                <apex:actionFunction name="filterByCatalogParaFunction" oncomplete="filterByCatalog(this.value);">
+                   
+                    <apex:param id="reRenderPanel" name="reRenderPanel" value="{!selectedCatalogName}" assignTo="{!selectedCatalogName}"/>
+                </apex:actionFunction>                      
+                -->    
+            </apex:outputPanel>  
+       
+            <div id="wrapper">
+                <apex:pagemessages />
+                <apex:outputPanel id="contentPanel" rendered="{!displayShoppingCart}"> 
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">     
+                                    <apex:outputText id="breadcrumbText" value="{!$Label.IDP_Shopping_Cart_Header}"/>
+                                    <div style="float:right">
+                                    <b>
+                                    <img src="{!$Resource.IDP_Is_Catalog_Item_Icon}" width="15" height="15"/> {!$Label.IDP_Is_Catalog_Indicator_Description}
+                                    </b>
+                                    </div>
+                            </div>
+                            <!-- /.panel-heading -->
+
+            
+                                <div class="panel-body">
+
+                                    <div class="dataTables_wrapper"> 
+                                        <div class="dataTables_length">
+                                            <div class="slds">
+                                                <div class="row" style="margin-bottom:5px;">
+                                                    <div class="col-md-9">
+                                                        <img src="{!$Resource.IDP_Back_Button_Icon}" style="width:25px;height:25px;cursor:pointer;" onclick="redirectToPageParaFunction('{!$Label.IDP_Path_IDPBrowseCatalogVFP}');"/><!--action="{!redirectToPage}"/>-->
+                                                        <div class="divider"/>
+                                                    </div>
+                                                    <div class="col-md-3">                                           
+                                                        <apex:outputLabel value="Catalog " for="catalogSelectList"  style="float:right;">
+                                                        
+                                                            <apex:selectList id="catalogSelectList" value="{!selectedCatalogName}" size="1" style="width:200px" styleClass="form-control input-sm catalogSelectList" onchange="filterByCatalog(this.value);" >                                                
+                                                                <apex:selectOptions id="catalogSelectOption" value="{!catalogSelectOptionList}">
+                                                                </apex:selectOptions>
+                                                            </apex:selectList>       
+                                                       </apex:outputLabel> 
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-9" >
+                                                        <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Remove_From_Favourite_List_Button}" onclick="MassActionParaFunction(JSON.stringify(window.editedCatalogItem),'{!$Label.IDP_Mass_Remove_Mode_Remove_From_Cart}');removeMultipleItemRow();" reRender="actionFunctionPanel"/>                                                                                                                           
+
+                                                    </div>                                                
+                                                    <div class="col-md-3" >            
+                                                        <apex:outputLabel value="Sort by " for="sortingSelectList" style="float:right;">
+                                                            <apex:selectList id="sortingSelectList" value="{!selectedSortingFieldName}" size="1" styleClass="form-control input-sm" style="width:200px" onchange="sortDataTable(this.value);" >                                                
+                                                                <apex:selectOptions id="sortingSelectOption" value="{!SortingSelectOptionList}">
+                                                                </apex:selectOptions>
+                                                            </apex:selectList>
+                                                       </apex:outputLabel>
+                                                   </div>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                        <apex:outputPanel id="itemTablePanel">
+                                            <table width="100%" class="table table-striped table-bordered table-hover" id="itemTable">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:5%"><input type="checkbox" Id="ciCheckboxAll" name="ciCheckboxCheckedAll" onclick="checkAll(this,'ciCheckbox');"/></th>
+                                                    <th style="width:10%">Photo</th>
+                                                    <th style="display:none;">
+                                                        Parent Catalog 
+                                                    <!--hidden column for filtering, the hidden is set in datatable setting-->
+                                                    </th>
+                                                    <th style="width:10%">Catalog<!--hidden column for filtering Catalog--></th>
+    
+                                                    <th style="width:35%">Details</th>
+                                                    <th style="width:10%">
+                                                    Ref. Price&nbsp;
+                                                    <apex:selectList id="currencySelectList" value="{!selectedDisplayCurrencyName}" size="1" styleClass="form-control input-sm" onchange="setDisplayReferencePrice(this.value);" >                                                
+                                                        <apex:selectOptions id="currencySelectOption" value="{!displayCurrencySelectOptionList}">
+                                                        </apex:selectOptions>
+                                                    </apex:selectList>                                               
+                                                    </th>
+                                                    <th style="width:10%">UOM</th>
+                                                    <th style="width:10%">Action</th>
+                                                    <th style="width:10%">Amount</th>
+                                                    <th style="display:none;">
+                                                        Last Supplier
+                                                    <!--hidden column for sorting Last Supplier, the hidden is set in datatable setting-->
+                                                    </th>
+                                                    <!--if add new column, also need to modify the comlumn in the setDataTable function-->
+                                                </tr>
+                                            </thead>
+                                            
+                                            <tbody>
+                                                <apex:repeat value="{!existingShoppingCartItemMap}" var="key">
+    
+                                                <tr Id="ciRow{!key}">
+                                                    <td><input type="checkbox" Id="ciCheckbox{!key}" onchange="saveEditedCatalogItemIdQuantity('{!key}');updateCheckAllCheckbox(this,false);" name="ciCheckbox"/></td>
+                                                    <td>
+                                                        <img src="{!photoDocIdUrlMap[existingShoppingCartItemMap[key].Catalog_Item__r.Photo_Doc_Id__c]}" width="100" height="100"/>
+                                                    </td>                                        
+                                                    <td >
+                                                    <!--hidden column for sorting-->
+                                                    {!existingShoppingCartItemMap[key].Catalog_Item__r.Catalog__r.Parent_Catalog__r.Catalog_Name__c} 
+                                                    </td>
+                                                    <td>
+                                                        <!--
+                                                        {!existingShoppingCartItemMap[key].Catalog_Item__r.Catalog__r.Catalog_Name__c}
+                                                        -->
+                                                        {!existingShoppingCartItemMap[key].Catalog_Item__r.Catalog__r.Display_Name__c}
+                                                    </td>
+                                                    <td>
+                                                        Item Name: {!existingShoppingCartItemMap[key].Catalog_Item__r.Item_Name__c}
+                                                        <apex:outputPanel rendered="{!existingShoppingCartItemMap[key].Catalog_Item__r.Is_Catalog__c}">
+                                                            <img src="{!$Resource.IDP_Is_Catalog_Item_Icon}" width="15" height="15"/>
+                                                        </apex:outputPanel>
+                                                        <br/><br/>
+                                                        Description: {!if(existingShoppingCartItemMap[key].Catalog_Item__r.Description__c != null,existingShoppingCartItemMap[key].Catalog_Item__r.Description__c ,  $Label.IDP_Field_Empty_Label) }
+                                                        <br/><br/>
+                                                        Supplier: {!if(existingShoppingCartItemMap[key].Catalog_Item__r.Last_Supplier__r.Supplier_Name__c != null,existingShoppingCartItemMap[key].Catalog_Item__r.Last_Supplier__r.Supplier_Name__c , $Label.IDP_Field_Empty_Label) } 
+                                                        <br/><br/>
+                                                                                                             
+                                                    </td>
+                                                    <td>
+                                                        <div style="{!if(catalogItemIdIsExpiredBooleanMap[key] == true, 'color:red;', '')}">
+                                                            <span id="ciOriginalReferenceCurrency{!key}" class="originalReference"> 
+                                                                {!if(existingShoppingCartItemMap[key].Catalog_Item__r.Currency__r.Name != null, existingShoppingCartItemMap[key].Catalog_Item__r.Currency__r.Name, $Label.IDP_Not_Available_Reference_Price_Message)}
+                                                            </span>
+                                                            <span id="ciOriginalReferencePrice{!key}" class="originalReference"> 
+                                                                {!if(existingShoppingCartItemMap[key].Catalog_Item__r.Reference_Price__c != null, existingShoppingCartItemMap[key].Catalog_Item__r.Reference_Price__c, '')}
+                                                            </span>
+                                                            <span id="ciLocalReferenceCurrency{!key}" class="localReference">
+                                                            </span>
+                                                            <span id="ciLocalReferencePrice{!key}" class="localReference">
+                                                            </span>
+                                                        </div>
+                                                    </td>    
+                                                    <td>
+                                                        {!existingShoppingCartItemMap[key].Catalog_Item__r.Unit_Of_Measure__c}
+                                                        <!--
+                                                        <apex:selectList value="" styleClass="form-control input-sm" size="1" onchange="updateShoppingCartItemUOMParaFunction('{!key}',this.value);">
+                                                            <apex:SelectOptions value="{!catalogItemIdUOMSelectOptionListMap[key]}" >
+                                                            </apex:SelectOptions>
+                                                        </apex:selectList>
+                                                        -->
+                                                    </td>
+                                                    <td>
+                                                        Qty.: 
+                                                        <input id="ciQuantity{!key}" value="{!existingShoppingCartItemMap[key].Quantity__c}" type="number" min="1" step="1" style="width:50%" onchange="preventEmptyQuantity('{!key}');saveEditedCatalogItemIdQuantity('{!key}');if(this.value > 0){updateShoppingCartItemQuantityParaFunction('{!key}',this.value);updateAmount('{!key}');}"/>
+                                                        <button class="btn btn-default" type="button" onclick="singleRemoveCartOnePara('{!key}');removeSingleItemRow('{!key}');">
+                                                            <img src="{!$Resource.IDP_Remove_From_Cart_Button_Icon}" width="20" height="20"/>
+                                                        </button>
+                                                        <BR/>
+                                                        <apex:outputText rendered="{!!existingShoppingCartItemMap[key].Catalog_Item__r.Is_Catalog__c}">
+                                                            Transfer To:
+                                                            <button class="btn btn-default" type="button" onclick="updateShoppingCartAssignTo('{!key}');">
+                                                                <img src="{!$Resource.IDP_transfer_item_icon}" width="20" height="20"/>
+                                                            </button>
+                                                            <apex:inputfield value="{!existingShoppingCartItemMap[key].user__c}"/>
+                                                            
+                                                        </apex:outputText> 
+                                                        
+                                                        
+                                                    </td>
+                                                    <td>
+                                                        <div style="{!if(catalogItemIdIsExpiredBooleanMap[key] == true, 'color:red;', '')}">
+                                                        <span id="ciOriginalAmountCurrency{!key}" class="originalReference">
+                                                        </span>
+                                                        <span id="ciOriginalAmount{!key}" class="originalReference">
+                                                        </span>                                              
+                                                        <span id="ciLocalAmountCurrency{!key}" class="localReference">
+                                                        </span>
+                                                        <span id="ciLocalAmount{!key}" class="localReference">
+                                                        </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                    <!--hidden column for sorting-->
+                                                    {!if(existingShoppingCartItemMap[key].Catalog_Item__r.Last_Supplier__r.Name != null,existingShoppingCartItemMap[key].Catalog_Item__r.Last_Supplier__r.Name, "Not avaiable") } 
+                                                    </td>
+                                                </tr>
+                                                </apex:repeat>                                     
+                                            </tbody>
+                                            </table>
+                                        </apex:outputPanel>
+                                        <div class="dataTables_length">
+                                            <div class="slds">
+                                                <div class="row">
+                                                    <div class="col-md-12" style="text-align:right;">    
+                                                        <span id="newPRButtonGroup">
+                                                            <apex:outputPanel id="newPOButtonGroupPanel">                                   
+                                                                <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Create_PR_Button}" oncomplete="closeShoppingCartItemsParaFunction(JSON.stringify(window.editedCatalogItem), '{!$Label.IDP_Create_Purchase_Request_Mode_Create_New}');"/>
+                                                                <div class="divider"/>
+                                                                <apex:commandButton disabled="{!!isRelatedCatalogPRExisted}" styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Add_To_Existing_PR_Button}" onclick="addToExistingPROnClick();" oncomplete="return false;"/>
+                                                            </apex:outputPanel>
+                                                        </span>
+                                                        <span id="existingPRButtonGroup" style="display:none;">
+                                                            <apex:outputPanel id="purchaseRequestPanel2">
+
+                                                                    <apex:outputLabel value="Existing PR " for="purchaseRequestSelectList2">
+                                                                        <apex:selectList id="purchaseRequestSelectList2" value="{!selectedPurchaseRequest}" size="1" styleClass="form-control input-sm purchaseRequestSelectList" style="width:350px" onchange="syncPicklistValue(this.value);" rendered="{!isRelatedCatalogPRExisted}" >                                                
+                                                                            <apex:selectOptions id="purchaseRequestSelectOption2" value="{!catalogIdPurchaseRequestMap[selectedCatalogName]}">
+                                                                            </apex:selectOptions>
+                                                                        </apex:selectList>   
+                                                                    </apex:outputLabel>
+                                                                    <script>
+                                                                        if({!!isRelatedCatalogPRExisted}){
+                                                                            cancelAddToExistingPROnClick();
+                                                                        }
+                                                                    </script>                                                                                                             
+                                                                <div class="divider"/>
+                                                            </apex:outputPanel>
+                                                            <apex:commandLink action="{!viewExistingPurchaseRequest}" styleClass="slds-button slds-button--neutral" value="{!$Label.IDP_Preview_PR_Button}" target="_blank"/>
+                                                            <div class="divider"/> 
+                                                            <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Shopping_Cart_Confirm_Button}" reRender="actionFunctionPanel" oncomplete="closeShoppingCartItemsParaFunction(JSON.stringify(window.editedCatalogItem), '{!$Label.IDP_Create_Purchase_Request_Mode_Add_To_Existing}');"/>
+                                                            <div class="divider"/> 
+                                                            <apex:commandButton styleClass="slds-button slds-button--neutral"  value="{!$Label.IDP_Shopping_Cart_Cancel_Button}" onclick="cancelAddToExistingPROnClick();" onComplete="return false;"/>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /.table-responsive -->    
+
+                                </div>
+                                <!-- /.panel-body -->
+                            
+                        </div>
+                        <!-- /.panel -->
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <!-- /.row -->  
+                </apex:outputPanel>
+            </div>
+            <!-- /#page-wrapper -->
+       
+            
+
+            <c:IDPBrowseCatalogFavouriteListJSComponent />
+            
+            <script>
+                var $newPRButtonGroup = null;
+                var $existingPRButtonGroup = null;
+                
+            </script>
+            <script>  
+                $(document).ready(function() {
+                    $newPRButtonGroup = $("#newPRButtonGroup");
+                    $existingPRButtonGroup = $("#existingPRButtonGroup");   
+                    
+                   var sortingFieldName = "{!selectedSortingFieldName}";
+                   var displayCurrencyName = "{!selectedDisplayCurrencyName}";
+                   var dTable = setDataTable(sortingFieldName, displayCurrencyName);
+                 
+                    dTable.DataTable().order(  [[ 3, 'asc' ], [ 4, 'asc' ]] ).draw();
+                });
+                
+
+
+                function sortDataTable(pSelectedValue) {
+                    var  table = $("#itemTable").DataTable();
+                    switch(pSelectedValue) {
+                        case '{!$Label.IDP_Sorting_Field_Catalog_Asc_Key}' :
+                            table.order( [[ 3, 'asc' ], [ 4, 'asc' ]] ).draw();
+                            break;
+                        case '{!$Label.IDP_Sorting_Field_Catalog_Desc_Key}' :
+                            table.order( [[ 3, 'desc' ], [ 4, 'asc' ]] ).draw();
+                            break;
+                        case '{!$Label.IDP_Sorting_Field_Name_Asc_Key}' :
+                            table.order( [ 4, 'asc' ] ).draw();
+                            break;
+                        case '{!$Label.IDP_Sorting_Field_Name_Desc_Key}' :
+                            table.order( [ 4, 'desc' ] ).draw();
+                            break;
+                        case '{!$Label.IDP_Sorting_Field_Last_Supplier_Asc_Key}' :
+                            table.order( [[ 9, 'asc' ], [ 4, 'asc' ]] ).draw();
+                            break;        
+                        case '{!$Label.IDP_Sorting_Field_Last_Supplier_Desc_Key}' :
+                            table.order( [[ 9, 'desc' ], [ 4, 'asc' ]] ).draw();
+                            break;                                      
+                        case '{!$Label.IDP_Sorting_Field_Reference_Price_Asc_Key}' :
+                            table.order( [[ 5, 'asc' ], [ 4, 'asc' ]]).draw();
+                            break;
+                        case '{!$Label.IDP_Sorting_Field_Reference_Price_Desc_Key}' :
+                            table.order( [[ 5, 'desc' ], [ 4, 'asc' ]] ).draw();
+                            break;
+                                                                       
+                        default:
+                            alert('default');
+                            
+                    }
+                    
+                }                
+
+            </script>        
+       
+            <!--DataTable Setup Script-->     
+            <script>  
+
+                function setDataTable(pTableId, pSelectedSortingField, pSelectedDisplayCurrency) {
+                    $.fn.dataTableExt.sErrMode = 'console';                                       
+                    oTable = $('#itemTable').dataTable( {
+                        "autoWidth": false,
+                        "responsive": false, // The table will not be collapsed
+                        "searching": true, //Disable searching box
+                        "dom": 'lrt<"bottom"i>', // Remove the pagination p in DOM
+                        "lengthChange": false, //Include/Remove the Picklist that used to change the page length
+                        "lengthMenu": [[-1], ["All"]],
+                        "ordering": true, // sorting
+                        order: [],
+                        "processing": true,
+                        //"pageLength": 5, // Set the PageLength
+                        "initComplete" : function(settings, json) {
+                            window.editedCatalogItem.editedCatalogItemList = [];
+                            
+                            //for after creating purchase request/ adding to existing purchase request, then press browser's back to previous page to set the catalog select option list to not available
+                            //document.getElementById('{!$Component.catalogSelectList}').selectedIndex = 0;
+
+                            //inital trigger the catalog select Option list to filter the records
+                            document.getElementById('{!$Component.catalogSelectList}').onchange();
+                        },                    
+                        
+                         "drawCallback": function( settings ) {
+                                loadEditedCatalogItemIdQuantity();
+                                var checkedAllCheckbox = document.getElementsByName("ciCheckboxCheckedAll"); 
+                                updateCheckAllCheckbox(checkedAllCheckbox, true);
+                                //loadEditedFavouriteItemImageStatus();
+                                setDisplayReferencePrice(displayRereferencePrice);
+                                calculateLocalReferencePrice({!existingShoppingCartItemJSON }, {!fromToCurrencyIdExchangeRateMapJSON});
+
+                        }
+                        ,
+                        columns: [
+                            { "orderable": false},
+                            { "orderable": false},
+                            { "orderable": true,
+                                "visible": false
+                            },
+                            { 
+                                "orderable": false,
+                                "visible": true
+                            },
+                            { "orderable": false},
+                            { "orderable": false},
+                            { "orderable": false},                            
+                            { "orderable": false},
+                            { "orderable": false},                            
+                            {
+                                "orderable": false,
+                                "visible": false
+                            }
+                        ]    
+                    } );
+                    
+                    
+        
+                    return oTable;
+                }
+                
+
+            </script>
+                        
+            <!--update amount script-->
+            <script>
+                function updateAmount(pCatalogItemId) {
+                    var ciQuantity = "#ciQuantity" + pCatalogItemId;
+                    var ciOriginalReferencePriceId = "#ciOriginalReferencePrice" + pCatalogItemId;
+                    var ciLocalReferencePriceId = "#ciLocalReferencePrice" + pCatalogItemId;
+                    var ciOriginalAmountId = "#ciOriginalAmount" + pCatalogItemId;
+                    var ciLocalAmountId = "#ciLocalAmount" + pCatalogItemId;
+                    var ciOriginalAmount = "";
+                    var ciLocalAmount = "";
+                    if( $.trim($(ciOriginalReferencePriceId).text()) != "") {
+                        ciOriginalAmount = $(ciOriginalReferencePriceId).text() * $(ciQuantity).val();
+                        ciLocalAmount = $(ciLocalReferencePriceId).text() * $(ciQuantity).val();
+                        $(ciOriginalAmountId).html(ciOriginalAmount.toFixed(2));
+                        $(ciLocalAmountId).html(ciLocalAmount.toFixed(2));
+                    }
+                }    
+            </script>
+            
+            <script>
+                function singleRemoveCartOnePara (pCatalogItemId) {
+                    singleRemoveFromCartParaFunction(pCatalogItemId);
+                    $('#ciCheckbox'+pCatalogItemId).prop('checked', false);
+                    //alert("{!$Label.IDP_Remove_From_Shopping_Cart_Message}");
+                }
+            </script>
+            
+            <script>
+                function filterByCatalog(pSelectedSelectOption) {
+                    
+                    for(var i=0; i < window.editedCatalogItem.editedCatalogItemList.length; i++) {
+                        editedCatalogItem.editedCatalogItemList[i].checked = false;
+                    }                                                      
+                    var table = $('#itemTable').DataTable();
+                    var exactMatchRegularExpression = $.fn.dataTable.util.escapeRegex(pSelectedSelectOption);
+                    exactMatchRegularExpression = '^' + exactMatchRegularExpression + '$';
+                    table.column(2).search(exactMatchRegularExpression, true, false).draw();
+                    var picklist = $('.catalogSelectList').val(pSelectedSelectOption);
+                    reRenderPurchaseRequestPanel();
+                    
+                    var checkboxArray = $('input[name="ciCheckbox"]');
+                    checkboxArray.prop('checked', true);
+                    checkboxArray.change();
+                    var checkedAllCheckbox = $('input[name="ciCheckboxCheckedAll"]');
+                    updateCheckAllCheckbox(checkedAllCheckbox, true);                    
+                }
+                
+                function syncPicklistValue(pSelectedSelectOption) {
+                    var picklist = $('.purchaseRequestSelectList').val(pSelectedSelectOption);
+                }
+                
+                function addToExistingPROnClick(){
+                    $newPRButtonGroup.fadeOut(0);
+                    $existingPRButtonGroup.fadeIn(0);   
+                }
+                function cancelAddToExistingPROnClick(){
+                    $existingPRButtonGroup.fadeOut(0);   
+                    $newPRButtonGroup.fadeIn(0);
+                }                
+            </script>
+            
+            <script>
+                $("select[id$='mlktp']").fadeOut(0);
+            </script>
+
+            
+            
+        </apex:form>
+    </div>
+    <!-- /#wrapper -->
+
+</body>
+
+</apex:page>

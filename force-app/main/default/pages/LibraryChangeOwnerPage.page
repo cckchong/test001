@@ -1,0 +1,12 @@
+<apex:page StandardController="Library_Item__c">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+ 
+    <apex:form >
+       <apex:outputLabel value="Owner Selection" ></apex:outputLabel>
+       <apex:inputField value="{!Library_Item__c.OwnerId}" />
+       <apex:commandButton action="{!save}" value="Save"/>
+       <apex:commandButton action="{!cancel}" value="Cancel"/>
+   </apex:form>
+</apex:page>

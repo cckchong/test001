@@ -1,0 +1,171 @@
+<apex:page controller="IDPPurchaseOrderResultCtrl" >
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    
+    
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />
+    
+    <style type="text/css" class="init">
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+       
+        table.dataTable thead th, table.dataTable thead td{
+          padding-bottom: 0px;
+          //padding-left: 10px;
+          //padding-right: 10px;
+          padding-left: 10px;
+          padding-right: 0px;
+          border-bottom: 1px solid #111;
+        }
+        
+        table.dataTable tfoot th{
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        
+        table.dataTable tbody td{
+          padding-left: 10px;
+          padding-right: 0px;
+          padding-top: 10px;
+          padding-bottom: 5px;
+        }    
+        .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td {
+            vertical-align: middle;
+           padding-top:5px; 
+        }
+        .dataTables_wrapper{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        } 
+        table.dataTable input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        label{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        table.dataTable select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+        }
+        .accordion table tr td {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td input {
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td textarea{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        .accordion table tr td select{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-size: 10.5pt;
+        }
+        
+        .verticalLine{
+             border-left: medium solid #c00;             
+        }
+        .inputClass{
+            //margin-top:4px;
+            margin-top:0px;
+        }
+        .errorAlert{
+            border:1px solid red;
+            outline: 2px solid #F00;
+        }
+        .ui-autocomplete {
+            max-height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .ui-tabs-anchor{
+            font-family: Salesforce Sans, Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+         }
+       
+        .ui-state-focus:focus { outline:none }
+         
+        .ui-state-default{
+          background-color: #dfeffc;
+          background-image: none;
+         }
+         
+         .prheaderlabel{
+             text-align: right !important;
+             padding-top:2px !important;
+             width:150px;
+         }
+         .prheaderval{             
+             padding-left: 10px !important;
+             padding-top:2px !important;
+             width:300px;
+         }
+         
+         .prheaderInputLongVal{             
+             width:300px;
+         }
+         .prheaderInputval{             
+             width:250px;
+         }                  
+         .actionIcon{
+            float:left;
+            margin-left:5px;
+         }
+    </style>
+    <div class="slds">
+    <apex:form id="poFormVali">
+        <div class="slds-page-header" role="banner" >
+            <div class="slds-grid">
+                <div class="slds-media__body">              
+                        <h1 class="slds-text-heading--medium">Purchase Order Creation List</h1>                
+                    </div>
+            
+                <div class="slds-col slds-no-flex slds-align-middle">
+                    <apex:commandButton value="Back" styleClass="slds-button slds-button--neutral" action="{!backAction}" />
+                </div>
+            </div>
+            
+        </div>
+        
+        
+         <table class="display dataTable no-footer" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>PO#</th>
+                    <th>Cost Center#</th>
+                    <th>Currency</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <apex:variable value="{!1}" var="count"/>
+                <apex:repeat value="{!POList}" var="po">                
+                    <tr>
+                        <td>{!count} </td>
+                        <td>
+                            <apex:outputLink value="./IDPPurchaseOrderVFP?mode=v&poId={!po.id}" target="_blank">{!po.Name}</apex:outputLink>
+                        </td>
+                        <td>{!po.Cost_Center__c}</td>
+                        <td>{!po.Currency__r.Name}</td>   
+                        <td>{!po.Estimated_Total_Price__c}</td>
+                    </tr>
+                <apex:variable var="count" value="{!count+ 1}"/>
+                </apex:repeat>
+                <apex:outputText rendered="{!count == 1}">
+                    <td colspan = "5">
+                        
+                    </td>
+                </apex:outputText>
+             </tbody> 
+         </table>
+    </apex:form> 
+    </div>
+</apex:page>

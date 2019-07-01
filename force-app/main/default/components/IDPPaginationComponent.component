@@ -1,0 +1,80 @@
+<apex:component >
+    <apex:includeScript value="{!URLFOR($Resource.IDPTestPagination,'IDPTestPagination/pagination.js')}"/>
+
+    <apex:attribute name="recordsList" description="The list of data will be shown in the table." type="List" required="true"/>
+    <apex:attribute name="tableId" description="The table Id." type="String" required="true"/>
+
+    <apex:attribute name="paginationId" description="The Id of the pagination." type="String" required="true"/>
+
+    <!---style for the table-->
+    <style>     
+        .pagination.disabled a,
+        .pagination.disabled a:hover,
+        .pagination.disabled a:focus,
+        
+        .pagination.disabled span {
+            color: #eee;
+            background: #fff;
+            cursor: default;
+        }
+        
+        .pagination {
+            float: left;
+        }
+        
+        .pagination.disabled li.active a {
+            color: #fff;
+            background: #cccccc;
+            border-color: #cccccc;
+        }
+        
+        .paging-container select{
+            float: left;
+            margin: 20px 0 20px 10px;
+            padding: 9px 3px;
+            border-color: #ddd;
+            border-radius: 4px;
+        }
+        
+        #table {
+            margin-bottom: 0;
+        }
+    </style>
+    <!--end of style for the table-->
+    
+    <!--script for pagination-->
+    <script>
+
+    $(function () {
+
+            load = function() {
+                window.tp = new Pagination('#{!paginationId}', {
+                    itemsCount: {!recordsList.size},
+                    pageRange: [10, 25, 50, 100, -1], //-1 (All)
+                    onPageSizeChange: function (ps) {
+                        console.log('changed to ' + ps);
+                    },
+                    onPageChange: function (paging) {
+                        //custom paging logic here
+                        console.log(paging);
+                        var start = paging.pageSize * (paging.currentPage - 1),
+                            end = start + paging.pageSize,
+                            $rows = $('#{!tableId}').find('.data');
+
+                        $rows.hide();
+
+                        for (var i = start; i < end; i++) {
+                            $rows.eq(i).show();
+                        }
+                    }
+                });
+            }
+
+        load();
+    });
+    </script>
+    <!--end of script for pagination-->
+    
+    <div class="paging-container"  id="{!paginationId}"/>
+
+</apex:component>

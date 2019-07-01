@@ -1,0 +1,506 @@
+<apex:page controller="IDPPhotoMappingCtrl"  cache="false" showHeader="false" standardStylesheets="true" sidebar="false" tabstyle="Expense_Application__c" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+
+    <script>
+        var tdtable = null;
+        var tableInit = null;
+        var tableDiv = null;
+        var icons = null;
+        var files = null;
+        var requiredInfoText = null;
+        <!-- remove the default open of date picker when page load //-->
+        function setFocusOnLoad() {}
+    </script>
+    
+
+    <apex:outputPanel id="Result">
+        <script>
+            
+            function prepareFileUploads(evt){
+                files = evt;
+                
+                //loop the files to validate file extension and size
+                var files2 = evt.files;
+                if (files2.length > 0){
+                    for (i=0; i<files2.length; i++){
+                    
+                        fname = files2[i].name;
+                        //alert(fname.length);
+                        fextension = fname.substring(fname.lastIndexOf(".")+1, fname.length);
+                        fsize = files2[i].size;
+                        //alert(fsize);                     
+                       
+                        // check the attachment can't start from number
+                        document.getElementById("upload-error-message").innerHTML ="";
+                        if(!(isNaN(Number(fname.charAt(0))))){
+                            document.getElementById("upload-error-message").innerHTML ="The Attachment's name can not start from number";
+                            return false; 
+                        }     
+                        if (fsize > 3000000){
+                            document.getElementById("upload-error-message").innerHTML ="File size is limited to 3MB each.";
+                            return false;                         
+                        }                         
+                                  
+                        
+                        if (fextension!="jpeg" && fextension!="JPEG" && 
+                            fextension!="jpg" && fextension!="JPG" && 
+                            fextension!="png" && fextension!="PNG"){
+                            
+                            alert("Only JPG, JPEG, or PNG files can be uploaded");
+                            return false;   
+                        }
+                        
+                     // if (fsize > 1000000)    alert("File size is limited to 1MB each.");
+                    }
+                }
+                uploadfilesAction(false)
+                //files2.length
+                document.getElementById("countnotificationlabel").innerHTML = 'File(s) have been successfully uploaded.'
+            }
+            
+            function uploadfiles(){                
+                uploadfilesAction(true);                
+            }
+            
+            function uploadfilesAction(redirect){
+                var ufiles = files;  
+                
+                if(ufiles != null){                    
+                    ufiles = files.files;
+                    if (ufiles.length == 0){
+                        return;
+                    }
+                    disablebtns();
+                    uploadfileAction (0, ufiles, redirect);
+                }
+            }
+            
+            function uploadfileAction(index,  ufiles, redirect){   
+                var currentFile = null;
+                var blobChunk = null;
+                var byteChunkArray = new Array();
+                var base64value = '';
+                var attachid = '';
+                var islast = false;
+                base64value = '';
+                attachid = '';
+                currentFile = ufiles[index];
+                byteChunkArray = byteChunk(currentFile);
+                if (index == ufiles.length -1){
+                    islast = true;
+                }
+                filecontent(index , ufiles, currentFile, byteChunkArray, base64value, attachid, islast, redirect);
+            }
+            
+            function byteChunk(currentFile){
+                var byteChunkArray = new Array(); 
+                var CHUNK_SIZE = 180000;
+                var numOfFullChunks = 0;
+                var remainderBytes = 0;
+                var startByte = 0;
+                var endByte = CHUNK_SIZE - 1;
+                
+                
+                if(currentFile.size < CHUNK_SIZE){
+                    byteChunkArray.push(currentFile.slice(0, currentFile.size + 1));                    
+                }
+                else{
+                    
+                    numOfFullChunks = Math.floor(currentFile.size / CHUNK_SIZE);
+                    remainderBytes = currentFile.size % CHUNK_SIZE;
+                    for(var i = 0; i < numOfFullChunks; i++){
+                        byteChunkArray.push(currentFile.slice(startByte, endByte+1));
+                        startByte = endByte + 1;
+                        endByte += CHUNK_SIZE;
+                    }
+                    startByte = currentFile.size - remainderBytes;
+                    endByte = currentFile.size;
+                    byteChunkArray.push(currentFile.slice(startByte, endByte));
+                }
+                return byteChunkArray;
+            }
+            
+            function filecontent(index , ufiles, currentFile, byteChunkArray, base64value, attachid, islast, redirect){
+                
+                 if (byteChunkArray.length == 0 ){
+                     if (islast && redirect){
+                         go();
+                     }
+                     if (islast && !redirect){
+                         enablebtn();
+                         try {
+                            $('#dialog').dialog('destroy');
+                         }catch(err) {}   
+                         refreshDocs();
+                     }
+                     if (!islast){
+                         uploadfileAction(index+1, ufiles, redirect);
+                     }
+                     return '';
+                 }
+                 
+                 var reader = new FileReader(); 
+                 if (!FileReader.prototype.readAsBinaryString) {
+                     reader.readAsArrayBuffer(byteChunkArray[0]);
+                 }else{
+                     reader.readAsBinaryString(byteChunkArray[0]);
+                 }
+                 
+                 reader.onloadend = function(evt){
+                     if(evt.target.readyState == FileReader.DONE){
+                         var fileData = evt.target.result;
+                         if (!FileReader.prototype.readAsBinaryString) {
+                             
+                             var bytes = new Uint8Array(fileData);
+                             var binaryText = '';
+                             for (var pos= 0; pos < bytes.byteLength; pos++) {
+                                 binaryText += String.fromCharCode( bytes[pos] );
+                             }
+                             base64value = window.btoa(binaryText); 
+                         }else{
+                             base64value = window.btoa(fileData ); 
+                         }                        
+                         Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.IDPPhotoMappingCtrl.uploadFileAction}',
+                            currentFile.name, currentFile.type, base64value, attachid,
+                            function(result, event){                                
+                                if (event.status){
+                                     byteChunkArray.shift();
+                                     attachid = result;
+                                     filecontent(index, ufiles, currentFile, byteChunkArray, base64value , attachid, islast, redirect);                                     
+                                }
+                                else if (event.type === 'exception'){
+                                    alert(event.message);
+                                    enablebtn();
+                                }
+                                else{
+                                    alert(event.message);
+                                    enablebtn();
+                                }
+                            }, 
+                            {escape: true,}
+                           );
+                         return '';
+                     }
+                 }
+
+                 document.getElementById("filesInput").value = "";
+            } 
+            function disablebtns(){
+                $('.actionbtn').css('pointer-events', 'none');
+                $('.actionbtn').css('tab-index', -1);
+                $('.btngp').fadeOut(0);
+            }
+            
+            function enablebtn(){
+                 $('.actionbtn').css('pointer-events', 'fill');
+                 $('.actionbtn').css('tab-index', 99);
+                 $('.btngp').fadeIn(0);
+            }
+            
+            function displayDelMsg(delephoto){
+                document.getElementById("countnotificationlabel").innerHTML = "The file " + delephoto + " have been successfully deleted.";
+            }
+               
+        </script>       
+        
+        <style type="text/css" class="init">
+        
+            #tdtable td {
+                vertical-align:top; 
+                padding-top:5px;
+            }
+            
+            .largeTopPadding {
+                padding-top:8px !important;
+            }
+            
+         
+            
+            .errorMsg{
+                white-space: pre-wrap;
+            }
+            
+            .sfdc-font {
+                font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            }
+            div.dataTables_wrapper {
+                width: 100%;
+                margin: 0px;
+                padding: 0px;
+            }
+            .select2-dropdown {
+                margin-left: 0px;
+                width: 999px;
+            }
+            table.dataTable thead th,
+            table.dataTable thead td {
+                padding-bottom: 0px;
+                padding-left: 10px;
+                padding-right: 0px;
+                border-bottom: 1px solid #111;
+            }
+            .tal-simulate-disabled-input {
+                border: 1px solid #A9A9A9;
+                padding: 1px;
+                margin-top: 0px;
+                display: block;
+                background: #EBEBE4;
+                height: 19px;
+                font-family: Salesforce Sans, Arial, sans-serif;
+            }
+            table.dataTable tfoot td {
+                //padding-left: 10px;
+                padding-left: 10px;
+                padding-right: 0px;
+            }
+            table.dataTable tbody td {
+                padding-left: 10px;
+                padding-right: 0px;
+                padding-top: 1px;
+                padding-bottom: 1px;
+            }
+            table.dataTable textarea {
+                line-height: 12px;
+                font-family: Salesforce Sans, Arial, sans-serif;
+            }
+            table.dataTable input{
+                font-family: Salesforce Sans, Arial, sans-serif;
+            } 
+            label{
+                font-family: Salesforce Sans, Arial, sans-serif;
+            }
+            .actionIcon {
+                float: left;
+                margin-left: 5px;
+            }
+            .hideTable {
+                position: absolute !important;
+                opacity: 0 !important;
+            }
+            .progressbar {
+                position: relative;
+                left: 50%;
+                margin-top: 50px;
+                margin-bottom: 50px;
+            }
+            
+           
+            select:enabled +.select2-container {
+              position: relative;
+              z-index: 2;
+              width: 100%;
+              margin-bottom: 0;
+              display: table;
+              table-layout: fixed;
+            }
+            
+            .select2-container--default .select2-search--inline .select2-search__field {
+                width: auto !important;
+            }
+            
+            .verticalLine {
+                /* border-left: thick solid #ff0000;*/
+            }
+            /*
+            table thead th {
+                background: #BBD8DB;
+                float:inherit;
+            }
+            
+           
+            */
+            #accordion table tr td {
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td input {
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td textarea{
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td select{
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }   
+            .ui-accordion-header.ui-state-active { background-color: #dfeffc; }
+            .ui-state-focus:focus { outline:none }
+            .ui-dialog .ui-button-text {font-family: Salesforce Sans, Arial, sans-serif; font-style: normal;}
+            
+            .ui-state-default{
+              background-color: #dfeffc;
+              background-image: none;
+            }
+            
+            .ui-accordion .ui-accordion-content {padding: 0;}
+            .bPageBlock .bDetailBlock .secondaryPalette {padding: 0;}
+        </style>
+
+
+    </apex:outputPanel>
+    <style type="text/css">
+        
+       .ui-dialog-title{
+            //color: #e17009;
+            color: white;
+            font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px; 
+        }    
+        .ui-tabs-anchor{
+            font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px; 
+        }
+        .alertlabel {
+            background-color: #f0ad4e;
+            color: black;
+            padding: 4px;
+            border-radius: 10px;
+            -moz-border-radius: 10px;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            color: #FFFFFF;
+        }
+    </style> 
+
+    <apex:form >
+        <apex:actionFunction name="refreshDocs" id="refreshDocs" action="{!rerenderAllDocTables}" reRender="photoTable, result"  status="loading2..." oncomplete=""/>
+        
+        <input type="file" name="file" multiple="true" id="filesInput" onchange= "prepareFileUploads(this);" style="display:none" />
+        <p id="responseErrors"></p>
+        <div class="slds">
+            
+            <div class="slds-col slds-no-flex slds-align-middle btngp">
+                <div class="slds-button-group" role="group" style="display: inline-block;" >
+                     <apex:outputText >
+                        <a href="javascript:;" onclick="$('#filesInput').click();" class="actionbtn" >
+                            <apex:outputPanel styleClass="slds-button slds-button--neutral"> 
+                                <span >
+                                    <apex:image value="{!URLFOR($Resource.upload_icon, '')}" width="15px" height="15px" style="position: relative;top: -2px;" />
+                                </span>
+                                Select Photo(s)
+                            </apex:outputPanel>
+                        </a>
+                    </apex:outputText>
+                    
+                    <div id='upload-error-message' style='color:red'></div>
+     
+                    <apex:outputtext id="att"> <!--  rendered="{!rtGeneral}" -->
+                        <td valign="top">
+                           <label id="countnotificationlabel" class="slds-form-element__label">
+                            <!-- &nbsp;&nbsp;&nbsp;&nbsp;{!countOfFiles}&nbsp;File(s) have been successfully uploaded -->
+                           </label>
+                        </td>
+                    </apex:outputtext>
+                    
+                </div>
+                 <!-- <apex:commandButton value="Cancel" styleClass="actionbtn slds-button slds-button--neutral" action="{!cancel}" />-->
+            </div>
+
+            <BR/>
+            <!--<apex:outputPanel rendered="{!TextId != ''}">-->
+            <div style = "margin-bottom:-10px; ">
+            
+            <apex:actionFunction name="delPhoto" action="{!deletePhoto}" reRender="photoTable, result, msg">
+                <apex:param name="delPhotoId" value=""/>
+            </apex:actionFunction>
+                        
+                                               
+               <div style="margin-bottom:25px;">
+                    <table style="width: 100%;margin-top:5px;" border = "0px;" id = "headerTable">                               
+                        <tr>
+                            <td></td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                            <apex:outputPanel id="photoTable" rendered="{!attachments.size!=0}">                              
+                                <label class="slds-form-element__label details-toggle" style="font-size:14px;">Existing Images Uploaded</label>
+                                 
+                                <table title="Existing Images Uploaded">
+                                  
+                                    <thead>
+                                        <tr style="border-bottom:1pt solid black;" >
+                                            <th> </th>
+                                            <th> </th>
+                                            <th>No</th>
+                                            <th>File Name</th>
+                                            <th>Last Modified</th>
+                                        </tr>
+                                    </thead>
+                                    
+                                    <tbody>
+                                        <apex:variable value="{!0}" var="counter" />
+                                        
+                                        <apex:repeat value="{!attachments}" var="att">
+                                            <apex:variable value="{!(counter + 1)}" var="counter" />
+                                            <tr>
+                                                <td>
+                                                     <!--
+                                                     <div class='ui-icon ui-icon-zoomin actionIcon' onclick="window.open('/{!att.id}');" style="cursor: pointer;"> </div>
+                                                     -->
+                                                </td>
+
+                                                <td>
+                                                    <div class='ui-icon ui-icon-trash actionIcon' onclick="delPhoto('{!att.id}'),displayDelMsg('{!att.Name}')" style="cursor: pointer;"></div>
+                                                </td>
+                                            
+                                                <td>
+                                                    <apex:outputText value="{!counter}" />
+                                                </td>
+                                                <td>
+                                                    <apex:outputText >
+                                                        <a href="/servlet/servlet.FileDownload?file={!att.id}" target="_blank"  >                                            
+                                                            {!att.Name}
+                                                        </a>
+                                                    </apex:outputText>
+                                                    
+                                                    <!-- <apex:outputText>
+                                                        <a href="/{!att.id}" target="_blank"  >                                            
+                                                            {!att.Name}
+                                                        </a>
+                                                    </apex:outputText> -->
+                                                    
+                                                </td>
+                                                <td>
+                                                    <apex:outputField value="{!att.lastModifiedDate}" /> 
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                       
+                                    </tbody>
+                                   
+                                </table>
+                                 
+                            </apex:outputPanel>
+                            </td>
+                        </tr>
+                          
+                    </table>
+            </div>
+            </div>
+            
+            <!-- 
+            <div id="accordion" style = "width:99.5%; margin-top:5px;margin-bottom:50px;">
+               <label class="slds-form-element__label" style="font-size:14px;">Travel Application: {!ea.Name}</label>
+               <div style="margin-bottom:5px;">
+                </div>
+            </div>
+            -->
+        </div>
+
+        <br/>
+
+
+        
+    </apex:form>
+
+</apex:page>

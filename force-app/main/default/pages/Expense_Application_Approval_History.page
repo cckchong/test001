@@ -1,0 +1,24 @@
+<apex:page standardcontroller="Expense_Application__c" showHeader="false" >
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <script>
+        $(function() {
+            $('.apexDefaultPageBlock').removeClass('bPageBlock');
+            $('.actionLink').attr('target', '_blank');
+        });
+    </script>
+
+    <style>
+         /* to hide submit for approval button */
+         input.btn[name="piSubmit"] {
+                display: none;
+         } 
+         /* to hide recall button */
+         input.btn[name="piRemove"] {
+                display: none;
+         }
+    </style>
+    <apex:pageBlock >
+        <apex:relatedList list="ProcessSteps" ></apex:relatedList>
+    </apex:pageBlock>
+    
+</apex:page>

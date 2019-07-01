@@ -1,0 +1,77 @@
+<apex:component >
+    <apex:attribute name="chatterId" type="String" description="chatter Id" required="false" />
+    <apex:attribute name="chatterPhotos" type="ContentVersionWrapper[]"  description="chatter photos" required="false" />
+    <apex:attribute name="photoSize" type="String"  description="chatter photo size" required="false" />
+    <apex:attribute name="isAccessible" description="control whether the user can access the group" type="Boolean" required="true" />
+    <apex:attribute name="topic" type="String[]"  description="Photo Slideshow Topics" required="false" />
+    <apex:attribute name="Name2TopicId" type="map"  description="mapping of topic name to topic Id" required="false" />
+    <apex:attribute name="showChatterPhoto" description="control whether the chatter photo sectoin shows on the page" type="Boolean" required="true" />
+    <style>
+        .chatter_pos_right {
+            float: right;
+            position:relative;
+            right: 5px; 
+            top: 2px; 
+            z-index:1;
+        }
+        .TopicPanel {
+            border-bottom: 1px Solid #D8E3ED;
+            padding-bottom: 3px;
+        }
+    </style>
+    <div class="bs wrapper">  
+        <apex:outputPanel rendered="{!AND(isAccessible,showChatterPhoto)}">
+            <div class="bs panel panel-info panelClass">
+                <div class="bs panel-heading">
+                    <h3 class="bs panel-title">{!$Label.ChatterPhotos}
+                    </h3>                   
+                    <div class="chatter_pos_right">
+                        <h7><a href="/_ui/core/chatter/content/GroupFileListPage?g={!chatterId}" target="_parent">{!$Label.ShowAll} ({!photoSize})</a></h7> 
+                    </div>                  
+                </div> 
+                <div class="bs panel-body">          
+                    <apex:outputPanel id="Component_Topics" styleClass="TopicPanel" layout="block" rendered="{!!topic.empty}">
+                        <span style="font-weight:bold;color:#888;">TOPICS:</span><br/>
+                        <apex:repeat value="{!topic}" var="t">
+                            <a href="/_ui/core/chatter/topics/TopicPage?id={!Name2TopicId[t]}&ref=feed_item_topic" target="_parent">&middot; {!t}</a><br/>
+                        </apex:repeat>
+                    </apex:outputPanel>
+                    <br/>
+                    <apex:outputPanel id="Component_Chatterphotos" layout="block">
+                        <div class="bs-example">
+                            <div id="myCarousel" class="carousel slide" data-interval="15000"
+                                data-ride="carousel">
+                                <ol class="carousel-indicators">
+                                    <apex:repeat value="{!chatterPhotos}" var="Doc">
+                                        <li data-target="#myCarousel" data-slide-to="{!Doc.fileSeq}"
+                                            class="{!IF(Doc.fileSeq=0, 'active','')}"></li>
+                                    </apex:repeat>
+                                </ol>
+                                <div class="carousel-inner">
+                                    <apex:repeat value="{!chatterPhotos}" var="Doc">
+                                        <div class="{!IF(Doc.fileSeq=0, 'active','')} item">
+                                            <center>
+                                                <a href="/{!Doc.origContentVersion.Id}" target="_top"><img class="img-responsive"
+                                                    height="100%" width="300px"
+                                                    src="/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB240BY180&versionId={!Doc.origContentVersion.ContentDocument.LatestPublishedVersionId}"
+                                                    alt="Click to preview" title="Click to preview" /></a>
+                                            </center>
+                                        </div>
+                                    </apex:repeat>
+                                </div>
+                                <a class="carousel-control left {!IF(chatterPhotos.size>0,'','hidden')}"
+                                    href="#myCarousel" data-slide="prev"> <span
+                                    class="bs glyphicon glyphicon-chevron-left"></span>
+                                </a> <a
+                                    class="carousel-control right {!IF(chatterPhotos.size>0,'','hidden')}"
+                                    href="#myCarousel" data-slide="next"> <span
+                                    class="bs glyphicon glyphicon-chevron-right"></span>
+                                </a>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </div>
+            </div>
+        </apex:outputPanel>
+    </div>
+</apex:component>

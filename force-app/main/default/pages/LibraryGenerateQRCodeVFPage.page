@@ -1,0 +1,30 @@
+<apex:page standardController="Library_Inventory__c" extensions="LibraryGenerateQRCodeCtrl" showHeader="false" action="{!genQrCode}" cache="false">
+	
+	<apex:form id="theformid">
+		<apex:outputPanel rendered="{!!bPrintableView}">
+			<br/><span style="font-size:12pt;font-weight:bold;color:#888;">TAL Warehouse QR Code Generator</span><br/><br/>		
+			<apex:PageBlock title="How to use">	
+				<apex:pageBlockButtons id="thePageButtonId">
+					<apex:commandButton action="{!doNothing}" onclick="window.location.reload();window.open('/qrcode?generate=true&category=Samples TGA')" value="Generate Samples TGA" />
+					<apex:commandButton action="{!doNothing}" onclick="window.location.reload();window.open('/qrcode?generate=true&category=Samples PD')" value="Generate Samples PD" />
+					<apex:commandButton action="{!doNothing}" onclick="window.location.reload();window.open('/qrcode?generate=true&category=Warehouse')" value="Generate Warehouse" />
+					<apex:commandButton action="{!doNothing}" onclick="window.location.reload();window.open('/qrcode?generate=true&category=Book')" value="Generate Book" />
+				</apex:pageBlockButtons>
+				<ol>
+				  <li>Click on Generate QR Code button</li>
+				  <li>New window pops up</li>
+				  <li>Your new QR code and reference number will appear</li>
+				  <li>Note down the reference number and print the QR code</li>
+				</ol>
+			</apex:PageBlock>
+		</apex:outputPanel>
+		<apex:outputPanel rendered="{!bPrintableView}">
+			<div style="border:1px solid #EAEAEA;width:155px;text-align:center;">
+			<apex:outputField Label="QR Code" value="{!inv.Temp_QR_Code__c}"/>
+			<apex:outputText Label="QR Number" value="{!inv.Temp_QR_Code_Number__c}" style="font-weight:bold;"/><br/>
+			<apex:outputText value="{!$CurrentPage.parameters.category}"  style="font-weight:bold;"/>
+			</div>
+		</apex:outputPanel>
+	</apex:form>
+
+</apex:page>

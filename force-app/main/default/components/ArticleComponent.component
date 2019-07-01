@@ -1,0 +1,219 @@
+<apex:component >
+<!-- <apex:component layout="block">
+    <apex:attribute name="Title" type="String" description="Title" required="true" />
+    <apex:attribute name="Summary" type="String" description="Summary" required="true" />
+    <apex:attribute name="ContentURL" type="String" description="ContentURL" required="true" />
+    <apex:attribute name="PublishDate" type="Datetime" description="PublishDate" required="false" />
+    <apex:attribute name="PublishBy" type="String" description="PublishBy" required="false" />
+    <apex:attribute name="PublishById" type="String" description="PublishById" required="false" />
+    <apex:attribute name="LastUpdateDate" type="Datetime" description="LastUpdateDate" required="false" />
+    <apex:attribute name="PicURL" type="String" description="PicURL" required="false" />
+    <apex:attribute name="Revised" type="Boolean" description="Revised" required="false" />
+    <apex:attribute name="Feedsize" type="Integer" description="Feedsize" required="false" />
+    <apex:attribute name="ArticleId" type="String" description="ArticleId" required="false" />
+    <apex:attribute name="fromArticleList" type="Boolean" description="fromArticleList" required="false" />
+    <apex:attribute name="Grade" type="String" description="Grade" required="false" />
+    <apex:attribute name="FromDept" type="String" description="Message From Department" required="false" />
+    <apex:attribute name="Priority" type="String" description="Sticky Priority" required="false" />
+    
+	<apex:stylesheet value="{!URLFOR($Resource.bootstrap, '/css/bootstrap.css')}"/>
+	<apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+	<apex:includeScript value="{!URLFOR($Resource.bootstrap, '/js/bootstrap.min.js')}" />
+	
+    
+    <style>
+    	.divStyle1 {
+    		padding-left: 5px; 
+    		padding-right: 2px; 
+    		padding-bottom: 2px;    	
+    	}
+    	.divStyle2 {
+    		padding: 2px;
+        	padding-left: 10px;
+    	}
+    	.divStyle3 {
+    		padding-left: 2px; 
+    		padding-right: 10px;
+    	}
+        .RichTextBlock {
+            width: 100%;
+            font-family: arial;
+        }
+        .RichTextTitle {
+            color: #006699;
+            font-size: 1em;
+            font-weight: bold;
+            font-family: arial;
+            word-break:keep-all;
+        }
+        .RichTextSummary {
+            color: #555;
+            font-family: arial;
+            font-size: 1em;
+            word-break:keep-all;
+            
+        }
+        .RichTextContentURL {
+    		bottom: 0;
+        }
+        .Author {
+            color: #555;
+            font-family: arial;
+            font-size: 0.8em;
+            font-style:italic;
+            text-align: center;
+            word-break:keep-all;
+        }
+        .RevisedOn {
+            color: #990000;
+            font-family: arial;
+            font-size: 0.8em;
+            font-style:italic;
+            text-align: center;
+        }
+        .Container {
+		    display:block;
+		    width:100%;
+		    min-height:110px;
+		    max-height:110px;
+		    overflow: hidden;
+		    }
+		.Container2 {
+		    display:block;
+		    width:100%;
+		    min-height:110px;
+		    max-height:110px;		    
+		    text-align:center;
+		    }
+		.Container_Content {
+		    display:block;
+		    width:100%;
+		    min-height:43px;
+		    max-height:43px;
+		    overflow: hidden;
+		    }
+		.Container_List_Content {
+		    display:block;
+		    width:100%;
+		    min-height:42px;
+		    max-height:42px;
+		    overflow: hidden;
+		    }
+		.Container_List{
+		    display:block;
+		    width:100%;
+		    min-height:115px;
+		    max-height:115px;
+		    overflow: hidden;
+		    }  
+		.keepBottom {
+		    position: absolute;
+		    bottom: 10px;
+		} 
+		.keepBottom_List {
+		    position: absolute;
+		    bottom: 5px;
+		} 
+		.keepBottomCenter {
+		    position: absolute;
+		    bottom: 10px;
+		    margin: 0 auto;
+		}
+        .priorityStar {
+        	font-size: 10pt;
+        }
+    </style>
+
+	<div class="RichTextBlock">
+		<div class="bs row">
+			<div class="bs col-md-2 col-sm-2 col-xs-2 divStyle1">
+				<img class="bs img-responsive img-thumbnail" src="{!PicURL}"
+					height="95px" />
+			</div>
+			
+			OutputPanel for Article Feed Component
+			<apex:outputPanel rendered="{!NOT(fromArticleList)}">
+				<div class="bs col-md-8 col-sm-8 col-xs-8 divStyle2">
+					<div class="Container">
+						<apex:outputLink value="/{!ContentURL}&{!$Label.ConnecTalTab}" styleclass="RichTextTitle">
+							<apex:outputText value="{!Title}" styleClass="RichTextTitle" />
+						</apex:outputLink>
+						&nbsp;&nbsp;-&nbsp;&nbsp; 
+						<apex:outputLink value="/{!PublishById}" target="_parent"
+							styleclass="RichTextTitle">
+							<apex:outputText value="{!PublishBy}" styleClass="Author" />
+						</apex:outputLink>
+						<apex:outputText rendered="{!IF(FromDept=null, false,true)}" value=", {!FromDept}" styleClass="Author"/>
+						<br />
+						<div class="Container_Content">
+							<apex:outputText value="{!Summary}" styleClass="RichTextSummary" escape="false" />
+						</div>
+						<div class="keepBottom">
+							<apex:outputLink value="/{!ContentURL}&{!$Label.ConnecTalTab}"
+								styleclass="RichTextContentURL">[{!$Label.ReadMore}]</apex:outputLink>
+							&nbsp;&nbsp;&nbsp;
+							<apex:outputPanel styleclass="RichTextContentURL"
+								rendered="{!IF((Feedsize>0), true, false)}">
+								<a href="/{!ContentURL}&{!$Label.ConnecTalTab}#chatter"> {!$Label.ViewComments}
+									[{!Feedsize}] </a>
+							</apex:outputPanel>
+						</div>
+					</div>
+				</div>
+				<div class="bs col-md-2 col-sm-2 col-xs-2 divStyle3" align="center">
+					<div class="Container2">
+                        <apex:outputPanel rendered="{!VALUE(Priority) < 5}">
+						<span class="priorityStar"><span class="bs label label-warning"><span class="bs glyphicon glyphicon-star"></span> {!Priority}</span></span>
+                        <br/><br/>
+                        </apex:outputPanel>
+						<apex:outputText value="Published: {0, date, dd MMM yyyy}"
+							styleClass="Author">
+							<apex:param value="{!PublishDate}" />
+						</apex:outputText>
+						<br/>
+						<apex:outputText rendered="{!Revised}"
+							value="Revised: {0, date, dd MMM yyyy}" styleClass="RevisedOn">
+							<apex:param value="{!LastUpdateDate}" />
+						</apex:outputText>
+						<div class="keepBottomCenter">
+							<apex:outputText value="{!Grade}" styleClass="Author" />
+						</div>
+
+					</div>
+				</div>
+			</apex:outputPanel>
+			
+			OutputPanel for Article List Component
+			<apex:outputPanel rendered="{!fromArticleList}">
+				<div class="bs col-md-10 col-sm-10 col-xs-10 divStyle2">
+					<div class="Container_List">
+						<apex:outputLink value="/{!ContentURL}&{!$Label.ConnecTalTab}" styleclass="RichTextTitle" target="_parent">
+							<apex:outputText value="{!Title}" styleClass="RichTextTitle" />
+						</apex:outputLink>
+						&nbsp;&nbsp;-&nbsp;&nbsp; 
+						<apex:outputLink value="/{!PublishById}"  target="_top"
+							styleclass="RichTextTitle">
+							<apex:outputText value="{!PublishBy}" styleClass="Author" />
+						</apex:outputLink>
+						<apex:outputText rendered="{!IF(FromDept=null, false,true)}" value=", {!FromDept}" styleClass="Author"/>
+						<br />
+						<div class="Container_List_Content">
+							<apex:outputText value="{!Summary}"	styleClass="RichTextSummary" escape="false" />
+						</div>
+						<br />
+						<div class="keepBottom_List">
+							<apex:outputLink value="/{!ContentURL}&{!$Label.ConnecTalTab}" target="_parent"
+								styleclass="RichTextContentURL">[{!$Label.ReadMore}]</apex:outputLink>
+							&nbsp;&nbsp;&nbsp;
+							<apex:outputPanel styleClass="RichTextContentURL"
+								rendered="{!IF((Feedsize>0), true, false)}">
+								<a href="/{!ContentURL}#chatter"> {!$Label.ViewComments}
+									[{!Feedsize}] </a>
+							</apex:outputPanel>
+						</div>
+					</div>
+				</div>
+			</apex:outputPanel>
+		</div>
+	</div> -->
+</apex:component>

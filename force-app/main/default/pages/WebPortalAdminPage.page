@@ -1,0 +1,247 @@
+<apex:page >
+<!-- <apex:page controller="WebPortalAdminController" sidebar="false">
+	
+ 	<script type="text/javascript">
+		function autoResize(id){
+		    var newheight;
+		    var newwidth;
+		
+		    if(document.getElementById){
+		        newheight=document.getElementById(id).contentWindow.document .body.scrollHeight;
+		        newwidth=document.getElementById(id).contentWindow.document .body.scrollWidth;
+		    }
+		
+		    document.getElementById(id).height= (newheight) + "px";
+		    document.getElementById(id).width= (newwidth) + "px";
+		}
+	</script>
+	
+	<apex:form id="frm_page_search">
+		<apex:pageBlock title="Page Admin Page">
+			<apex:actionFunction name="refresh1" rerender="searchCriteria, debug" status="asCat"/>
+			<apex:actionFunction name="refresh2" rerender="searchCriteria, debug" status="asSubCat"/>
+			<apex:actionFunction name="refresh3" rerender="searchCriteria, debug" status="asDept"/>
+			<apex:actionFunction name="refresh4" rerender="newCriteria, debug" status="asNewCat"/>
+			<apex:actionFunction name="refresh5" rerender="newCriteria, debug" status="asNewSubCat"/>
+			<apex:actionFunction name="refresh6" rerender="searchCriteria, debug" status="asPageName"/>
+			<apex:actionFunction name="refresh7" rerender="searchCriteria, debug" status="asConTemp"/>
+			<script>
+				function confirmChangeLayout() {
+					return confirm('Are you sure you want to change template layout now?');
+					}
+        
+			</script> 
+			<table cellspacing="0" cellpadding="5">
+		 		<tr>			 		
+		 			Left Hand Side
+		 			<td width="450px" >
+						<apex:outputPanel id="searchCriteria">
+							<table cellspacing="0" cellpadding="5">
+								<tr>
+									<td colspan="2">
+										<Strong>Edit Existing Page Section:</Strong>
+									</td>
+								</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.Category__c.label}" />
+									</td>
+									<td>	
+										<apex:selectList value="{!selectedCategory}" size="1" onchange="refresh1();"
+										multiselect="false">
+											<apex:selectOptions value="{!availableCategory}" id="searchCat"/>
+										</apex:selectList>&nbsp;
+										<apex:actionStatus id="asCat">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.Sub_Category__c.label}" />
+									</td>
+									<td>
+										<apex:selectList value="{!selectedSubCategory}" size="1" onchange="refresh2();"
+										multiselect="false">
+											<apex:selectOptions value="{!availableSubCategory}" id="searchSubCat"/>
+										</apex:selectList>&nbsp;
+										<apex:actionStatus id="asSubCat">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>			
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.BU__c.label}" />
+									</td>
+									<td>
+										<apex:selectList value="{!selectedDepartment}" size="1" onchange="refresh3();"
+											multiselect="false">
+											<apex:selectOptions value="{!availableDepartment}" id="searchDept"/>
+										</apex:selectList>&nbsp;
+										<apex:actionStatus id="asDept">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>	
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+							 			<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.Page_Name__c.label}" />
+									</td>
+									<td>
+										<apex:selectList value="{!selectedPage}" size="1" required="true" onchange="refresh6();"
+											multiselect="false">
+											<apex:selectOptions value="{!availablePageNames}" id="searchPage"/>
+										</apex:selectList>
+										<apex:actionStatus id="asPageName">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>	
+										&nbsp;&nbsp;&nbsp;
+										<apex:commandButton action="{!searchPages}" value="Search" />
+									</td>
+						 		</tr>
+						 		<tr>
+						 			<td colspan="2">
+										<Strong>Change Template Layout Section:</Strong>
+									</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+							 			<apex:outputLabel value="Target Template Name" />
+									</td>
+						 			<td>	
+										<apex:selectList value="{!selectedConvertTemplate}" size="1" onchange="refresh7();"
+										multiselect="false">
+											<apex:selectOptions value="{!availableTemplateNames}" />
+										</apex:selectList>
+										<apex:actionStatus id="asConTemp">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>
+										&nbsp;&nbsp;&nbsp;
+										<apex:commandButton id="theConvertButton" rendered="{!NOT(OR(ISNULL(selectedConvertTemplate), IF(OR(selectedSubCategory='<Select one>', selectedPage='<Select one>', selectedCategory='<Select one>', selectedConvertTemplate='<Select one>'), true, false) ))}"  onclick="if(!confirmChangeLayout()) return false;" action="{!convertTemplate}" value="Change"/>		
+						 			</td>
+						 		</tr>
+						 		
+						 		
+						 		<tr>
+						 			<td colspan="2">
+							 			<apex:outputPanel rendered="{!bConvertPage}">
+											<Strong>Change Template Layout Section:</Strong>
+										</apex:outputPanel>&nbsp;
+									</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+							 			<apex:outputLabel value="Target Template Name" rendered="{!bConvertPage}"/>&nbsp;
+									</td>
+						 			<td>
+							 			<apex:outputPanel rendered="{!bConvertPage}">	
+											<apex:selectList value="{!selectedConvertTemplate}" size="1" onchange="refresh7();"
+											multiselect="false">
+												<apex:selectOptions value="{!availableTemplateNames}" />
+											</apex:selectList>
+											<apex:actionStatus id="asConTemp">
+						                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+						                    </apex:actionstatus>
+											&nbsp;&nbsp;&nbsp;
+											<apex:commandButton id="theConvertButton" rendered="{!NOT(OR(ISNULL(selectedConvertTemplate), IF(OR(selectedSubCategory='<Select one>', selectedPage='<Select one>', selectedCategory='<Select one>', selectedConvertTemplate='<Select one>'), true, false) ))}"  onclick="if(!confirmChangeLayout()) return false;" action="{!convertTemplate}" value="Change"/>		
+							 			</apex:outputPanel>&nbsp;
+						 			</td>
+						 		</tr>
+							</table>			
+						</apex:outputPanel>
+					</td>
+					<td width="250px" valign="bottom">
+					<apex:outputPanel id="debug">
+						<table>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>&nbsp;<Strong>{!strResult}</Strong></td></tr>
+						</table>
+					</apex:outputPanel>
+					</td>
+					Right Hand Side Panel
+					<td valign="top">
+						<apex:outputPanel id="newCriteria" rendered="{!bCreatePage}">
+							<table cellspacing="0" cellpadding="5">
+								<tr>
+									<td colspan="2">
+										<Strong>Create New Page Section:</Strong>
+									</td>
+								</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="Template Name" />
+									</td>
+									<td>	
+										<apex:selectList value="{!selectedNewTemplate}" size="1" onchange=""
+										multiselect="false">
+											<apex:selectOptions value="{!availableTemplateNames}" />
+										</apex:selectList>		
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.Category__c.label}" />
+									</td>
+									<td>	
+										<apex:selectList value="{!selectedNewCategory}" size="1" onchange="refresh4();"
+										multiselect="false">
+											<apex:selectOptions value="{!availableNewCategory}" id="createCat"/>
+										</apex:selectList>&nbsp;	
+										<apex:actionStatus id="asNewCat">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.Sub_Category__c.label}" />
+									</td>
+									<td>	
+										<apex:selectList value="{!selectedNewSubCategory}" size="1" onchange="refresh5();"
+										multiselect="false">
+											<apex:selectOptions value="{!availableNewSubCategory}" id="createSubCat"/>
+										</apex:selectList>&nbsp;
+										<apex:actionStatus id="asNewSubCat">
+					                        <apex:facet name="start"><apex:image value="{!$Resource.Loading_Image}"/></apex:facet>  
+					                    </apex:actionstatus>
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.BU__c.label}" />
+									</td>
+									<td>	
+										<apex:selectList value="{!selectedNewDepartment}" size="1"
+										multiselect="false">
+											<apex:selectOptions value="{!availableNewDepartment}" id="createDept"/>
+										</apex:selectList>								
+						 			</td>
+						 		</tr>
+						 		<tr>
+						 			<td>
+						 				<apex:outputLabel value="{!$ObjectType.Portal_Content__c.fields.Page_Name__c.label}" />
+									</td>
+									<td>	
+										<apex:selectList value="{!selectedNewPageName}" size="1"
+										multiselect="false">
+											<apex:selectOptions value="{!availableNewPageName}" id="createPageName"/>
+										</apex:selectList>						                    
+							 			&nbsp;&nbsp;&nbsp;
+										<apex:commandButton action="{!createPage}" value="Create" />										
+						 			</td>
+						 		</tr>
+							 </table>
+						 </apex:outputPanel>
+					</td>	
+				</tr>
+			</table>
+		</apex:pageBlock>
+		<iframe src="{!pageLink}" width="100%" height="500px" id="iframe1"  marginheight="0" frameborder="0" onChange="autoResize('iframe1');" onLoad="autoResize('iframe1');"/>
+	</apex:form> -->
+</apex:page>

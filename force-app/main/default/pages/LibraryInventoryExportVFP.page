@@ -1,0 +1,58 @@
+<apex:page controller="LibraryInventoryExportCtrl" readOnly="true" sidebar="false" showHeader="false" standardStylesheets="false" title="TAL Library Inventory">
+    <head>
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+        <style>
+            body {
+            	font-family: arial;
+            	font-size: 10px;
+            	margin: 0px;
+            }
+            .bs .row {
+            	margin-left: 0px;
+            	margin-right: 0px;
+            }
+            .page-break  {
+                clear: left;
+                display:block;
+                page-break-after:always;
+            }
+        </style>
+    </head>
+    <apex:outputPanel rendered="{!!stickyMode}">
+    <div class="bs container">
+        <apex:variable var="count" value="{!1}"/>
+        <div class="bs row">
+            <apex:outputText value="{!$Label.Library_Inventory_Export_Links}" escape="false"/><br/><br/>
+            <apex:repeat value="{!invList}" var="inv">
+                <div style="page-break-inside: avoid" class="bs col-xs-6">
+                    <strong>{!count}.&nbsp;&nbsp;<apex:outputField value="{!inv.Library_Item_Master__r.Item_Name__c}" /></strong><br/>
+                    <apex:outputfield value="{!inv.Serial_Number__c}" style="font-weight:bold;" /><br/>
+                    <br/>
+                    <apex:outputField value="{!inv.QR_Code__c}" />
+                </div>
+                    
+                <apex:outputText escape="false" value="</div><div class='bs row'>" rendered="{!MOD(count, 2) = 0}"/>    
+                
+                <apex:variable var="count" value="{!count + 1}"/>
+            </apex:repeat>
+            
+        </div>
+    </div>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!stickyMode}">
+        <apex:repeat value="{!invList}" var="inv">
+            <div style="border:1px solid #EAEAEA;width:155px;text-align:center;">
+                <apex:outputField Label="QR Code" value="{!inv.QR_Code__c}"/><br/>
+                <table width="100%">
+                    <tr>
+                        <td>
+                            <apex:outputfield value="{!inv.Serial_Number__c}" style="font-weight:bold;"></apex:outputfield><br/>
+                        	<apex:outputfield value="{!inv.Item_Category__c}" style="font-weight:bold;"></apex:outputfield>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="page-break"></div>
+        </apex:repeat>
+        </apex:outputPanel>
+</apex:page>

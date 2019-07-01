@@ -1,0 +1,3 @@
+<apex:page StandardController="Education_Application__c" extensions="TEEducationApplicationOverwriteEditCtrl" action="{!redirect}">
+
+</apex:page>

@@ -1,0 +1,11 @@
+<apex:page controller="LibraryItemRequestViewCtrl" action="{!bulkActions}">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+
+<div class="bs container">
+    <br/>
+    <apex:messages styleclass="bs alert alert-warning"/>
+    <br/>
+    <a href="javascript:window.history.back();" class="bs btn btn-primary">&laquo; Back</a>
+</div>
+    
+</apex:page>

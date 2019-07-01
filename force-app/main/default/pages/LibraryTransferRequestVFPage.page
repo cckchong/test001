@@ -1,0 +1,116 @@
+<apex:page standardController="Library_Item_Request__c" extensions="LibraryTransferRequestCtrl">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <style>
+    .TalCustomHeader {
+    	padding-bottom: 10px;
+        padding-top: 10px;
+        
+    }
+    .TalCustomHeader a {
+    	text-decoration: none;
+        background: #EAEAEA;
+        border-radius: 2px;
+        color: #888;
+        padding: 5px;
+        font-size: 11pt;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    .TalCustomHeader a:hover {
+    	text-decoration: none;
+		color: black;
+    }
+    .TalCustomHeader table td{
+    	vertical-align: middle;
+        font-size: 13pt;
+        font-weight: bold;
+        letter-spacing: -1px;
+        color: #888;
+    }
+    .TalCustomHeader table {
+    	width: 100%;
+    }
+    </style>
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-xs-12">
+                <apex:form id="TalLibrarySearchForm">
+                    <div class="TalCustomHeader">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td width="40px">
+                                        <img src="/img/icon/forecasts32.png" alt="{!$Label.Library_Search}"/>
+                                    </td>
+                                    <td>
+                                        Transfer Library Request
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bs well">
+                        <h4>Original Request &raquo;</h4><br/><br/>
+                        <table class="bs table-bordered table-condensed">
+                            <thead>
+                            	<tr>
+                                	<th>{!$ObjectType.Library_Item_Request__c.fields.Name.Label}</th>
+                                    <th>{!$ObjectType.Library_Item__c.fields.Item_Name__c.Label}</th>
+                                    <th>{!$ObjectType.Library_Item_Request__c.fields.Item_Category__c.Label}</th>
+                                    <th>{!$ObjectType.Library_Item_Request__c.fields.Status__c.Label}</th>
+                                    <th>{!$ObjectType.Library_Item_Request__c.fields.Requester__c.Label}</th>
+                                    <th>{!$ObjectType.Library_Inventory__c.fields.Target_Address__c.Label}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            	<tr>
+                                    <td><a href="/{!originalRequest.Id}"><apex:outputField value="{!originalRequest.Name}" /></a></td>
+                                    <td><apex:outputField value="{!originalRequest.Library_Item__r.Item_Name__c}" /></td>
+                                    <td><apex:outputField value="{!originalRequest.Item_Category__c}" /></td>
+                                    <td><apex:outputField value="{!originalRequest.Status__c}" /></td>
+                                    <td><apex:outputField value="{!originalRequest.Requester__c}" /></td>
+                                    <td><apex:outputField value="{!originalRequest.Library_Request_Inventory__r.Target_Address__r.Name}" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br/><br/>
+                        <h4><apex:outputText value="No requests eligible for transfer" rendered="{!eligibleTransfer = null}"/></h4><br/>
+						<apex:outputText value="The original request must be Inbound In-Transit and eligible requests must match on item, location and be Waitlisted." rendered="{!eligibleTransfer = null}"/>
+                        <apex:outputPanel rendered="{!eligibleTransfer != null}">
+                            <h4>Eligible Transfer &raquo;</h4><br/><br/>
+                            <table class="bs table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>{!$ObjectType.Library_Item_Request__c.fields.Name.Label}</th>
+                                        <th>{!$ObjectType.Library_Item__c.fields.Item_Name__c.Label}</th>
+                                        <th>{!$ObjectType.Library_Item_Request__c.fields.Item_Category__c.Label}</th>
+                                        <th>{!$ObjectType.Library_Item_Request__c.fields.Status__c.Label}</th>
+                                        <th>{!$ObjectType.Library_Item_Request__c.fields.Requester__c.Label}</th>
+                                        <th>{!$ObjectType.Library_Item_Request__c.fields.Target_Location__c.Label}</th>
+                                        <th>{!$ObjectType.Library_Item_Request__c.fields.CreatedDate.Label}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="/{!eligibleTransfer.Id}"><apex:outputField value="{!eligibleTransfer.Name}" /></a></td>
+                                        <td><apex:outputField value="{!eligibleTransfer.Library_Item__r.Item_Name__c}" /></td>
+                                        <td><apex:outputField value="{!eligibleTransfer.Item_Category__c}" /></td>
+                                        <td><apex:outputField value="{!eligibleTransfer.Status__c}" /></td>
+                                        <td><apex:outputField value="{!eligibleTransfer.Requester__c}" /></td>
+                                        <td><apex:outputField value="{!eligibleTransfer.Target_Location__r.Name}" /></td>
+                                        <td><apex:outputField value="{!eligibleTransfer.CreatedDate}" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                            <apex:commandButton value="Transfer" action="{!transfer}" 
+                                                onclick="if(!confirm('Are you sure?')){return false;}" styleclass="bs btn btn-primary"
+                                                rendered="{!displayTransferButton}" />
+                            <apex:messages styleclass="bs alert alert-warning"/>
+                        </apex:outputPanel>
+                    </div>
+                </apex:form>
+            </div>
+        </div>
+    </div>
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page showHeader="false" 
+standardStylesheets="false"     
+sidebar="false" 
+applyHtmlTag="false" 
+applyBodyTag="false" 
+wizard="false"
+setup="false"
+controller="TEExpenseReportsPrnCtrl"
+readonly="true"
+contentType="text/plain#Expense-PRN-Report.prn; charset=utf-8">
+{!resultStr}
+</apex:page>

@@ -1,0 +1,79 @@
+<apex:page controller="LibrarySearchCtrl" cache="true" action="{!purgeSearchResults}">
+     
+    <style> 
+         
+        .TalLibrarySearchBlock .bPageBlock {
+            border-top: 1px solid #eaeaea;
+            box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -webkit-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -moz-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            -o-box-shadow: inset 0px 0px 16px 4px #F5F5F5;
+            border-radius: 2px;
+
+        } 
+    </style>
+
+     <div class="TalLibrarySearchBlock">
+                             <apex:pageBlock >
+                             
+                             dsfsdf
+                             </apex:pageBlock>
+     </div>                        
+                             
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-sm-12" style="padding:0px; margin: 0px;">
+                <apex:form id="TalLibrarySearchForm">
+                    
+                    
+                    <br/>  
+                    <div class="bs row">
+<!-- SEARCH CRITERIA --------------------------------------------------------------------------------------------------- -->
+                        <div class="bs col-sm-12 TalLibrarySearchBlock">
+                             <apex:pageBlock >
+                             
+                             dsfsdf
+                             </apex:pageBlock>
+                            <div style="/*overflow-x: auto; width: auto;*/">
+                                <apex:outputLink value="javascript: toggleSearch(true);" rendered="{!IsCategorySelected}" styleclass="TalLibrarySearchExpandLink" style="display:none;">
+                                    <span class="TalLibrarySearchExpand"><span class="bs glyphicon glyphicon-chevron-down"></span> Expand Search</span>
+                                </apex:outputLink>
+                                
+                                <div class="TalLibrarySearchCriteria" style="margin:0;">
+                                    <apex:pageBlock rendered="{!IsCategorySelected}">
+                                        <!--
+                                        <span class="TalLibrarySearchCollapse"><a href="javascript: toggleSearch(false);"><span class="bs pull-right" style="padding-right: 2px;"> Collapse Search</span> <span class="bs glyphicon glyphicon-chevron-up pull-right"></span></a></span>
+                                        -->
+                                        
+                                        
+                                         
+                                        
+                                         
+                                        <!--  Special handling for Samples Fabric -->
+
+                                        
+                                        
+                                        <div style="height:40px;">
+                                            <apex:commandButton action="{!searchRecord}" value="Search" id="TalLibrarySearchBtnId" 
+                                                                rerender="TalLibrarySearchForm" status="statusSaveTrip" rendered="{!IsCategorySelected}"
+                                                                styleclass="bs btn-primary pull-right" style="margin-right: 5px;" oncomplete="moveCartBtnToLeft();loadChosenPicklists();loadCrossIcon();toggleSearch(false);tabToggle();"/>
+
+                                            
+                                            <apex:commandButton action="{!clearFilters}" value="Clear" id="TalLibraryClearBtnId" 
+                                                                rerender="TalLibrarySearchForm" rendered="{!IsCategorySelected}" oncomplete="moveCartBtnToLeft();loadChosenPicklists();tabToggle();"
+                                                                style="margin-right: 5px;float:right;"/>
+                                        </div>
+                                    </apex:pageBlock>
+                                    <div style="height:40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     
+                </apex:form>
+                <div style="height:40px;"></div>
+            </div>
+        </div>
+    </div>
+ 
+</apex:page>

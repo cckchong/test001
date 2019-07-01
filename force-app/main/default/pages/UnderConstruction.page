@@ -1,0 +1,30 @@
+<apex:page >
+
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+<style>
+	.centerImg {
+	    margin-left: auto;
+	    margin-right: auto;
+	    width: 50%;
+	}
+	.centerBtn {
+	    margin-left: auto;
+	    margin-right: auto;
+	    width: 25%;
+	}
+</style>
+<apex:form >
+	<div class="bs wrapper">
+		<div class="bs row">
+			<div class="centerImg">
+				<img class="bs img-responsive" src="{!$Resource.PageUnderConstruction}"/>
+			</div>	
+		</div>
+		<div class="bs row">
+			<div class="centerBtn">
+				<a href="javascript:window.history.back();" class="bs btn btn-primary btn-lg">&laquo; Back</a>
+			</div>
+		</div>
+	</div>
+</apex:form>
+</apex:page>

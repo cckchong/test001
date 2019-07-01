@@ -1,0 +1,365 @@
+<apex:page controller="IDPPhotoMappingMainCtrl" sidebar="false" cache="false">
+
+
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <title>Indirect Procurement Application</title>
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />    
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap_v3_3_7, '/css/bootstrap.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap_v3_3_7, '/js/bootstrap.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/dataTables.bootstrap.min.css')}" />  
+    <!-- Select 2 CSS -->
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    <!-- Select 2 Javascript-->
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+      
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+            setSearchPicklist();
+            setCatalogList();
+            setIframeHeight ();
+
+        });
+        
+        function setSearchPicklist(){
+            $(".js-basic-single").select2({
+                placeholder: "Select Mapping Mode"
+            });
+        }
+        //function to populate the catalog List from Catalog__c Object
+        function setCatalogList() {
+
+            
+            var json_obj = '';//{catalogJSON};
+            var output = '';
+            var levelTwoOutput = '';
+            var levelOneIndexArray= [];
+            
+            for (var i in json_obj) 
+            {
+                if(json_obj[i].Level__c == 1){
+                    output += '<li><a href="#">';
+                    output +=  json_obj[i].Name;
+                    output += '<span class="fa arrow"></span></a>';
+                    output += '<ul class="nav nav-second-level">';
+                    output += i + '@level2</ul></li>';
+                    levelOneIndexArray.push(i);
+                }
+                else if(json_obj[i].Level__c == 2){
+                    for(var j in levelOneIndexArray){
+                        if(json_obj[levelOneIndexArray[j]].Id == json_obj[i].Parent_Catalog__c){                    
+                            levelTwoOutput = '<li><a href="#">' + json_obj[i].Name + '</a></li>' + levelOneIndexArray[j] + '@level2';
+                            output = output.replace(levelOneIndexArray[j] + '@level2', levelTwoOutput);     
+                        }
+    
+                    }
+                }                
+            }
+            for(var j in levelOneIndexArray){
+                output = output.replace(levelOneIndexArray[j] + '@level2', '');  
+            }   
+            
+            
+            $('#side-menu').html(output);
+            //$('#side-menu').metisMenu();
+        }
+        
+        function setIframeHeight() {
+            parent.document.getElementById('iframeContent').style.height = $(window).height();//document['body'].offsetHeight + 'px';
+        }
+        
+        $(window).height();   // returns height of browser viewport
+        $(document).height(); // returns height of HTML document
+        $(window).width();   // returns width of browser viewport
+        $(document).width(); // returns width of HTML document
+        
+        function hideUploadButton(){
+            $(".uploadButton").hide();
+        }
+        
+        function controlDisplayCatList(){
+           if( $( ".catalogItemSel option:selected" ).text() == "Item Mapping"){
+                $(".catalogSel").show();
+                $(".catalogSel").val("default");
+                //$( ".catalogSel option:selected" ).text() == "----- Select Catalog -----";
+           }
+           else{
+               $(".catalogSel").hide();
+           }
+        }
+        
+    </script>  
+    
+    <style>
+
+        <!-- Favourite List, Catalog Item List, Shopping Cart Purchase Item List style-->
+        .hidethead thead {
+          display: none;
+        }
+    
+        tr:nth-child(even) {
+            background-color: #DCDCDC;
+        } 
+        body {font-size: 121%  }
+        
+#sidebar-wrapper {
+  width: 250px;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: all 0.4s ease 0s;
+  float: left;
+}      
+#page-content-wrapper {
+  padding-top: 15px;
+  padding-left: 10px;
+  height:100%;
+  width: -webkit-calc(100% + -250px);
+  transition: all 0.4s ease 0s;
+  float: left;
+}
+    </style>
+
+
+ 
+
+    <div id="wrapper" >
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0px;z-index:0">
+            <div class="navbar-header">
+                <label class="navbar-brand" >IDP Photo Mapping</label> 
+            </div> 
+            <div class="collapse navbar-collapse">
+                <apex:form >
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <BR/>
+                        <apex:outputPanel id="buttonPanel">
+                            <div class="slds uploadButton" onclick ="hideUploadButton()">
+                                <apex:commandButton styleClass="slds-button slds-button--neutral" value="Upload Photo(s)" action="{!showUploadPhotoPage}" rerender="itemTable, photoTable, iframeOutputPanel, itemSrch, photoSrch" rendered="{!isDisplayUploadPhotoButton}"/>
+                                <BR/><BR/>
+                            </div>
+                        </apex:outputPanel>
+                    </li>
+                    <li>
+                    </li>
+                    <li>
+                    </li>
+                    
+                    
+                </ul>
+                </apex:form>
+            </div>
+        </nav>
+        <div class="inner-container">
+            
+            <div id="sidebar-wrapper" class="navbar-default sidebar" align="middle" style="margin-top: 0px">
+                <nav>     
+                    <apex:form >    
+                        <!--
+                        <div class="form-group row" >
+                            <apex:commandButton styleclass="radio-toolbar" value="Upload Photo(s)" action="{!showUploadPhotoPage}" rerender="itemTable, photoTable, iframeOutputPanel, itemSrch, photoSrch"/>
+                        </div>
+                        -->
+                        <apex:actionFunction name="modeChange" action="{!changeMode}" rerender="itemTable, photoTable, iframeOutputPanel, itemSrch, photoSrch, buttonPanel"/>
+
+                        <apex:actionFunction name="showSelectedItem" action="{!showSelectedItem}" rerender="iframeOutputPanel,buttonPanel"/>
+
+                        <div class="form-group row" >
+                            
+                            <apex:selectList size="1" value="{!mode}"  onchange="modeChange(),controlDisplayCatList();" style="width:80%;" styleclass="catalogItemSel" >
+                                <apex:selectOption ItemValue="one" ItemLabel="-----Select Mapping Method-----"/>
+                                <apex:selectOption ItemValue="Item to Photo" ItemLabel="Item Mapping"/>
+                                <apex:selectOption ItemValue="Photo to Item" ItemLabel="Photo Mapping"/>
+                            </apex:selectList>
+                            
+                            <apex:actionFunction name="getCatalogItem" action="{!getCatalogItemList}" rerender="itemTable"/>
+                            <apex:selectList value="{!seletedCatItem}" size="1" style="width:80%;margin-top:10px;display:none;" styleclass="catalogSel" onchange="getCatalogItem()">
+         
+                                <apex:selectOptions value="{!CatalogOpt}"/>
+                            </apex:selectList>                       
+                            
+                            <!--
+                            <apex:selectRadio value="{!mode}" onchange="modeChange();">
+                                
+                                <apex:selectOption ItemValue="Item to Photo" ItemLabel="Item to Photo"/><br/>
+                                <apex:selectOption ItemValue="Photo to Item" ItemLabel="Photo to Item"/>
+                               
+                            </apex:selectRadio>
+                            -->
+    
+                            <!-- 
+                                <div class="input-group col-md-6">
+                                <apex:inputText StyleClass="form-control " value="{!queryInput}">
+                                </apex:inputText>
+                                
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-search" onclick=""></span>
+                                    </span>
+                            </div>       
+                            --> 
+                        </div>
+                    </apex:form>
+                    <!--<div style='overflow:scroll; height:550px'>-->
+                    <div style='overflow-x: hidden;overflow-y: auto; height:550px'>
+                    <apex:form >
+                        <!-- <apex:actionFunction name="reloadItemTbl" action="{!getCatItemToMap}" rerender="itemTable"/>-->
+                        <apex:actionFunction name="reloadItemTbl" action="{!getCatalogItemList}" rerender="itemTable"/>
+                        
+                        <apex:outputPanel id="itemSrch">
+                            <apex:inputText value="{!searchItemString}" onKeyUp="reloadItemTbl();" rendered="{!mode=='Item to Photo'}"><label>Filter:</label></apex:inputText>
+                        </apex:outputPanel>
+                        
+                        <apex:outputPanel id="itemTable" >
+                        
+                        <!--
+                            <apex:outputPanel rendered="{!AND(catItemList.size==0,mode=='Item to Photo')}">
+                                <label>No record to display</label>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!catItemList.size>0}">
+                                <table width="80%">
+                                    <thead>
+                                        <tr style="border-bottom:1pt solid black;" >
+                                            <th colspan="1">Catalog Item Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!catItemList}" var="item">
+                                            <tr>
+                                                <td>
+                                                    <apex:commandLink title="{!item.Catalog__r.Parent_Catalog_Name__c} - {!item.Catalog__r.Catalog_Name__c } - {!item.Description__c }" styleClass="font-size:7px;" value="{!item.Item_Name__c}" id="btn3" 
+                                                        action="{!gotoPage}" rerender="iframeOutputPanel">
+                                                        
+                                                        <apex:param name="itemSelected" value="/apex/IDPPhotoMappingItemToPhoto?cId={!item.id}" />
+                                                        
+                                                    </apex:commandLink>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </apex:outputPanel>
+                            -->
+                            
+                            <apex:outputPanel rendered="{!AND(catItemByCatList.size==0,mode=='Item to Photo')}">
+                                <label>No record to display</label>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!catItemByCatList.size>0}">
+                                <table width="80%">
+                                    <thead>
+                                        <tr style="border-bottom:1pt solid black;" >
+                                            <th colspan="1">Catalog Item Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!catItemByCatList}" var="item">
+                                            <tr>
+                                                <td>
+                                                    <apex:commandLink title="{!item.Catalog__r.Parent_Catalog_Name__c} - {!item.Catalog__r.Catalog_Name__c } - {!item.Description__c }" styleClass="font-size:7px;" value="{!item.Item_Name__c}" id="btn3" 
+                                                        action="{!gotoPage}" rerender="iframeOutputPanel">
+                                                        
+                                                        <apex:param name="itemSelected" value="/apex/IDPPhotoMappingItemToPhoto?cId={!item.id}" />
+                                                        
+                                                    </apex:commandLink>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </apex:outputPanel>
+                            
+                                                    
+                        </apex:outputPanel>
+    
+                        <apex:actionFunction name="reloadPhotoTbl" action="{!getPhotoToMap}" rerender="photoTable"/>
+                        
+                        <apex:outputPanel id="photoSrch" >
+                            <apex:inputText value="{!searchPhotoString}" onKeyUp="reloadPhotoTbl();" rendered="{!mode=='Photo to Item'}"><label>Filter:</label></apex:inputText>
+                        </apex:outputPanel>
+                           
+                        <apex:outputPanel id="photoTable">
+                            <apex:outputPanel rendered="{!AND(docList.size==0,mode=='Photo to Item')}">
+                                <label>No record to display</label>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel rendered="{!docList.size>0}">
+                                <table width="80%">
+                                    <thead>
+                                        <tr style="border-bottom:1pt solid black;" >
+                                            <th colspan="1">Photo Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!docList}" var="photo">
+                                            <tr>
+                                                <td>
+                                                    <apex:commandLink styleClass="font-size:7px;" value="{!photo.Name}" id="btn3"  action="{!gotoPage}" rerender="iframeOutputPanel">
+                                                        
+                                                        <apex:param name="itemSelected" value="/apex/IDPPhotoMappingPhotoToItem?cId={!photo.id}" />
+                                                        
+                                                    </apex:commandLink>
+                                                    <!-- <apex:outputText>
+                                                        <a href="/{!att.id}" target="_blank"  >                                            
+                                                            {!att.Name}
+                                                        </a>
+                                                    </apex:outputText> -->
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table> 
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        
+                        
+                        
+                        </apex:form>
+                    </div>
+                
+                <!-- 
+                    <div class="sidebar-nav navbar-collapse">
+                        <ul class="nav"  id="side-menu">
+                        </ul>
+                    </div>
+                     -->
+                    <!-- /.sidebar-collapse -->
+                </nav>
+            </div>
+                <!-- /.navbar-static-side -->
+            
+        
+            <div id="page-content-wrapper">
+                <apex:form >
+                         
+                        <apex:outputPanel id="iframeOutputPanel">
+        
+                            <apex:iframe id="iframeContent" height="500" width="100%" src="{!iframeSrc}" frameborder="0" scrolling="true" />
+        
+                        </apex:outputPanel>    
+                </apex:form>
+            </div>
+        </div>
+    </div>
+    <!-- /#wrapper -->
+
+    <script>
+        console.log('onload');
+        window.onload = new function() { console.log('onload2'); showSelectedItem(); }
+    </script>
+
+</apex:page>

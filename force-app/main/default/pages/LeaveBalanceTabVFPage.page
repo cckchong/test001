@@ -1,0 +1,69 @@
+<apex:page controller="SystemUtil">
+    <script>
+                 
+        if ( gup( 'override', window.location) == null  )
+        {
+            window.location.href += '{!$Label.ELeave_Landing_Page}';
+        }  
+        function gup( name, url ) {
+          if (!url) url = location.href
+          name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+          var regexS = "[\\?&]"+name+"=([^&#]*)";
+          var regex = new RegExp( regexS );
+          var results = regex.exec( url );
+          return results == null ? null : results[1];
+        }
+        
+    </script>
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <style>
+        <apex:actionRegion rendered="{!IsMobile}">
+        body {
+            font-family: arial;
+            font-size: 10pt;
+        }
+        a {
+            text-decoration: none;
+            color: #015ba7;
+        }
+        .rolodex {
+            display: none;
+        }
+        table.list td {
+            padding-bottom: 5px;
+            padding-top: 5px;
+            padding-left: 5px;
+            text-align: center;
+            
+        }
+        table.list tr {
+            padding-bottom: 5px;
+            padding-top: 5px;
+            padding-left: 5px;
+            text-align: center;
+            
+        }
+        .bFilterView {
+            padding-bottom: 18px;    
+        }
+        .bFilterView .fFooter {
+            display:none;    
+        }
+        </apex:actionRegion>
+        .employee-error {
+        	background-color: #f2dede;
+        	color: #a94442;
+        	border: 1px solid #ebccd1;
+        	font-size: 14px;
+        	padding: 10px;
+        	margin-bottom: 10px;
+        	border-radius: 3px;
+        	font-weight: bold;
+        }
+    </style>
+    <apex:outputPanel rendered="{!!UserEmployeeMatch}">
+        <div class="employee-error">
+        {!$Label.ELeave_AD_Employee_Error}</div></apex:outputPanel>
+    <apex:ListViews type="Leave_Balance__c" />
+
+</apex:page>

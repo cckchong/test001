@@ -1,0 +1,751 @@
+<apex:page controller="LibrarySearchCtrl" cache="true" action="{!purgeSearchResults}">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!$Resource.chosenjs}" />
+    <apex:stylesheet value="{!$Resource.chosencss}"/>
+    <c:LibrarySearchVFPageCssComp />
+
+    <apex:actionStatus id="statusSaveTrip" stopText="">
+        <apex:facet name="start">
+            <div>
+                <div class="popupBackground" />
+                <div class="PopupPanel">
+                    <table border="0" width="100%" height="100%">
+                        <tr>
+                            <td align="center"><b>{!$Label.Library_General_Wait}</b></td>
+                        </tr>
+                        <tr>
+                            <td align="center"><img src="{!$Resource.Loading_Image}"/></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </apex:facet>
+    </apex:actionStatus>
+    <div class="bs container">
+        <div class="bs row">
+            <div class="bs col-sm-12" style="padding:0px; margin: 0px;">
+                <apex:form id="TalLibrarySearchForm">
+                    <div class="bs row">
+                        <div class="TalCustomHeader">
+                            <div class="bs col-sm-5" id="LogoDivId" style="padding-bottom:5px;">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td width="120px">
+                                                {!$Label.Library_Category}<input type="text" name="fixScreenScroll" style="width:1px;height:1px;border:none;background:none;padding:none;margin:none;" />
+                                            </td>
+                                            <td align="right">
+                                                <div id="RecordTypeSelectionId">
+                                                
+                                                <apex:selectList id="TalLibraryCategorySelectorId" value="{!selectedRecordType}"  rendered="{!!OR(isBurberryUser , isChicoUser)}"
+                                                onchange="refreshCategoryDetectMobile();" size="1" multiselect="false" styleclass="bs form-control TalLibraryCategorySelector" style="width:170px;">
+                                                    <apex:selectOptions value="{!availableRecordTypes}" id="soRecordType"/>                                 
+                                                </apex:selectList>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="bs col-sm-7" id="ParentCartBtns">
+                                <div class="btn-group pull-right" id="CartBtns">
+                                    <button type="button" class="btn btn-default" onclick="navigateToLibraryCart()">{!$Label.Library_Cart} (<span id="TalCartCountId">{!libraryCartItemCount}</span>)</button>
+                                    <button type="button" class="btn btn-default disabled" id="TalBorrowSelectedBtnId" onclick="addToLibraryCart()">{!$Label.Library_Borrow_Selected} (<span id="TalSelectedItemsCountId">0</span>)</button>
+    
+                                </div>
+                            </div>                  
+                        </div>
+                        <div class="bs row">
+                            <div class="bs col-sm-12 TalLibraryBooksBlock" id="TalLibraryBooksBlockId">
+                                <div>
+                                    <c:LibraryRecentItemsComponent attrRtId="{!selectedRecordType }" rendered="{!IF(selectedRecordType != 'Fabric',true,false) }" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bs row">
+                            <div class="bs col-sm-12 TalLibraryBooksBlock" id="TalLibraryMostBorrowedId">
+                                <div style="margin-left:auto;margin-right:auto;">
+                                    <c:LibraryMostBorrowedComponent attrRtId="{!selectedRecordType }" rendered="true" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bs row">
+                            <div class="bs col-sm-12">
+                                <apex:outputPanel rendered="{!libraryOverdueItemCount>0}">
+                                    <div class="bs alert alert-warning">
+                                        <a href="#" class="close" data-dismiss="alert">&times;</a>
+                                        <apex:outputText value="{!libraryOverdueWarningMessage}" escape="false"/>
+                                    </div>
+                                </apex:outputPanel>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <apex:actionFunction name="refreshCategoryAction" immediate=""
+                                        action="{!purgeSearchResults}" 
+                                        rerender="TalLibrarySearchForm" 
+                                        status="statusSaveTrip" 
+                                        oncomplete="moveCartBtnToLeft();loadChosenPicklists();hideUserTypePicker();fabricTypeOnChange('');">
+                                        
+                        <apex:param name="isMobile" assignTo="{!isMobile}" value="" />
+                        <apex:param name="isSalesforceOne" assignTo="{!isSalesforceOne}" value="" />
+                    </apex:actionFunction>
+                    
+                    <apex:actionFunction name="refresh2" status="statusSaveTrip"/>
+                    
+                    <apex:actionFunction action="{!jsSetIsMobile}" name="jsSetIsMobile" rerender="TalLibrarySearchForm">
+                        <apex:param name="isMobile" assignTo="{!isMobile}" value="" />
+                        <apex:param name="isSalesforceOne" assignTo="{!isSalesforceOne}" value="" />
+                    </apex:actionFunction>
+                    
+                    <br/>  
+                    <div class="bs row">
+<!-- SEARCH CRITERIA --------------------------------------------------------------------------------------------------- -->
+                        <div class="bs col-sm-12 TalLibrarySearchBlock">
+                            <div class="tal-header" style="padding-left: 20px;">
+                              <h5>{!$Label.Library_Search}</h5>
+                            </div>
+                            
+                            <div style="/*overflow-x: auto; width: auto;*/">
+                                <apex:outputLink value="javascript: toggleSearch(true);" rendered="{!IsCategorySelected}" styleclass="TalLibrarySearchExpandLink" style="display:none;">
+                                    <span class="TalLibrarySearchExpand"><span class="bs glyphicon glyphicon-chevron-down"></span> Expand Search</span>
+                                </apex:outputLink>
+                                
+                                <div class="TalLibrarySearchCriteria" style="margin:0;">
+                                    <apex:pageBlock rendered="{!IsCategorySelected}">
+                                        <span class="TalLibrarySearchCollapse"><a href="javascript: toggleSearch(false);"><span class="bs pull-right" style="padding-right: 2px;"> Collapse Search</span> <span class="bs glyphicon glyphicon-chevron-up pull-right"></span></a></span>
+                                        
+                                        <div class="btn-group pull-left" style="{!IF(selectedRecordType = 'Fabric','display:block;padding-bottom:20px;','display:none')}">
+                                            <button type="button" id="fId" style="background: #EAEAEA;" class="btn btn-default" onclick="FabricSearchToggle();" >Fabric Search</button>
+                                            <button type="button" id="iId" class="btn btn-default" onclick="IdSearchToggle();" >ID Search</button>                                    
+                                        </div>
+                                        
+                                        
+                                        <div id="IdSearchformId" style="display:none;">
+                                            <apex:pageblocksection columns="{!pageSectionColumns}" collapsible="false">
+                                                    <apex:repeat value="{!FieldSetMaster}" var="f">  
+                                                        <!-- Use the default inputField if it's not a Wrapper field -->
+                                                        <apex:inputField id="uniqueFabricId" value="{!sow.obj[f.fieldPath]}" required="{!OR(f.required, f.dbrequired)}" 
+                                                                rendered="{! f.fieldPath = 'Fabric_ID__c' }" />
+                                                    </apex:repeat>
+                                            </apex:pageblocksection>
+                                        </div>
+                                        
+                                        <div id="FabricSearchformId">
+                                            <apex:pageblocksection columns="{!pageSectionColumns}" collapsible="false">
+                                                <apex:repeat value="{!FieldSetMaster}" var="f">
+                                                                                   
+                                                    <!-- Use the default inputField if it's not a Wrapper field -->
+                                                    <apex:inputField value="{!sow.obj[f.fieldPath]}" required="{!OR(f.required, f.dbrequired)}" 
+                                                            rendered="{! f.fieldPath != 'Tech_Owner__c' && f.fieldPath !='Fabric_ID__c' && 
+                                                                            (( f.type != 'datetime' && f.type != 'double' && f.type != 'picklist' && f.type != 'multipicklist' ) || 
+                                                                                (f.type = 'picklist' && selectedRecordType = 'Fabric' && NOT(CONTAINS(f.fieldPath, 'Fls_'))) || 
+                                                                                OR(f.fieldPath = 'Density_Weft__c', f.fieldPath = 'Density_Warp__c') )}"
+                                                            styleClass="{!f.fieldPath}"
+                                                            onchange="{!if(f.fieldPath == 'Fabric_Type__c', 'fabricTypeOnChange(this.value);','')}"/>
+                                                                        
+                                                    <!-- USER: Use the default inputField if it's not a Wrapper field User Drop-down -->
+                                                    <apex:inputField value="{!sow.obj[f.fieldPath]}" styleClass="TalUserDropDown {!f.fieldPath}"
+                                                            rendered="{! f.fieldPath = 'Tech_Owner__c' && (( f.type != 'datetime' && f.type != 'double' && f.type != 'picklist' && f.type != 'multipicklist' ) || 
+                                                                        (f.type = 'picklist' && selectedRecordType = 'Fabric'))}"/>
+                                                    
+                                                    <!-- NumberWrapper -->
+                                                    <apex:pageBlockSectionItem rendered="{!f.type == 'double' && AND(f.fieldPath != 'Density_Weft__c', f.fieldPath != 'Density_Warp__c')}" dataStyleClass="{!f.fieldPath}">
+                                                        <apex:outputLabel value="{!f.Label}" />
+                                                        <apex:outputPanel >
+                                                            <apex:inputText value="{!sow.numberWrapperMap[f.fieldPath].min}" rendered="{!f.type == 'double'}" style="width:60px;margin-right:5px;"/>
+                                                            <apex:outputText value="{!$Label.ELeave_General_To} " />
+                                                            <apex:inputText value="{!sow.numberWrapperMap[f.fieldPath].max}" rendered="{!f.type == 'double'}" style="width:60px;" />        
+                                                        </apex:outputPanel>
+                                                    </apex:pageBlockSectionItem>
+                                                    
+                                                    <!-- MultiSelectWrapper -->
+                                                    <apex:pageBlockSectionItem rendered="{!(f.type == 'multipicklist' || (f.type == 'picklist' && selectedRecordType != 'Fabric') || 
+                                                            (selectedRecordType = 'Fabric' && f.type == 'picklist' && CONTAINS(f.fieldPath, 'Fls_') ) )}" dataStyleClass="{!f.fieldPath}">
+                                                        <apex:outputLabel value="{!f.Label}" />
+                                                        <apex:outputPanel >
+                                                            <apex:selectList value="{!sow.multiSelectWrapperMap[f.fieldPath].selectedValues}" multiselect="true" styleclass="chosen-select" style="width:200px;" onchange="loadCrossIcon()">
+                                                                <apex:selectOptions value="{!sow.multiSelectWrapperMap[f.fieldPath].selectOptions}"/>
+                                                            </apex:selectList>
+                                                        </apex:outputPanel>
+                                                    </apex:pageBlockSectionItem>
+                                                    
+                                                    <!-- DateWrapper dateWrapperMap -->
+                                                    <apex:pageBlockSectionItem rendered="{!f.type == 'datetime'}" dataStyleClass="{!f.fieldPath}">
+                                                        <apex:outputLabel value="{!f.Label}" />
+                                                        <apex:outputPanel >                                                
+                                                            <apex:inputField value="{!sow.dateWrapperMap[f.fieldPath].proxy.Tech_Start_Date_Proxy__c}" />
+                                                            <apex:outputText value="  " />
+                                                            <apex:inputField value="{!sow.dateWrapperMap[f.fieldPath].proxy.Tech_End_Date_Proxy__c}" />        
+                                                        </apex:outputPanel>
+                                                    </apex:pageBlockSectionItem>
+                                                    
+                                                </apex:repeat>
+                                                
+                                                <apex:repeat value="{!FieldSetInventory}" var="f">
+                                                    <apex:inputField value="{!libInvSow.obj[f.fieldPath]}" required="{!OR(f.required, f.dbrequired)}" rendered="true" />
+                                                </apex:repeat>
+                                                
+                                                <apex:inputText label="QR Code Number"  value="{!QRCodeNumber}"  rendered="true" />
+                                                
+                                                <apex:inputCheckbox label="FMP" value="{!FMP}" rendered="{!IF(selectedRecordType != 'Fabric',false,true) }" />
+                                                
+
+                                                
+                                            </apex:pageblocksection>
+                                        </div>
+                                        <!--  Special handling for Samples Fabric -->
+
+                                       <apex:pageblocksection columns="{!pageSectionColumns}" collapsible="false" rendered="{! (selectedRecordType = 'SamplesTGA' || selectedRecordType = 'SamplesPD')}" title="Fabric Search Criteria">                          
+                                            <apex:repeat value="{!FieldSetSamplesFabric}" var="f">             
+                                                <!-- {!selectedRecordType} - {!f.type} - {!f.fieldPath}<br/>      -->                   
+                                                <!-- Use the default inputField if it's not a Wrapper field -->
+                                                <apex:inputField value="{!sow.fabric[f.fieldPath]}" required="{!OR(f.required, f.dbrequired)}" 
+                                                        rendered="{! ( f.type != 'datetime' && f.type != 'double' && f.type != 'multipicklist' && f.fieldPath!='Weave_Knit_Type_TGA__c')}"/>
+    
+                                                <!-- NumberWrapper -->
+                                                <apex:pageBlockSectionItem rendered="{!f.type == 'double'}">
+                                                    <apex:outputLabel value="{!f.Label}" />
+                                                    <apex:outputPanel >
+                                                        <apex:inputText value="{!sow.numberWrapperMap[f.fieldPath].min}" rendered="{!f.type == 'double'}" style="width:60px;margin-right:5px;"/>
+                                                        <apex:outputText value="{!$Label.ELeave_General_To} " />
+                                                        <apex:inputText value="{!sow.numberWrapperMap[f.fieldPath].max}" rendered="{!f.type == 'double'}" style="width:60px;" />        
+                                                    </apex:outputPanel>
+                                                </apex:pageBlockSectionItem>
+                                                
+                                                <!-- MultiSelectWrapper -->
+                                                <apex:pageBlockSectionItem rendered="{! (f.fieldPath == 'Weave_Knit_Type_TGA__c' && selectedRecordType = 'SamplesTGA')||(f.type == 'multipicklist' && ((f.fieldPath == 'Weave_Knit_Type_TGA__c' && selectedRecordType = 'SamplesTGA') 
+                                                                                                                 || (f.fieldPath == 'Fls_Woven_Type__c' && selectedRecordType = 'SamplesPD') 
+                                                                                                                 || (f.fieldPath != 'Fls_Woven_Type__c' && f.fieldPath != 'Weave_Knit_Type_TGA__c'))) }">
+                                                    <apex:outputLabel value="{!f.Label}" />
+                                                    <apex:outputPanel >
+                                                        <apex:selectList value="{!sow.multiSelectWrapperMap[f.fieldPath].selectedValues}" multiselect="true" styleclass="chosen-select" style="width:200px;" onchange="loadCrossIcon()">
+                                                            <apex:selectOptions value="{!sow.multiSelectWrapperMap[f.fieldPath].selectOptions}"/>
+                                                        </apex:selectList>
+                                                    </apex:outputPanel>
+                                                </apex:pageBlockSectionItem>
+                                                
+                                                <!-- DateWrapper dateWrapperMap -->
+                                                <apex:pageBlockSectionItem rendered="{!f.type == 'datetime' }">
+                                                    <apex:outputLabel value="{!f.Label}" />
+                                                    <apex:outputPanel >                             
+                                                        <apex:inputField value="{!sow.dateWrapperMap[f.fieldPath].proxy.Tech_Start_Date_Proxy__c}" />
+                                                        <apex:outputText value="  " />
+                                                        <apex:inputField value="{!sow.dateWrapperMap[f.fieldPath].proxy.Tech_End_Date_Proxy__c}" />        
+                                                    </apex:outputPanel>
+                                                </apex:pageBlockSectionItem>
+                                                
+                                            </apex:repeat>                              
+                                        </apex:pageblocksection>
+                                        
+                                        
+                                        <div style="height:40px;">
+                                            <apex:commandButton action="{!searchRecord}" value="Search" id="TalLibrarySearchBtnId" 
+                                                                rerender="TalLibrarySearchForm" status="statusSaveTrip" rendered="{!IsCategorySelected}"
+                                                                styleclass="bs btn-primary pull-right" style="margin-right: 5px;" oncomplete="moveCartBtnToLeft();loadChosenPicklists();loadCrossIcon();toggleSearch(false);tabToggle();fabricTypeOnChange('');"/>
+
+                                            
+                                            <apex:commandButton action="{!clearFilters}" value="Clear" id="TalLibraryClearBtnId" 
+                                                                rerender="TalLibrarySearchForm" rendered="{!IsCategorySelected}" oncomplete="moveCartBtnToLeft();loadChosenPicklists();tabToggle();"
+                                                                style="margin-right: 5px;float:right;"/>
+                                        </div>
+                                    </apex:pageBlock>
+                                    <div style="height:40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bs row">
+                        
+<!-- SEARCH RESULTS --------------------------------------------------------------------------------------------------- -->
+                        
+                        <div class="bs col-sm-12">
+                            <apex:messages styleclass="bs alert alert-warning" />
+                            
+                            <apex:outputPanel id="resultPanel" title="Library Item Details" rendered="{!!searchResults.empty}">
+                                <div>
+                                    <apex:repeat value="{!searchResults}" var="item" rendered="{!pageSectionColumns = 1}">
+                                        <div class="panel panel-default">
+                                            <div class="panel-body">
+                                                <table>
+                                                    <tbody>
+                                                        <td style="padding-right: 10px;">
+                                                            <apex:inputField styleClass="TalCheckbox" value="{!item.Tech_Selected__c}" onclick="bulkSelect(this, '{!item.Id}');" style="width:20px; height:20px;"/>        
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputLink value="javascript:sforce.one.navigateToSObject('{!item.Id}');" target="_blank">
+                                                                <strong>{!item.Item_Name__c}</strong>
+                                                            </apex:outputLink>
+                                                            <br/>
+                                                            <apex:outputText value="Description: {!LEFT(item.Item_Description__c, 80)}" /><apex:outputText value="..." rendered="{!item.Item_Description__c != ''}" />
+                                                            <br/>
+                                                            <apex:repeat value="{!FieldSearchResultSet}" var="f">
+                                                                <apex:outputPanel rendered="{! AND(f.fieldPath != 'Item_Name__c', 
+                                                                                                f.fieldPath != 'Item_Description__c',
+                                                                                                f.fieldPath != 'Tech_Thumbnail_Id__c')}" styleClass="TalRestrictChildImg">
+                                                                    <apex:outputText value="{!f.Label}: " rendered="{! f.fieldPath != 'Item_Photo__c'}"/><apex:outputField value="{!item[f.fieldPath]}" /> <br/>
+                                                                </apex:outputPanel>
+                                                            </apex:repeat>
+                                                            <apex:outputPanel rendered="{! selectedRecordType == 'Fabric'}">
+                                                                <a href="/{!item.Id}" target="_blank"><img src="{!$Label.Library_Fls_Photo_Path_Start}{!item.Fabric_ID__c}/{!item.Color_ID_1__c}{!$Label.Library_Fls_Photo_Path_End}150" class="bs img-thumbnail"/></a>
+                                                            </apex:outputPanel>
+                                                            <br/><br/>
+                                                            
+                                                            <apex:repeat value="{!libIdToFabricInventoryJson[item.Id]}" var="inv">
+                                                                Factory: {!inv.facility}<br/>
+                                                                
+                                                                Reserved Qty: {!inv.reservedQty}<br/>
+                                                                
+                                                                Available Qty: {!inv.availableQty}<br/>
+                                                                Unit: {!inv.unit}<br/><br/>
+                                                            </apex:repeat>
+                                                        </td>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </apex:repeat>
+                                    <apex:dataTable value="{!searchResults}" var="item" styleClass="bs table table-condensed" rendered="{!pageSectionColumns = 2}">
+                                        <apex:column headerValue="">
+                                            <apex:inputField styleClass="TalCheckbox" value="{!item.Tech_Selected__c}" onclick="bulkSelect(this, '{!item.Id}');"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Item Name">
+                                            <apex:outputLink value="/{!item.Id}"  target="_blank" rendered="{!!isSalesforceOne}">
+                                                {!item.Item_Name__c}
+                                            </apex:outputLink>
+                                            <apex:outputLink value="javascript:sforce.one.navigateToSObject('{!item.Id}');" target="_blank" rendered="{!isSalesforceOne}">
+                                                {!item.Item_Name__c}
+                                            </apex:outputLink>
+                                        </apex:column>
+                                        <apex:column headerValue="Description">
+                                                {!LEFT(item.Item_Description__c, 80)}<apex:outputText value="..." rendered="{!item.Item_Description__c != ''}" />
+                                        </apex:column>  
+                                        <apex:repeat value="{!FieldSearchResultSet}" var="f">
+                                            <apex:column styleClass="formatColumn" headerValue="{!f.Label}" 
+                                                         value="{!item[f.fieldPath]}"
+                                                         rendered="{! AND(f.fieldPath != 'Item_Name__c', 
+                                                                            f.fieldPath != 'Item_Description__c',
+                                                                            f.fieldPath != 'Tech_Thumbnail_Id__c')}" />
+                                            
+                                           
+                                        </apex:repeat>
+                                        <apex:column styleClass="formatColumn" headerValue="Image" 
+                                                         rendered="{! selectedRecordType == 'Fabric'}"> 
+                                            <a href="/{!item.Id}" target="_blank"><img src="{!$Label.Library_Fls_Photo_Path_Start}{!item.Fabric_ID__c}/{!item.Color_ID_1__c}{!$Label.Library_Fls_Photo_Path_End}150" class="bs img-thumbnail"/></a>
+                                        </apex:column>
+                                        <!-- Fabric only -->
+                                        <apex:column rendered="{! selectedRecordType == 'Fabric'}" headerValue="Factory Inventory">
+                                            <apex:repeat value="{!libIdToFabricInventoryJson[item.Id]}" var="inv">
+                                                Factory: {!inv.facility}<br/>
+                                                Available Qty:
+                                                <apex:outputText value="{0, number, 0.00}">
+                                                      <apex:param value="{!inv.availableQty}" />
+                                                </apex:outputText><br/>
+                                                
+                                                Reserved Qty:
+                                                <apex:outputText value="{0, number, 0.00}">
+                                                      <apex:param value="{!inv.reservedQty}" />
+                                                </apex:outputText><br/>
+                                                
+                                                Unit: {!inv.unit}<br/><br/>
+                                            </apex:repeat>
+                                        </apex:column>
+                                    </apex:dataTable>
+                                </div>
+                                <nav>
+                                    <apex:outputPanel rendered="{! selectedRecordType != 'Fabric'}">
+                                        <ul class="pagination">
+                                            <li class="{! IF(libSourceLocalRepo.hasPrevPage, '', 'disabled') }"><apex:commandLink action="{!prevPage}" rerender="resultPanel" status="statusSaveTrip" oncomplete="moveCartBtnToLeft();">&laquo;</apex:commandLink></li>
+                                            <li class="{! IF(libSourceLocalRepo.hasNextPage, '', 'disabled') }"><apex:commandLink action="{!nextPage}" rerender="resultPanel" status="statusSaveTrip" oncomplete="moveCartBtnToLeft();">&raquo;</apex:commandLink></li>
+                                        </ul>
+                                        <br/>
+                                        <span style="color:#888;font-size:9px;">{!libSourceLocalRepo.currentPage + 1} of {!libSourceLocalRepo.totalPages + 1} | {!libSourceLocalRepo.totalRecordCount} results found</span>
+    
+                                    </apex:outputPanel>
+                                    
+                                    <!--added by nickwu-->
+                                    <apex:outputPanel rendered="{! selectedRecordType == 'Fabric'}">
+                                        <div class="bs row">
+                                            <div class="bs col-md-6">
+                                                <ul class="pagination">
+                                                    <li class="{! IF(libSourceFabricRepo.hasPrevPage, '', 'disabled') }"><apex:commandLink action="{!prevPage}" rerender="resultPanel" status="statusSaveTrip" oncomplete="moveCartBtnToLeft();">&laquo;</apex:commandLink></li>
+                                                    <li class="{! IF(libSourceFabricRepo.hasNextPage, '', 'disabled') }"><apex:commandLink action="{!nextPage}" rerender="resultPanel" status="statusSaveTrip" oncomplete="moveCartBtnToLeft();">&raquo;</apex:commandLink></li>                                      
+                                                </ul> 
+
+                                                <div class="bs input-group">
+                                                    <input type="text" class="form-control" placeholder="Search for..."/>
+                                                    <span class="input-group-btn">
+                                                        <button class="btn btn-secondary" type="button">Go!</button>
+                                                    </span>
+                                                </div>
+                                                
+                                                <br/>
+                                                <span style="color:#888;font-size:9px;">{!libSourceFabricRepo.currentPage} of {!libSourceFabricRepo.totalPages + 1} | {!libSourceFabricRepo.totalRecordCount}  results found</span>
+                                                                                            
+                                            </div>
+                                        </div>
+                                    </apex:outputPanel>
+                                </nav>
+                            </apex:outputPanel>
+                         
+                        </div>
+                    </div>
+                </apex:form>
+                <div style="height:40px;"></div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript">
+    var LIBRARY_NS = {
+        selectedItems: new Array(),
+        libraryCartId: ''
+    };
+
+    var isToggle =false;
+
+    function navigateToLibraryCart() {
+    
+        if(getIsSalesforceOne()) {
+            
+            sforce.one.navigateToSObject(LIBRARY_NS.libraryCartId);
+             
+        } else {
+            window.location.href = '/apex/LibraryItemRequestViewVFPage';
+        }
+    }
+    
+    function IdTabAutofocus(){
+        if(isToggle){
+            return "autofocus";
+        }else{
+            return "";
+        }
+    }
+    
+    function fabricTabAutofocus(){
+        if(isToggle){
+            return "";
+        }else{
+            return "autofocus";
+        }
+    }
+    
+    function tabToggle(){
+        if(isToggle){
+            $('#IdSearchformId').show();
+            $('#IdSearchformId').css('display','block');
+            $('#iId').css('background','#EAEAEA');
+            
+            $('#FabricSearchformId').hide();
+            $('#FabricSearchformId').css('display','none');
+            $('#fId').css('background','white');
+        }else{
+            $('#FabricSearchformId').show();
+            $('#FabricSearchformId').css('display','block');
+            $('#fId').css('background','#EAEAEA');
+            
+            $('#IdSearchformId').hide();
+            $('#IdSearchformId').css('display','none');
+            $('#iId').css('background','white');
+            $("input[id*=uniqueFabricId]").val('');
+        }
+    }
+    
+    function FabricSearchToggle(){
+        isToggle = false;
+        $('#FabricSearchformId').show();
+        $('#fId').css('background','#EAEAEA');
+        $('#iId').css('background','white');
+        
+        $("input[id*=uniqueFabricId]").val('');
+        $('#IdSearchformId').hide();
+    }
+    
+    function IdSearchToggle(){
+        isToggle = true;
+        $('#FabricSearchformId').hide();
+        $('#IdSearchformId').show();
+        $('#iId').css('background','#EAEAEA');
+        $('#fId').css('background','white');
+        
+    }
+    
+    function getIsSalesforceOne() {
+        var result = false;
+        
+        if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+            result = true;
+        }
+        
+        return result;
+    }
+    
+    function refreshCategoryDetectMobile() {
+        var isMobile = false;
+        var isSalesforceOne = false;
+        loadCrossIcon();
+        if($(window).width() < 768) {
+            isMobile = true;
+        }
+        
+        isSalesforceOne = getIsSalesforceOne();
+        refreshCategoryAction(isMobile, isSalesforceOne);
+        
+    }
+
+    $(document).ready(function() {
+        if (!Array.prototype.indexOf) {
+            Array.prototype.indexOf = function(val) {
+                return jQuery.inArray(val, this);
+            };      
+        }
+
+        /*
+            Nick wu reset the record type text to default index
+            if not burberry user, then reset selected index
+        */
+        if({!!OR(isBurberryUser , isChicoUser)}){
+            $("select[id*=TalLibraryCategorySelectorId]").get(0).selectedIndex = 0;
+        }
+
+        getLibraryCart();
+        $('#TalLibraryBooksBlockId').show();
+        
+        loadChosenPicklists();
+        loadCrossIcon();
+        moveCartBtnToLeft();
+        
+        hideUserTypePicker();
+        
+        //refreshCategoryAction(); // Added by AN: 06/05/2015
+        
+        
+    });
+    
+    /*
+        NickWu added to fix My Cart & Borrow Buttons not working in IOS
+    */
+    
+    function moveCartBtnToLeft(){
+        if(navigator.userAgent.indexOf('SalesforceMobile')>1||navigator.userAgent.indexOf('Salesforce1')>1) {        
+            $('#CartBtns').removeClass('pull-right');
+            $('#CartBtns').addClass('pull-left');
+            
+            $('#LogoDivId').css('display','block');
+            $('#LogoDivId').css('width','100%');
+            $('#ParentCartBtns').css('display','block');
+            $('#ParentCartBtns').css('width','100%');
+            
+            $('#LogoDivId').focus();
+            
+            $('#CartBtns').css('float','left');
+            $('#ParentCartBtns').css('float','left');  
+            $('#RecordTypeSelectionId').css('float','left');
+        }
+    }
+    
+    function hideUserTypePicker() {
+        $('div.TalUserDropDown select').hide();
+    }
+    
+    function unescapeChars(str) {
+     var arrEntities={'lt':'<','gt':'>','nbsp':' ','amp':'&','quot':'"'};
+     return str.replace(/&(lt|gt|nbsp|amp|quot);/ig,function(all,t){return arrEntities[t];});
+    }
+    
+    function loadChosenPicklists() {
+    
+    $('#TalLibraryBooksBlockId').show();
+        
+        if(!getIsSalesforceOne()) {
+            $('.chosen-select').each(function(index, value) {
+            
+                for(var i=0;i<value.children.length;i++){
+                   value.children[i].label = unescapeChars(value.children[i].label);
+                   value.children[i].value = unescapeChars(value.children[i].value);
+                   value.children[i].text= unescapeChars(value.children[i].text);
+                }
+                $(this).chosen({placeholder_text_multiple: '{!$Label.Library_Select_Options}'});            
+            });
+        }
+        
+    }
+    
+    function loadCrossIcon() {
+        $('.search-choice-close').css('background', 'url({!$Resource.chosen_sprite}) -42px 1px no-repeat');     
+    }
+    
+    function bulkSelect(checkbox, recordId) {
+        //if($(checkbox).attr("checked")) {
+        if(LIBRARY_NS.selectedItems.indexOf(recordId) > -1) {
+            LIBRARY_NS.selectedItems.splice(LIBRARY_NS.selectedItems.indexOf(recordId), 1);
+        } else {
+            LIBRARY_NS.selectedItems.push(recordId);
+        }
+        //}
+        
+        var itemCount = LIBRARY_NS.selectedItems.length;
+        $('#TalSelectedItemsCountId').text(itemCount);
+        
+        if(itemCount > 0 ) {
+            $('#TalBorrowSelectedBtnId').removeClass('disabled');
+        } else {
+            $('#TalBorrowSelectedBtnId').addClass('disabled');
+        }
+        
+    }
+    
+    //function resetCartCount() {
+    //  $('#TalCartCountId').text('{!libraryCartItemCount}');    
+    //}
+    
+    function resetCartCount() {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.LibrarySearchCtrl.getLibraryCartNum}',
+            function(result, event){
+                if (event.status) {
+                    if(result != '') {
+                        $('#TalCartCountId').text(result);    
+                    }
+                } else if (event.type === 'exception') {
+
+                } else {
+
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    
+    function addToLibraryCart() {
+        if(LIBRARY_NS.selectedItems.length > 0) {
+            var multiLibItemId = LIBRARY_NS.selectedItems.join(';');
+            addToLibraryCartAndRedirect(multiLibItemId);
+            //window.location.href = '/apex/LibraryItemRequestAddVFPage?multiLibItemId=' + multiLibItemId;            
+        } else {
+            alert('You must select items to borrow');    
+        }
+    }
+    
+    function addToLibraryCartAndRedirect(itemIds) {
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LibrarySearchCtrl.borrowSelectedAction}',
+                itemIds,
+                function(result, event){
+                    if (event.status) {
+                        if(result != '') {
+                            alert('Added to your Library Cart!');               
+                        } else {
+                            alert('Fail. Try again.');
+                        }
+                    } else if (event.type === 'exception') {
+                        alert(event.message);
+                    } else {
+                        alert('Fail. Try again.');
+                    }
+                    reset();
+                }, 
+                {escape: true}
+            );
+            resetCartCount();
+        }
+    
+    function toggleSearch(expand) {
+        if(expand != null && expand) {
+            $('.TalLibrarySearchCriteria').show();
+            $('.TalLibrarySearchExpandLink').hide();
+            $('#TalLibraryBooksBlockId').show();
+        } else {
+            $('.TalLibrarySearchExpandLink').show();
+            $('.TalLibrarySearchCriteria').hide();
+        }
+    }
+       
+    function reset() {    
+        //deSelect all checkbox
+        $(".TalCheckbox").attr('checked', false);
+        
+        //reset item counter
+        LIBRARY_NS.selectedItems = new Array();
+        $('#TalSelectedItemsCountId').text(0);        
+        $('#TalBorrowSelectedBtnId').addClass('disabled');
+        
+    }
+    function replaceEnter(e){
+        if (e.keyCode == 13){
+            var allElements = document.getElementsByTagName('*');
+            for (var i = 0; i < allElements.length; i++){
+                if (allElements[i].id.indexOf("TalLibrarySearchBtnId") !=-1){
+                    allElements[i].click();
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+    function getLibraryCart() {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.LibrarySearchCtrl.getLibraryCart}',
+            function(result, event){
+                if (event.status) {
+                    if(result != '') {
+                        LIBRARY_NS.libraryCartId = result;
+                    }
+                } else if (event.type === 'exception') {
+                    alert(event.message);
+                    console.log(event);
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    
+    function fabricTypeOnChange(fabricType) {
+        if(fabricType == '') {
+            $(".Yarn_Size__c").val('');
+            $(".Yarn_Size__c").prop('disabled', true);
+            
+            $(".Warp_Yarn_Size__c").val('');
+            $(".Yarn_Type_Warp__c").val('');
+            $(".Weft_Yarn_Size__c").val('');
+            $(".Yarn_Type_Weft__c").val('');            
+            $(".Warp_Yarn_Size__c").prop('disabled', true);
+            $(".Yarn_Type_Warp__c").prop('disabled', true);
+            $(".Weft_Yarn_Size__c").prop('disabled', true);
+            $(".Yarn_Type_Weft__c").prop('disabled', true);        
+        }
+        else if(fabricType == '210') {
+            //$(".Yarn_Size__c").val('');
+            $(".Yarn_Size__c").prop('disabled', false);
+            
+            $(".Warp_Yarn_Size__c").val('');
+            $(".Yarn_Type_Warp__c").val('');
+            $(".Weft_Yarn_Size__c").val('');
+            $(".Yarn_Type_Weft__c").val('');            
+            $(".Warp_Yarn_Size__c").prop('disabled', true);
+            $(".Yarn_Type_Warp__c").prop('disabled', true);
+            $(".Weft_Yarn_Size__c").prop('disabled', true);
+            $(".Yarn_Type_Weft__c").prop('disabled', true);
+        }
+        else if(fabricType == '211') {
+            $(".Yarn_Size__c").val('');
+            $(".Yarn_Size__c").prop('disabled', true);
+            
+            //$(".Warp_Yarn_Size__c").val('');
+            //$(".Yarn_Type_Warp__c").val('');
+            //$(".Weft_Yarn_Size__c").val('');
+            //$(".Yarn_Type_Weft__c").val('');            
+            $(".Warp_Yarn_Size__c").prop('disabled', false);
+            $(".Yarn_Type_Warp__c").prop('disabled', false);
+            $(".Weft_Yarn_Size__c").prop('disabled', false);
+            $(".Yarn_Type_Weft__c").prop('disabled', false);            
+            
+        }
+    }
+    window.onkeypress = replaceEnter;
+</script>
+</apex:page>

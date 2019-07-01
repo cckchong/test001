@@ -1,0 +1,52 @@
+<apex:page standardController="Expense_Detail__c" sidebar="false" showHeader="false" extensions="TEExpenseDetailRemoteActionsUtils">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+
+    <c:JavascriptUtilsComponent />
+    
+    <script>
+        
+        $(document).ready(function() {
+            recallApprovalProcess('{!Expense_Detail__c.Id}');            
+        });
+        
+        function recallApprovalProcess(recordId) {
+
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.TEExpenseDetailRemoteActionsUtils.recallApprovalProcess}',
+                recordId,
+                function(result, event){
+                    if (event.status) {
+                        if(result != '') {
+                            alert('{!$Label.TE_Expense_Detail_Recalled}');
+                            navigateTo(result);
+                        } else {
+                            alert('{!$Label.TE_Expense_Detail_Unable_To_Recall}');
+                            navigateTo(result);
+                        }
+                    } else if (event.type === 'exception') {
+                        if ( !{!Expense_Detail__c.Mine__c} ){
+                            alert('{!$Label.TE_Expense_Detail_Unable_To_Recall_By_Other}');
+                        }
+                        else{
+                            alert(event.message);
+                        }
+                        
+                        navigateTo(event.data[0]);
+                    }
+                }, 
+                {escape: true}
+            );
+        }
+        
+        function navigateTo(endpoint) {
+            if(getIsSalesforceOne()) {
+                //sforce.one.navigateToSObject(endpoint);
+                sforce.one.back(true);
+            } else {
+                window.location.href = '/' + endpoint;
+            }
+        }
+    
+    </script>
+</apex:page>

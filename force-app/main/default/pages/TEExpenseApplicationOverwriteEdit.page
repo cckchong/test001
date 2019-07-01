@@ -1,0 +1,3 @@
+<apex:page StandardController="Expense_Application__c" extensions="TEExpenseApplicationOverwriteEditCtrl" action="{!redirect}">
+
+</apex:page>

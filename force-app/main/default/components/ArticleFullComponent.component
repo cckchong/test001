@@ -1,0 +1,185 @@
+<apex:component >
+<!-- <apex:component controller="ArticleDetailsController" layout="block">
+	<apex:attribute name="articleRef" description="recordID" type="Id" assignTo="{!articleID}" required="false" />
+	<apex:attribute name="title" type="String" description="title of the Panel" assignTo="{!panelTitle}" required="false" />	     
+	<apex:attribute name="recordRef" description="recordID" type="Id" assignTo="{!recordID}" required="false" />
+    <apex:attribute name="isEditable" description="control whether the edit button is visible" type="Boolean" required="false" />
+	<style>
+		img {
+			max-width: 100%;
+			height: auto;
+		}
+		
+		.panelClass {
+			height: 100%;
+		}
+		
+		.FullTextTitle {
+			color: #006699;
+			font-size: 2em;
+			font-weight: bold;
+			font-family: arial;
+		}
+		
+		.PublishText {
+			color: #006699;
+			font-size: 1em;
+			font-weight: bold;
+			font-family: arial;
+		}
+		
+		.FullText {
+			color: #555;
+			font-family: arial;
+			font-size: 1em;
+		}
+		
+		.Author {
+	        color: #555;
+	        font-family: arial;
+	        font-size: 1em;
+	        font-style:italic
+	    }
+	    
+	    .RevisedOn {
+	        color: #990000;
+	        font-family: arial;
+	        font-size: 1em;
+	        font-style:italic;
+	        align: left
+	    }	
+	    @font-face {   
+			font-family: 'Glyphicons Halflings';   
+			src: url('{!URLFOR($Resource.bootstrap, '/fonts/glyphicons-halflings-regular.eot')}');   
+			src: url('{!URLFOR($Resource.bootstrap, '/fonts/glyphicons-halflings-regular.eot')}?#iefix') format('embedded-opentype'), 
+			url('{!URLFOR($Resource.bootstrap, '/fonts/glyphicons-halflings-regular.woff')}') format('woff'),  
+			url('{!URLFOR($Resource.bootstrap, '/fonts/glyphicons-halflings-regular.ttf')}') format('truetype'), 
+			url('{!URLFOR($Resource.bootstrap, '/fonts/glyphicons-halflings-regular.svg')}#glyphicons-halflingsregular') format('svg'); 
+		} 
+	</style>	
+	
+	<apex:includeScript value="/soap/ajax/29.0/connection.js" />	
+	<script type="text/javascript"> 	
+	
+	function cFollow() { 
+	
+		var cRecordId = "{!articleID}"; 
+		var cUserID = "{!$User.Id}"; 
+		
+		var cEntSub = new sforce.SObject('EntitySubscription');
+		cEntSub.ParentId = cRecordId;
+		cEntSub.SubscriberId  = cUserID;
+		
+		sforce.connection.sessionId = "{!$Api.Session_ID}";
+		var result = sforce.connection.create([cEntSub]); 
+		
+		if (result[0].getBoolean("success")) 
+		{ 
+			alert("You have followed the record so you can see updates in your Chatter feed, including field changes, posts, tasks, and comments on the record!"); 
+		} 
+		else 
+		{ 
+			alert("Fails on " + result[0] + "."); 
+		} 
+		location.reload(true);
+	
+	} 
+	
+	function cUnfollow() { 
+	
+		var cRecordId = "{!articleID}"; 
+		var cUserID = "{!$User.Id}"; 
+		
+		sforce.connection.sessionId = "{!$Api.Session_ID}";		
+		var result = sforce.connection.query("select Id, ParentId, SubscriberId from EntitySubscription Where SubscriberId='{!$User.Id}' And ParentId='{!articleID}' limit 100");
+		records = result.getArray("records");
+ 		var cEntSub = new sforce.SObject('EntitySubscription');
+		for (var i=0; i< records.length; i++) 
+		{
+			cEntSub.Id = records[i].Id;
+		}		
+		
+		var delResult = sforce.connection.deleteIds([cEntSub.Id]);
+	    if (delResult[0].getBoolean("success")) 
+	    {
+	    	alert("Unfollowed!"); 
+	    } else {
+	    	alert("Fails on " + delResult[0] + "."); 
+	    }
+	} 
+	</script> 
+	
+	<div class="bs wrapper">
+		<div class="bs panel panel-info panelClass" id="announcementPanel">
+			<div class="bs panel-heading">
+				<h3 class="bs panel-title">{!panelTitle}</h3>				
+			</div>		
+			<apex:outputPanel rendered="{!bReadArticle}">
+				<div id="Body" class="bs panel-body">	
+					<div class="bs row">
+						<div class="col-md-12 col-sm-12 col-xs-12" id="announcement">					
+							<ul id="tabs" class="bs nav nav-tabs" data-tabs="tabs">							
+								<li class="bs pull-right"><apex:outputLink value="{!strNextId}" rendered="{!bNext}"><Strong>Next</Strong>&nbsp;<span class="bs glyphicon glyphicon-chevron-right"></span></apex:outputLink></li>
+						    	<li class="bs pull-right"><apex:outputLink value="{!strPreviousId}" rendered="{!bPrevious}"><span class="bs glyphicon glyphicon-chevron-left"></span>&nbsp;<Strong>Previous</Strong></apex:outputLink></li>		    	
+								<li class="bs dropdown pull-right">
+						            <a href="#" data-toggle="dropdown" class="bs dropdown-toggle"><Strong>Language</Strong> <b class="caret"></b></a>
+						            <ul class="dropdown-menu">
+						            	<apex:variable value="{!1}" var="counterPanel"/>
+										<apex:repeat value="{!Languages}" var="lang">										
+											<li class="{!IF(OR(fullArticle.objpc[TitleLangVar[lang]]=NULL,fullArticle.objpc[TitleLangVar[lang]]='' ),'hidden','')}"><a href="#tab{!counterPanel}" data-toggle="tab">{!LanguagesLabel[Lang]}</a></li>
+										<apex:variable var="counterPanel" value="{!counterPanel + 1}"/>   									
+		            					</apex:repeat>		    	
+						            </ul>
+						        </li>
+						        <li class="bs pull-right"><apex:outputLink rendered="{!bEditArticle}" value="/{!articleRef}"  target="_blank"><Strong>Edit Content</Strong></apex:outputLink></li>
+						        <li class="bs pull-right"><apex:outputLink rendered="{!NOT(bFollowing)}" onclick="cFollow();"><apex:image value="{!$Resource.ChatterFollow}"/>&nbsp;<Strong>Follow</Strong></apex:outputLink></li>
+						        <li class="bs pull-right"><apex:outputLink rendered="{!bFollowing}" onclick="cUnfollow();"><Strong>Following</Strong>&nbsp;<apex:image value="{!$Resource.ChatterUnfollow}"/></apex:outputLink></li>
+							</ul>
+							<div id="my-tab-content" class="bs tab-content">
+								<apex:variable value="{!1}" var="counter"/>
+								<apex:repeat value="{!Languages}" var="lang">
+									<div class="bs tab-pane {!IF(OR(AND(Lang = 'en' , userPreferLang = 'en'), AND(Lang = 'en' , userPreferLang != 'en', fullArticle.defaultLang=false), AND(userPreferLang = Lang, fullArticle.defaultLang=true, Lang != 'en')),'active','')}" id="tab{!counter}">		
+						                <apex:outputPanel layout="block">
+							                <div class="bs row">
+								                <div class="col-md-9 col-sm-9 col-xs-9">
+									                <apex:outputText value="{!fullArticle.objpc[TitleLangVar[lang]]}" styleClass="FullTextTitle" />
+									                <apex:outputText value=" - " styleClass="Author" />
+													<apex:outputLink value="/{!IF(fullArticle.objpc[RevisedLangVar[lang]]=true,fullArticle.objpc.LastModifiedById,fullArticle.objpc.OwnerId)}" styleclass="RichTextContentURL" target="_blank">
+													<apex:outputText value="{!IF(fullArticle.objpc[RevisedLangVar[lang]]=true,fullArticle.objpc.LastModifiedBy.Name,fullArticle.objpc.Owner.Name)}" styleClass="Author" />
+													</apex:outputLink>	
+													
+												</div>
+												<div class="col-md-3 col-sm-3 col-xs-3" align="right">
+													<apex:outputText value="Published: {0, date, dd MMM yyyy}" styleClass="Author">
+													    <apex:param value="{!fullArticle.objpc.CreatedDate}" /> 
+													</apex:outputText>
+													<br/>
+													<apex:outputText rendered="{!IF(fullArticle.objpc[RevisedLangVar[lang]]=true,true,false)}" value="Revised: {0, date, dd MMM yyyy}" styleClass="RevisedOn">
+													    <apex:param value="{!fullArticle.objpc.LastModifiedDate}" /> 
+													</apex:outputText>	
+												</div>
+											</div>
+											<div class="bs row">
+												<div class="col-md-12 col-sm-12 col-xs-12">
+							                		<apex:outputText value="{!fullArticle.objpc[ContentsLangVar[lang]]}" styleClass="FullText" escape="false" />
+							                	</div>
+							                </div>
+						                </apex:outputPanel>
+							        </div>
+							        <apex:variable var="counter" value="{!counter + 1}"/>
+								</apex:repeat>
+								
+							</div>						
+						</div>
+					</div>
+				</div>
+				<div class="bs well well-lg" id="chatter">
+					<chatter:feed entityId="{!articleID}" />
+				</div>
+			</apex:outputPanel>
+			<apex:outputLink value="/{!recordID}"
+				styleClass="bs btn btn-primary btn-sm" rendered="{!isEditable}"
+				target="_blank">{!$Label.ChangeContent}</apex:outputLink>
+		</div>  		
+	</div> -->
+</apex:component>

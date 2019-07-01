@@ -1,0 +1,2 @@
+<apex:page standardController="Education_Application__c" sidebar="false" showHeader="false" extensions="TEEducationRequestStatusController"  action="{!SubmitAction}">
+</apex:page>

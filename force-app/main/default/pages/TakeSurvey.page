@@ -1,0 +1,189 @@
+<apex:page id="wholepage" standardcontroller="Survey__c" extensions="ViewSurveyController" cache="false" sidebar="false" showheader="true" action="{!checkAccessRight}">
+<!-- add by Connie. Bootstrap CSS -->
+<apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+<!-- end -->
+<style>
+    <apex:outputText value="{!surveyContainerCss}" />
+
+    /* Added by Connie. Remove border-top in pPageBlock */
+    .bPageBlock {
+        border-top: 4px solid #eaeaea !important;
+    }
+
+    /* added by Connie */
+    .bs label {
+        display: inline-block;
+        margin-bottom: 5px;
+        font-weight: 300;
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 11px;
+        color: #555;
+    }
+
+    .bs h1 {
+        font-family: Arial,Helvetica,sans-serif !important;  
+        font-weight: bold !important;
+        font-size: 14px !important;
+        color: #555 !important;
+    }
+    /* end */
+</style>
+
+<div id="survey_container" class="bs container">   
+
+    <!-- added by Connie. center the survey -->
+    <div class="bs col-md-8 col-md-offset-2">
+
+        <apex:form id="theForm"   >
+        <!-- mod by Connie Hide after save survey as draft -->
+        <apex:outputPanel id="seeSurvey" rendered="{!thankYouRendered == false && draftRendered == false}" >
+            <apex:outputField value="{!Survey__c.Survey_Header__c}"/>
+            <h1><apex:outputField value="{!Survey__c.Name}" rendered="{!Survey__c.Hide_Survey_Name__c == false}"  /></h1>
+            
+        </apex:outputPanel>
+
+        <apex:pageMessages />
+        
+        
+        
+        <!-- mod by Connie Hide after save survey as draft -->
+        <apex:pageBlock rendered="{!thankYouRendered == false && draftRendered == false}" > 
+            <div id="qList">
+                <apex:variable value="{!1}" var="rowNum"/>
+                <apex:repeat value="{!allQuestions}" var="qPreview" id="aQPreview">
+        
+                <div id="{!qPreview.id}" >
+            
+                        <apex:pageBlock id="pblock"> 
+                            <h1 class="question">
+                                <span class="questionNumber">{!rowNum}</span>&nbsp;&nbsp;
+                                <!-- {!qPreview.question} -->
+                                <apex:outputText value="{!qPreview.questionRT}" escape="false" style="display:inline-block"/>
+                                <apex:outputPanel rendered="{!qPreview.required}" styleClass="requiredText">
+                                    ({!$Label.LABS_SF_Required})
+                                </apex:outputPanel>
+                            </h1>
+                            <!-- add space between question and answer -->
+                         <div id="radio" style="margin-top:5px;" > 
+                          <apex:selectRadio layout="pageDirection" rendered="{!qPreview.renderSelectRadio}" value="{!qPreview.selectedOption}" >
+                            <apex:selectOptions value="{!qPreview.singleOptions}"/>
+                          </apex:selectRadio>
+
+                          <apex:inputTextArea cols="35" rows="5" rendered="{!IF(AND(qPreview.addOther,qPreview.renderSelectRadio='true'),true,false)}"  value="{!qPreview.otherChoices}"/><!--add by DTT-->
+
+                          
+                        </div>
+                        <div id="checkbox" style="margin-top:5px;">           
+                          <apex:selectCheckboxes layout="pageDirection" rendered="{!qPreview.renderSelectCheckboxes}" value="{!qPreview.selectedOptions}" >
+                            <apex:selectOptions value="{!qPreview.multiOptions}"/>
+                          </apex:selectCheckboxes> 
+                          
+                          <apex:inputTextArea cols="35" rows="5" rendered="{!IF(AND(qPreview.addOther,qPreview.renderSelectCheckboxes='true'),true,false)}"  value="{!qPreview.otherChoices}"/><!--add by DTT-->
+                          
+                        </div>
+                        <div id="text" style="margin-top:5px;"> 
+                           <apex:inputTextArea cols="35" rows="5" rendered="{!qPreview.renderFreeText}" value="{!qPreview.choices}"/>  
+                        </div>
+                        <div id="row" style="margin-top:5px;" >
+                          <apex:selectRadio rendered="{!qPreview.renderSelectRow}" value="{!qPreview.selectedOption}">
+                            <apex:selectOptions value="{!qPreview.rowOptions}"/>
+
+                           
+                          </apex:selectRadio>
+
+                         
+                           <apex:inputTextArea cols="35" rows="5" rendered="{!IF(AND(qPreview.addOther,qPreview.renderSelectRow='true'),true,false)}"  value="{!qPreview.otherChoices}"/> <!--add by DTT-->
+                          
+                        </div>            
+                        <!-- IN ORDER TO ADD A QUESTION TYPE YOU MUST CHANG THE JAVASCRIPT BELOW AS WELL -->
+                        
+                        </apex:pageBlock>   
+                  
+                </div>  <!-- qPreview.id -->
+                <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                </apex:repeat>
+                             
+            </div> <!-- qList -->
+            
+                
+        </apex:pageBlock>
+            <!-- mod by Connie Hide after save survey as draft -->
+            <apex:outputPanel rendered="{!thankYouRendered == false && draftRendered == false}">
+                <!-- Start of Original Anonymous User Setup of SF
+                <apex:outputPanel rendered="{!isInternal}" >
+                    {!$Label.LABS_SF_Answer_as}: 
+                    <apex:selectRadio value="{!anonymousAnswer}">
+                        <apex:selectOptions value="{!anonymousOrUser}" />
+                        <apex:actionSupport event="onchange" rerender="hiddenAnonymousAnswer"/>
+                    </apex:selectRadio>
+                    <apex:inputHidden value="{!anonymousAnswer}" id="hiddenAnonymousAnswer"/>
+                    <BR />
+                </apex:outputPanel> -->
+
+                <apex:outputPanel rendered="{!allowAnonymous == true}" styleClass="bs text text-info" >    
+                        The Survey will be submitted Anonymously.
+                   <BR /><BR />
+                 </apex:outputPanel>
+                <apex:outputPanel rendered="{!allowAnonymous == false}" styleClass="bs text text-info" >  
+                    <!-- mod by Connie. Display user's first name and last name -->  
+                    <!--The Survey will be submitted with your User Name. -->
+                    <!-- mod by Connie. Display user's nickname --> 
+                    <!-- The Survey will be submitted as {!$User.FirstName} {!$User.LastName}. -->
+                    The Survey will be submitted as 
+                    <apex:outputLink value="/{!$User.Id}" id="theUserLink" target="_blank">
+                        <apex:outputText value="{!IF(IsBlank($User.Name_Display__c) ,  ' '+$User.FirstName + ' ' +  $User.LastName, ' '+$User.Name_Display__c)}" ></apex:outputText>
+                    </apex:outputLink>. 
+                   <BR /><BR />
+                 </apex:outputPanel>
+                
+                <!--   hide buttons if owner previews survey       
+                <apex:commandButton action="{!submitResults}" value="{!$Label.LABS_SF_SubmitSurvey}" rerender="theForm,seeSurvey" styleClass="bs btn btn-default btn-sm" />  
+                <apex:commandButton action="{!saveAsDraft}" value="{!$Label.LABS_SF_SaveDraft}" rerender="theForm,seeSurvey" styleClass="bs btn btn-default btn-sm" />
+                -->
+                <apex:commandButton action="{!submitResults}" value="{!$Label.LABS_SF_SubmitSurvey}" rerender="theForm,seeSurvey" styleClass="bs btn btn-default btn-sm" rendered="{!previewMode == false}" />  
+                <apex:commandButton action="{!saveAsDraft}" value="{!$Label.LABS_SF_SaveDraft}" rerender="theForm , seeSurvey" styleClass="bs btn btn-default btn-sm" rendered="{!previewMode == false}" />
+                <!-- end -->
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!thankYouRendered == true}">
+               <apex:outputText value="{!surveyThankYouText}"  escape="false" />
+               <!--
+               &nbsp;&nbsp;&nbsp;
+                <apex:commandButton value="Home" action="{!backHome}" styleClass="bs btn btn-default btn-sm" />
+                -->
+            </apex:outputPanel>  
+            <apex:outputPanel rendered="{!draftRendered == true}">
+                <p style="font-size:14px">
+                <BR/>                
+                <apex:outputText value="Your draft has been saved!"  escape="false" />
+                <BR/><BR/>
+                <!--
+                <apex:outputText value="You may resume the Survey using the same link later."  escape="false" />
+                
+                <apex:outputText value="You may resume the Survey using the same link before (12th Oct 2016 12:00PM). {!startDateTime}"  escape="false" />
+                -->
+                <apex:outputText value="You may resume the Survey using the same link before {0,date,dd MMM yyyy HH:mm}." rendered="{!!ISBLANK(endDateTime)}">
+                   <apex:param value="{!endDateTime}" />
+                </apex:outputText>
+                
+                <apex:outputText value="You may resume the Survey using the same link later." rendered="{!ISBLANK(endDateTime)}">
+                </apex:outputText>
+                            
+                
+                <BR/><BR/>
+                <a href = "/apex/TakeSurvey?id={!surveyId}&cId=none&caId=none">
+                <apex:outputText value="{!$Label.Server_PR_URL}/apex/TakeSurvey?id={!surveyId}&cId=none&caId=none"/>
+                </a>
+                </p>
+                 <!--
+                 &nbsp;&nbsp;&nbsp;
+                <apex:commandButton value="Home" action="{!backHome}" styleClass="bs btn btn-default btn-sm" />
+                -->
+            
+            </apex:outputPanel>  
+        </apex:form>
+    </div>
+</div>
+
+</apex:page>

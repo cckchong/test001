@@ -1,0 +1,25 @@
+<!-- Purely for Reject Cash Advance button linked to Visualforce page on Page Layout -->
+<apex:page standardController="Cash_Advance__c" recordSetVar="cashAdvances" sidebar="false" showHeader="false" extensions="TECashAdvanceRejectCtrl"
+            action="{!reject}">
+
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <c:JavascriptUtilsComponent />
+
+<script>
+    $(document).ready(function() {
+        if(getIsSalesforceOne()) {
+            var mobileRouteResult = '{!mobileRoute.navResult}';
+            var message = '{!mobileRoute.infoMessage}';
+            
+            if(message != null && message != '') {
+                alert(message);
+            }
+            
+            if(mobileRouteResult == 'BACK') {
+                history.go(-2); // This page comes in via browser navigation, so we trigger browser back instead of Salesforce1 back
+                //sforce.one.back(true);
+            }
+        }
+    });
+</script>
+</apex:page>

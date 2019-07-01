@@ -1,0 +1,277 @@
+<apex:page showHeader="true" sidebar="false" title="T&E Shuttle Arrangement" standardcontroller="Car_Journey__c" extensions="TEShuttleAssignmentCtrl" docType="html-5.0" id="shuttleAssignmentPage">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}"/>
+    
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+   
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" /> 
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+    
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />  
+
+    <script>
+        var showbtn = null;
+        var viewlist = null;
+            
+        $(document).ready(function(){
+            progressbar = $(".progressbar");
+            tableDiv = $("#tableDiv");
+            filterNewDiv = $("#filterNewDiv");            
+            showbtn = $('.showbtn');
+            viewlist = $('.viewlist');
+            
+
+            progressbar.hide();
+            tableDiv.removeClass('hideTable');
+            filterNewDiv.removeClass('hideTable');
+            
+            tableInit();            
+        });
+        
+        <!-- remove the default open of date picker when page load //-->
+        function setFocusOnLoad() {} 
+                    
+        function tableInit() {
+            shuttleTable = $('#shuttleTable').DataTable({
+                                "scrollY":        "450px",
+                                "scrollCollapse": true,
+                                "paging":         true,
+                                "bFilter":        false,
+                                "order": [[ 1, "asc" ]],
+                                "columnDefs": [ {
+                                  "targets"  : 'no-sort',
+                                  "orderable": false,
+                                }], 
+                                "iDisplayLength" : 25,        //default show XX entries
+                                "bLengthChange": false        //hide 'show XX entries'       
+                            });
+        }
+
+        function completeLoadTable() {
+            tableDiv.removeClass('hideTable');
+            progressbar.hide();
+            tableInit();
+            showbtn.attr('disabled', false);
+            viewlist.attr('disabled', false);
+        }
+
+        function startLoadTable() {
+            <!-- tdtable.destroy(); //-->
+            tableDiv.addClass('hideTable');
+            progressbar.show();
+            showbtn.attr('disabled', true);
+            viewlist.attr('disabled', true);
+        }
+          
+    </script>
+    
+    <style type="text/css" class="init">
+    
+    .hideTable {
+                position: absolute !important;
+                opacity: 0 !important;
+            }
+            
+     
+    
+    .outer {
+        position: relative;
+    }
+    
+    .progressbar {
+        position: relative;
+        left: 50%;
+        margin-top: 200px;
+        margin-bottom: 200px;
+        margin-left: -25px;
+    }
+    
+    span {
+        display: inline-block;
+        vertical-align: middle;
+    }
+            
+    </style>
+    
+    
+    <apex:form id="shuttleForm">
+        <div class="slds" id="OutDiv">
+            <div class="slds-page-header">
+                <div class="slds-grid">
+                    <div class="slds-media__body">
+                        <h1 class="slds-text-heading--medium">{!$Label.TE_Shuttle_Assignment_Actual_Journeys}</h1> 
+                    </div>
+                </div>
+            </div>
+            <div class="hideTable outer" id = "filterNewDiv">
+                <table border = "0" width="100%" style="margin-top: 10px;">
+                    <tr>
+                        <td width="32%">
+                            <div style="margin-top: 9px;">
+                                <apex:outputPanel id="listView">
+                                    View: &nbsp;
+                                    <apex:selectList value="{!selectedListView}" size="1"> 
+                                        <apex:selectOptions value="{!listViews}" /> 
+                                        <apex:actionSupport event="onchange" action="{!onListViewChange}" rerender="shuttleTableBlock , conditions " oncomplete="completeLoadTable()" onsubmit="startLoadTable()"/>
+                                    </apex:selectList>
+                                </apex:outputPanel>
+                            </div>
+                        </td>
+                        <td >
+                            <div  style="display: inline-block;">
+                                <apex:outputPanel id="conditions">
+                                    From: &nbsp;<apex:inputText value="{!fromDateStr}" size="10" id="queryFromDate" onfocus="DatePicker.pickDate(false, this, false);" />
+                                    &nbsp;
+                                    To: &nbsp;
+                                    <apex:inputText value="{!toDateStr}" size="10" id="queryToDate" onfocus="DatePicker.pickDate(false, this, false);" />
+                                    &nbsp;
+                                    Active: &nbsp;<apex:inputCheckbox value="{!isActive}" id="isActive" style="position:absolute; top:12px;"/>
+                                    &nbsp;
+                                </apex:outputPanel>
+                                <apex:commandButton styleClass="slds-button slds-button--neutral showbtn" action="{!showFilteredShuttles}" value="Show" style="margin-left: 15px;" reRender="shuttleTableBlock" onclick="startLoadTable()" oncomplete="completeLoadTable()"/>
+                            </div>
+                        </td>
+                        <td style="text-align:right;">
+                            <div  id = "filterDiv" style="display: inline-block;">
+                                 
+                                <div class = "bs panel panel-default" id = "NewButton" style="display: inline-block;">
+                                    <apex:commandButton styleClass="btn btn-primary" action="{!newShuttleSchedule}" value="+ Ad hoc Shuttle"/>
+                                    
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <BR/>
+            <BR/>
+               
+            <div id="main" style="padding-top: 0px; margin-top: -40px;">
+                <div class="progressbar">
+                    <apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" />
+                </div>
+                <div id="tableDiv" class="hideTable">
+                    <apex:pageBlock mode="maindetail" id="shuttleTableBlock">
+                    <table id="shuttleTable" class="display" cellspacing="0" width="100%">
+                        <thead>
+                            <!--
+                            <tr>
+                                <th colspan="6">Shuttle Information</th>
+                                <th colspan="5">Car &amp; Driver Information</th>
+                            </tr>
+                            -->
+                            <tr>
+                                <!-- <th class = "no-sort dt-center">Active</th> -->
+                                <th>Action</th>
+                                <th>Date</th>
+                                <th>Route Information</th>
+                                <th>Yet To <br/>Assign</th>
+                                <th class = "dt-center">Vacant <br/> Seats</th>
+                                <th class = "dt-center">Occupied <br/> Seats</th>
+                                <th class = "dt-center">Car</th>
+                                <th>Driver</th> 
+                                <!--
+                                <th>Mobile</th> 
+                                <th>TAL Direct Line</th> 
+                                -->
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- <apex:repeat value="{!carJourneyList}" var="cj"> 
+                                <tr>
+                                    <td style = "width : 6%;" class = "dt-center">
+                                        <apex:outputField value="{!cj.Active__c}" />
+                                    </td>
+                                    <td style = "width : 10%;">
+                                        <a href="/{!cj.id}" target="_blank"><apex:outputField value="{!cj.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 8%;">
+                                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                                            <apex:param value="{!cj.Date__c}" /> 
+                                        </apex:outputText>                
+                                    </td>
+                                    <td style = "width : 19%;">
+                                        <a href="/{!cj.Route__r.id}" target="_blank"><apex:outputField value="{!cj.Route__r.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 6%;" class = "dt-center">
+                                        <apex:outputField value="{!cj.Vacant_Seats__c}" />
+                                    </td>
+                                    <td style = "width : 7%;" class = "dt-center">
+                                        <apex:outputField value="{!cj.Occupied_Seats__c}" />
+                                    </td>
+                                    <td style = "width : 7%;" class = "dt-center">
+                                        <apex:outputText value="{!cj.Occupied_Seats__c}" />
+                                    </td>
+                                    <td style = "width : 7%;">
+                                        <a href="/{!cj.Company_Car__r.id}" target="_blank"><apex:outputField value="{!cj.Company_Car__r.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 10%;">
+                                        <apex:outputField value="{!cj.Driver_Name__c}" />
+                                    </td>
+                                    <td style = "width : 12%;">
+                                        <apex:outputField value="{!cj.Remarks__c}" />
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                            -->
+                            <apex:repeat value="{!ShuttleList}" var="sd">
+                                <tr>
+                                    <!--
+                                    <td style = "width : 3%;" class = "dt-center">
+                                        <apex:outputField value="{!sd.cj.Active__c}" />
+                                    </td>
+                                    -->
+                                    <td style = "width : 5%;" class = "dt-center">
+                                        <a href="/{!sd.cj.id}" target="_blank" title="Assign/View">
+                                        <!-- <apex:outputField value="{!sd.cj.Name}" /> -->
+                                        <span class="ui-icon ui-icon-pencil" style="margin:-3px 0px;display:inline-block;"></span>
+                                        </a>
+                                    </td>
+                                    <td style = "width : 10%;">
+                                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                                            <apex:param value="{!sd.cj.Date__c}" /> 
+                                        </apex:outputText>                
+                                    </td>
+                                    <td style = "width : 30%;">
+                                        <a href="/{!sd.cj.Route__r.id}" target="_blank"><apex:outputField value="{!sd.cj.Route__r.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 4%;" class = "dt-center">
+                                        <apex:outputText value="{!sd.requestCount}" />
+                                    </td>
+                                    <td style = "width : 3%;" class = "dt-center">
+                                        <apex:outputField value="{!sd.cj.Vacant_Seats__c}" />
+                                    </td>
+                                    <td style = "width : 4%;" class = "dt-center">
+                                        <apex:outputField value="{!sd.cj.Occupied_Seats__c}" />
+                                    </td>
+                                    <td style = "width : 10%;" class = "dt-center">
+                                        <a href="/{!sd.cj.Company_Car__r.id}" target="_blank"><apex:outputField value="{!sd.cj.Company_Car__r.Name}" /></a>
+                                    </td>
+                                    <td style = "width : 15%;">
+                                        <apex:outputField value="{!sd.cj.Driver_Name__c}" />
+                                    </td>
+                                    <!--
+                                    <td style = "width : 7%;">
+                                        <apex:outputField value="{!cj.Driver_Mobile__c}" />
+                                    </td>
+                                    <td style = "width : 8%;">
+                                        <apex:outputField value="{!cj.Driver_TAL_Direct_Line__c}" />
+                                    </td>
+                                    -->
+                                    <td style = "width : 21%;">
+                                        <apex:outputField value="{!sd.cj.Remarks__c}" />
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                    </apex:pageBlock>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

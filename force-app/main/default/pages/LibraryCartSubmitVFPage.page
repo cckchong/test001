@@ -1,0 +1,112 @@
+<apex:page standardController="Request__c" extensions="LibraryItemRequestViewCtrl" action="{!onload}">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap1, '/css/bootstrap.css')}" />
+    <apex:includeScript value="{!$Resource.jqueryMin_1_11_1}" />
+    <apex:includeScript value="{!URLFOR($Resource.bootstrap1, '/js/bootstrap.min.js')}" />
+	<style>
+    	@media only screen
+        and (min-device-width : 320px)
+        and (max-device-width : 480px) {
+            input[type="text"], select {
+                padding-top: 5px;
+                padding-bottom: 5px;
+
+            }
+            .btn {
+
+                height: 30px;
+                padding-top: 6px;
+                padding-bottom: 6px;
+            }
+        }
+    
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var isSalesforceOne = false;    
+            if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+                isSalesforceOne = true;
+            }
+            
+            jsSetIsMobile(isSalesforceOne);
+            var val = {!isSubmitted};
+            var val2 = {!isEmptyCart};
+            
+            if(val){
+                alert('{!$Label.Library_Cart_have_been_submit}');
+                if(isSalesforceOne){
+                    sforce.one.back();
+                }else
+                    window.history.back();
+                
+            }else if(val2){
+                alert('{!$Label.Library_Cart_Empty}');
+                if(isSalesforceOne){
+                    sforce.one.back();
+                }else
+                    window.history.back();
+            }
+        });
+        
+        function getIsSalesforceOne() {
+        var result = false;
+        
+        if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+            result = true;
+        }
+        
+        return result;
+    }
+    
+    function cancelButton(){
+        
+        var isSalesforceOne = false;    
+        if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+            isSalesforceOne = true;
+        }
+        
+        if(isSalesforceOne)
+            sforce.one.back();
+        else
+            window.history.back();
+    }
+ 
+</script>
+
+    <apex:form id="theformid">
+        <apex:actionFunction action="{!initial}" name="jsSetIsMobile" oncomplete="Sfdc.canvas.publisher.publish({name: 'publisher.close', payload:{ refresh:'true'}});">
+            <apex:param name="isSalesforceOne" assignTo="{!isSalesforceOne}" value="true" />
+        </apex:actionFunction>
+        <apex:pageBlock id="thepageblockid" title="" mode="maindetail" >
+            <apex:pageMessages id="page-messages" />
+            <apex:pageBlockButtons id="thePageButtonid">
+                <apex:commandButton action="{!submitCart}" rendered="{!!isSubmitted}" oncomplete="Sfdc.canvas.publisher.publish({name: 'publisher.close', payload:{ refresh:'true'}});" value="Submit Library Cart" id="submitButton" rerender="page-messages"/>               
+                <apex:commandButton onclick="cancelButton();" oncomplete="Sfdc.canvas.publisher.publish({name: 'publisher.close', payload:{ refresh:'true'}});" rendered="{!!isSubmitted}" value="Cancel" id="cancelButton"/>                   
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection id="txtBlockSectionContents" title="Library Cart Details" columns="1" rendered="{!!isSubmitted}" collapsible="false">
+                <!-- <apex:inputText style="width:1px;height:1px;"/> -->
+                <apex:inputField value="{!cart.Remarks__c}" style="width:80%" />
+                <apex:inputField value="{!cart.Target_Location__c}" required="{!!isBookOnly}" rendered="{!!isSalesforceOne}"/>
+                <apex:pageBlockSectionitem rendered="{!isSalesforceOne}">
+                    <apex:outputLabel value="{!$ObjectType.Request__c.fields.Target_Location__c.label}" />
+                    <apex:selectList value="{!selectedTargetLocation}" multiselect="false" size="1" required="{!!isBookOnly}">
+                        <apex:selectOptions value="{!targetLocationSelectOptions}"/>                       
+                    </apex:selectList>
+                </apex:pageBlockSectionitem>
+                                                                                     
+                <!-- 
+                <apex:inputField value="{!cart.Brand_Customer__c}" rendered="{!isRequireBrandCus}" required="{!isRequireBrandCus}"/>
+                 -->
+                <apex:pageBlockSectionItem rendered="{!isRequireBrandCus}">
+                    <apex:outputLabel value="{!IF(isRequireBrandCus,$ObjectType.Library_Item_Request__c.fields.Brand_Customer_For_Fabric__c.label, '')}" />
+                    <apex:outputPanel styleClass="requiredInput" layout="block">
+                        <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+	                    <apex:selectList value="{!selectedBrandCustomer}" size="1" multiselect="false" required="false" >
+	                       <apex:selectOptions value="{!BrandCustomerList}" id="soRecordType"/>                                 
+	                    </apex:selectList>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>

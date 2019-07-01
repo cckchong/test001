@@ -1,0 +1,3 @@
+<apex:page controller="TETravelDetailAssignCtrl"    action="{!action}" >
+  
+</apex:page>

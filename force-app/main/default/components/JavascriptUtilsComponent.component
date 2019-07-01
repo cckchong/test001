@@ -1,0 +1,13 @@
+<apex:component >
+	<script>
+		function getIsSalesforceOne() {
+	        var result = false;
+	        
+	        if((typeof sforce != 'undefined') && (typeof sforce.one != 'undefined') && (sforce.one != null)) {
+	            result = true;
+	        }
+	        
+	        return result;
+	    }
+	</script>
+</apex:component>

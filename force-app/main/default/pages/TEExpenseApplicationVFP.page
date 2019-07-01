@@ -1,0 +1,1310 @@
+<apex:page controller="TEExpenseApplicationCtrl" showHeader="true" standardStylesheets="true" sidebar="false" tabstyle="Expense_Application__c" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!$Resource.jquery_ui_1_11_4_custom}" />
+    <apex:stylesheet value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'external/jquery/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.jquery_ui_1_11_4_custom, 'jquery-ui.js')}" />
+
+    <apex:includeScript value="{!URLFOR($Resource.datetimepicker, 'build/jquery.datetimepicker.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.datetimepicker, 'jquery.datetimepicker.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.DataTables, 'media/js/jquery.dataTables.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.DataTables, 'media/css/jquery.dataTables.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.FixedColumns, 'js/dataTables.fixedColumns.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.select2, 'dist/js/select2.full.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.select2, 'dist/css/select2.css')}" />
+    
+
+    <script>
+        var tdtable = null;
+        var tableInit = null;
+        var tableDiv = null;
+        var icons = null;
+        var files = null;
+        var requiredInfoText = null;
+        <!-- remove the default open of date picker when page load //-->
+        function setFocusOnLoad() {}
+    </script>
+    
+    <apex:outputPanel id="viewAllAttachments">
+         <script>
+            function viewAllAttachments(){
+                 var attachmentIds = new Array();  
+                 var contents = new Array();       
+                 <apex:repeat value="{!attachments}" var="att">
+                    if ( '{!att.type}' == 'a'){
+                        attachmentIds.push('{!att.id}');
+                    }
+                    if ( '{!att.type}' == 'c'){
+                        contents.push('{!att.id}');
+                    }
+                 </apex:repeat>                    
+        
+                for (i = 0; i < attachmentIds.length; i++) {                 
+                    window.open('/servlet/servlet.FileDownload?file=' + attachmentIds[i]);
+                }
+                for (i = 0; i < contents.length; i++) {                 
+                    window.open('/'+contents[i]);
+                }         
+           }
+    </script>
+    </apex:outputPanel>
+
+
+    <apex:outputPanel id="jqPanel1">
+        <script>
+            function refreshAmount() {
+
+                var a = '{!exceedCapStr}';
+                var count = a.length;
+                var objs = $('.amountPanel > input ');
+
+                if (objs.length == count) {
+                    console.log("str: " + a);
+                    for (var c = 0; c < count; c++) {
+                        if (a[c] === 'Y') {
+                            objs.eq(c).css('background-color', 'red');
+                        } else {
+                            objs.eq(c).css('background-color', '');
+                        }
+                    }
+                } else {
+                    console.log("ERROR!");
+                }
+
+
+            }
+        </script>
+    </apex:outputPanel>
+
+
+    <apex:outputPanel id="Result">
+        <script>
+            $(function () {
+                progressbar = $(".progressbar");
+                tableDiv = $("#tableDiv");
+                icons = {
+                  header: "ui-icon-circle-arrow-e",
+                  activeHeader: "ui-icon-circle-arrow-s"
+                };
+
+                progressbar.hide();
+                tableDiv.removeClass('hideTable');
+                $("#dialog").css('display', 'none');
+
+                $(".capIcon").tooltip();
+                resetTable();
+                $("#dialog").dialog({
+                    autoOpen: false,
+                    width: 500,
+                    buttons: {
+                      "View All": function() {
+                          viewAllAttachments()
+                      }
+                    }
+                });
+                $('.showError').next().find('.select2-selection--single').css('border','2px solid red');
+                
+                
+                requiredInfoText = $("<span></span>");
+                var str = '<div  class="sfFont bPageBlock bDetailBlock"><div class="requiredInput"><div class="requiredBlock"></div>';
+                    str += '{!$Label.TE_Required_Field_Message}';
+                    str += '</div></div>';
+                requiredInfoText = $(str); 
+                requiredInfoText.css('position', 'absolute');        
+                requiredInfoText.css('right', '20px');
+                requiredInfoText.css('top', '8px');
+                
+                $( "#accordion" ).accordion({
+                  collapsible: true,
+                  icons: icons
+                });
+                
+                $(function () {
+                    $(".details-toggle").click(function () {
+                        $(".edit-toggle").text("");
+                        if({!isEditable}){
+                            $(".ui-state-active").find(".edit-toggle").html(requiredInfoText);
+                        }
+                    });
+                }); 
+                if({!isEditable}){
+                    $(".ui-state-active").find(".edit-toggle").html(requiredInfoText);
+                }
+            });
+            
+            function resetDialog() {                
+                resetDialogAction('open');
+            }
+            
+            function resetDialogAction(action) {
+                $("#dialog").dialog({
+                    autoOpen: false,
+                    width: 500,
+                    buttons: {
+                      "View All": function() {
+                          viewAllAttachments()
+                      }
+                    }
+                });
+                $("#dialog").dialog(action);
+
+            }
+             
+            function resetSelect2() {
+                $(".js-basic-single").select2({
+                    placeholder: "Select Option",
+                    allowClear: false,
+                    dropdownAutoWidth: false,
+                    width: 'resolve'
+                }); 
+                
+                 $('.showError').next().find('.select2-selection--single').css('border','2px solid red');
+            }
+
+            function dataTableInitSetting() {
+                return {
+
+                    "scrollY": 265,
+                    "scrollX": true,
+                    "paging": false,
+                    "scrollCollapse": true,
+                    "bFilter": false,
+                    "bInfo": false,
+                    "bSort": false,
+                    "bAutoWidth": false,
+                    
+                };
+            }
+
+            function dateTimepickerInit() {
+                $('.datepicker').datetimepicker({
+                    dayOfWeekStart: 1,
+                    lang: 'en',
+                    defaultTime: '00:00',
+                    format: 'd/m/Y',
+                    timepicker: false
+                });
+            }
+
+            function tableRefesh() {
+                tdtable = $('#tdtable').DataTable(tableInit);
+            }
+
+
+            function changeDateFormat(num) {
+                var str = $(".jt" + num + " option:selected").text();
+                var selected1 = $(".departureDateTime" + num);
+                var selected2 = $(".returnDateTime" + num);
+                if (str == 'Shuttle') {
+                    selected1.removeClass("datetimepicker");
+                    selected1.addClass("datepicker");
+                    selected2.addClass("datepicker");
+                    selected2.removeClass("datetimepicker");
+                } else {
+                    selected1.addClass("datetimepicker");
+                    selected1.removeClass("datepicker");
+                    selected2.addClass("datetimepicker");
+                    selected2.removeClass("datepicker");
+                }
+                dateTimepickerInit();
+            }
+
+
+            function resetTable() {
+                $(".dateFormat").hide();
+                $(".disabledNP").attr("disabled", "disabled");
+                $(".disabledField").attr("disabled", "disabled");
+                tableInit = dataTableInitSetting();
+                
+                if({!rtEducation}){
+                   if({!isEditable }){
+                    tableInit["aoColumns"] =[{
+                            sWidth: '50px'
+                        }, {
+                            sWidth: '50px'
+                        }, {
+                            sWidth: '20px'
+                        }, {
+                            sWidth: '150px'
+                        }, {
+                            sWidth: '90px'
+                        }, {
+                            sWidth: '150px'
+                        }, {
+                            sWidth: '80px'
+                        }, {
+                            sWidth: '50px'
+                        }, {
+                            sWidth: '400px'
+                        }];
+                   } else if({! rtEducation && !isEditable && !showFinalAmount}){
+                    tableInit["aoColumns"] =[{
+                           sWidth: '50px'
+                        }, {
+                            sWidth: '20px'
+                        }, {
+                            sWidth: '150px'
+                        }, {
+                            sWidth: '90px'
+                        }, {
+                            sWidth: '150px'
+                        }, {
+                            sWidth: '90px'
+                        }, {
+                             sWidth: '50px'
+                        }, {
+                            sWidth: '450px'
+                        }];
+                 }
+               }  
+                 
+               if({!rtTravel}){
+                   if({!isEditable}){
+                    tableInit["aoColumns"] =[{
+                            sWidth: '50px'
+                        }, {
+                            sWidth: '20px'
+                        }, {
+                            sWidth: '250px'
+                        }, {
+                            sWidth: '90px'
+                        }, {
+                            sWidth: '250px'
+                        }, {
+                            sWidth: '200px'
+                        }, {
+                            sWidth: '500px'
+                        }, {
+                             sWidth: '30px'
+                        }, {
+                            sWidth: '30px'
+                        }, {
+                             sWidth: '50px'
+                        }, {
+                            sWidth: '3000px'
+                        }];
+                    }
+                }
+                
+                
+                 if({!rtGeneral}){
+                   if({!isEditable}){
+                    tableInit["aoColumns"] =[{
+                            sWidth: '50px'
+                        }, {
+                            sWidth: '20px'
+                        }, {
+                            sWidth: '150px'
+                        }, {
+                            sWidth: '90px'
+                        }, {
+                            sWidth: '150px'
+                        }, {
+                            sWidth: '100px'
+                        }, {
+                        //    sWidth: '50px'
+                        //}, {
+                            sWidth: '50px'
+                        }, {
+                            sWidth: '300px'
+                        }, {
+                            sWidth: '50px'
+                        }];
+                    }
+                }
+                
+                $("#tabs").tabs();
+                dateTimepickerInit();
+                resetSelect2();
+
+                d = document.getElementById('tabs-1');
+                d.style.width = ($(window).width() - 80) + "px";
+                tableRefesh();
+            }
+
+
+            function isNumberKey(evt) {
+                var charCode = (evt.which) ? evt.which : event.keyCode
+                if (charCode > 31 && (charCode < 48 || charCode > 57))
+                    return false;
+
+                return true;
+            }
+
+            function isDecimalNumberKey(evt, element) {
+                var charCode = (evt.which) ? evt.which : event.keyCode
+                if (charCode > 31 && (charCode < 48 || charCode > 57) && (charCode != 46 || $(element).val().indexOf('.') != -1)) {
+                    return false;
+                }
+
+
+                return true;
+            }
+
+            function completeLoadTable() {
+                tableDiv.removeClass('hideTable');
+                progressbar.hide();
+                $('#addRowsButton').fadeIn(0);
+                resetTable();
+                
+            }
+
+            function startLoadTable() {
+                tdtable.destroy();
+                tableDiv.addClass('hideTable');
+                progressbar.show();
+                $('#addRowsButton').fadeOut(0);
+            }
+            
+            function prepareFileUploads(evt){
+                files = evt;
+                if ( '{!ea.id}' != ''){
+                    uploadfilesAction('{!ea.id}', false)
+                }
+                else{
+                    filesDisplay(evt);
+                }
+            }
+            function filesDisplay(evt){
+                var fname = '0';
+                var files = evt.files;
+                if (files.length > 0){
+                    fname = files.length + ' file(s)';
+                }
+                $('#AllFilename').html(fname);
+            }
+            
+            function uploadfiles(pid){                
+                uploadfilesAction(pid, true);                
+            }
+            
+            function uploadfilesAction(pid, redirect){
+                var ufiles = files;  
+                if(!Boolean(pid)|| !Boolean(ufiles) ){
+                    go();
+                }
+                if(pid != '' && ufiles != null){                    
+                    ufiles = files.files;
+                    if (ufiles.length == 0){
+                        return;
+                    }
+                    disablebtns();
+                    uploadfileAction (0, ufiles, pid, redirect);
+                }
+            }
+            
+            function uploadfileAction(index,  ufiles, pid, redirect){                
+                var currentFile = null;
+                var blobChunk = null;
+                var byteChunkArray = new Array();
+                var base64value = '';
+                var attachid = '';
+                var islast = false;
+                base64value = '';
+                attachid = '';
+                currentFile = ufiles[index];
+                byteChunkArray = byteChunk(currentFile);
+                if (index == ufiles.length -1){
+                    islast = true;
+                }
+                filecontent(index , ufiles, currentFile, byteChunkArray, base64value, attachid, pid, islast, redirect);
+              
+            }
+            
+            function byteChunk(currentFile){
+                var byteChunkArray = new Array(); 
+                var CHUNK_SIZE = 180000;
+                var numOfFullChunks = 0;
+                var remainderBytes = 0;
+                var startByte = 0;
+                var endByte = CHUNK_SIZE - 1;
+                if(currentFile.size < CHUNK_SIZE){
+                    byteChunkArray.push(currentFile.slice(0, currentFile.size + 1));                    
+                }
+                else{
+                    
+                    numOfFullChunks = Math.floor(currentFile.size / CHUNK_SIZE);
+                    remainderBytes = currentFile.size % CHUNK_SIZE;
+                    for(var i = 0; i < numOfFullChunks; i++){
+                        byteChunkArray.push(currentFile.slice(startByte, endByte+1));
+                        startByte = endByte + 1;
+                        endByte += CHUNK_SIZE;
+                    }
+                    startByte = currentFile.size - remainderBytes;
+                    endByte = currentFile.size;
+                    byteChunkArray.push(currentFile.slice(startByte, endByte));
+                }
+                return byteChunkArray;
+            }
+            
+            
+            function filecontent(index , ufiles, currentFile, byteChunkArray, base64value, attachid, pid, islast, redirect){
+                 if ( byteChunkArray.length == 0 ){
+                     if (islast && redirect){
+                         go();
+                     }
+                     if (islast && !redirect){
+                         enablebtn();
+                         try {
+                            $('#dialog').dialog('destroy');
+                         }catch(err) {}              
+                         refreshAttachment();
+                     }
+                     if (!islast){
+                         uploadfileAction(index+1, ufiles, pid, redirect);
+                     }
+                     return '';
+                 }
+                 
+                 var reader = new FileReader(); 
+                 if (!FileReader.prototype.readAsBinaryString) {
+                     reader.readAsArrayBuffer(byteChunkArray[0]);
+                 }else{
+                     reader.readAsBinaryString(byteChunkArray[0]);
+                 }
+                 
+                 reader.onloadend = function(evt){
+                     if(evt.target.readyState == FileReader.DONE){
+                         var fileData = evt.target.result;
+                         if (!FileReader.prototype.readAsBinaryString) {
+                             
+                             var bytes = new Uint8Array(fileData);
+                             var binaryText = '';
+                             for (var pos= 0; pos < bytes.byteLength; pos++) {
+                                 binaryText += String.fromCharCode( bytes[pos] );
+                             }
+                             base64value = window.btoa(binaryText); 
+                         }else{
+                             base64value = window.btoa(fileData ); 
+                         }                        
+                         Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.TEExpenseApplicationCtrl.uploadFileAction}',
+                            currentFile.name, currentFile.type, base64value, attachid, pid,
+                            function(result, event){                                
+                                if (event.status){
+                                     byteChunkArray.shift();
+                                     attachid = result;
+                                     filecontent(index, ufiles, currentFile, byteChunkArray, base64value , attachid, pid, islast, redirect);                                     
+                                }
+                                else if (event.type === 'exception'){
+                                    alert(event.message);
+                                    enablebtn();
+                                }
+                                else{
+                                    alert(event.message);
+                                    enablebtn();
+                                }
+                            }, 
+                            {escape: true,}
+                           );
+                         return '';
+                     }
+                 }
+            } 
+            function disablebtns(){
+                $('.actionbtn').css('pointer-events', 'none');
+                $('.actionbtn').css('tab-index', -1);
+                $('.btngp').fadeOut(0);
+            }
+            
+            function enablebtn(){
+                 $('.actionbtn').css('pointer-events', 'fill');
+                 $('.actionbtn').css('tab-index', 99);
+                 $('.btngp').fadeIn(0);
+            }
+            
+            function findLocation(counterNum){                
+                var date = $('.theDate'+counterNum).val();
+                date = new Date(date);
+                var taid = $('.travelApplicationsId').val();
+                if (Boolean(date) && Boolean(taid) ){
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.TEExpenseApplicationCtrl.findLoaction}',
+                    taid , date.toUTCString﻿(),
+                    function(result, event){                                
+                        if (event.status){
+                            if (Boolean(result.Destination__c)){
+                                $('.Destination'+counterNum).select2().val(result.Destination__c).trigger("change");
+                                $('.ReceiptCurrency'+counterNum).select2().val(result.Receipt_Currency__c).trigger("change");
+                            }
+                        }
+                        else if (event.type === 'exception'){
+                         alert(event.message);
+                        }
+                        else{
+                         alert(event.message);
+                        }
+                    }, 
+                    {escape: true,}
+                   );
+               }         
+           }
+           
+           function changeCurrency(currencyid, num){
+               $('.ReceiptCurrency'+num).select2().val(currencyid).trigger("change");
+           }
+        </script>
+        
+        
+        <style type="text/css" class="init">
+        
+            #tdtable td {
+                vertical-align:top; 
+                padding-top:5px;
+            }
+            
+            .largeTopPadding {
+                padding-top:8px !important;
+            }
+            
+         
+            
+            .errorMsg{
+                white-space: pre-wrap;
+            }
+            
+            .sfdc-font {
+                font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            }
+            div.dataTables_wrapper {
+                width: 100%;
+                margin: 0px;
+                padding: 0px;
+            }
+            .select2-dropdown {
+                margin-left: 0px;
+                width: 999px;
+            }
+            table.dataTable thead th,
+            table.dataTable thead td {
+                padding-bottom: 0px;
+                padding-left: 10px;
+                padding-right: 0px;
+                border-bottom: 1px solid #111;
+            }
+            .tal-simulate-disabled-input {
+                border: 1px solid #A9A9A9;
+                padding: 1px;
+                margin-top: 0px;
+                display: block;
+                background: #EBEBE4;
+                height: 19px;
+                font-family: Salesforce Sans, Arial, sans-serif;
+            }
+            table.dataTable tfoot td {
+                //padding-left: 10px;
+                padding-left: 10px;
+                padding-right: 0px;
+            }
+            table.dataTable tbody td {
+                padding-left: 10px;
+                padding-right: 0px;
+                padding-top: 1px;
+                padding-bottom: 1px;
+            }
+            table.dataTable textarea {
+                line-height: 12px;
+                font-family: Salesforce Sans, Arial, sans-serif;
+            }
+            table.dataTable input{
+                font-family: Salesforce Sans, Arial, sans-serif;
+            } 
+            label{
+                font-family: Salesforce Sans, Arial, sans-serif;
+            }
+            .actionIcon {
+                float: left;
+                margin-left: 5px;
+            }
+            .hideTable {
+                position: absolute !important;
+                opacity: 0 !important;
+            }
+            .progressbar {
+                position: relative;
+                left: 50%;
+                margin-top: 50px;
+                margin-bottom: 50px;
+            }
+            
+           
+            select:enabled +.select2-container {
+              position: relative;
+              z-index: 2;
+              width: 100%;
+              margin-bottom: 0;
+              display: table;
+              table-layout: fixed;
+            }
+            
+            .select2-container--default .select2-search--inline .select2-search__field {
+                width: auto !important;
+            }
+            
+            .verticalLine {
+                /* border-left: thick solid #ff0000;*/
+            }
+            /*
+            table thead th {
+                background: #BBD8DB;
+                float:inherit;
+            }
+            
+           
+            */
+            #accordion table tr td {
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td input {
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td textarea{
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }
+            #accordion table tr td select{
+                font-family: Salesforce Sans, Arial, sans-serif;
+                font-size: 10.5pt;
+            }   
+            .ui-accordion-header.ui-state-active { background-color: #dfeffc; }
+            .ui-state-focus:focus { outline:none }
+            .ui-dialog .ui-button-text {font-family: Salesforce Sans, Arial, sans-serif; font-style: normal;}
+            
+            .ui-state-default{
+              background-color: #dfeffc;
+              background-image: none;
+            }
+            
+            .ui-accordion .ui-accordion-content {padding: 0;}
+            .bPageBlock .bDetailBlock .secondaryPalette {padding: 0;}
+        </style>
+
+
+    </apex:outputPanel>
+    <style type="text/css">
+        
+       .ui-dialog-title{
+            //color: #e17009;
+            color: white;
+            font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px; 
+        }    
+        .ui-tabs-anchor{
+            font: 100%/1.5"Salesforce Sans", Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px; 
+        }
+        .alertlabel {
+            background-color: #f0ad4e;
+            color: black;
+            padding: 4px;
+            border-radius: 10px;
+            -moz-border-radius: 10px;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            color: #FFFFFF;
+        }
+    </style> 
+
+    <apex:form >
+        <apex:outputPanel id="goPanel">
+            <apex:actionFunction name="go"    oncomplete="window.location.href = document.location.origin+'{!prc}';"   rendered="{!!isblank(prc)}"/>
+            <apex:actionFunction name="go"    oncomplete="enablebtn();"   rendered="{!isblank(prc)}"/>
+        </apex:outputPanel>
+        <apex:actionFunction name="refreshAttachment" id="refreshAttachment" action="{!getAllAttachments}" reRender="attachmentResult , subt , viewAllAttachments"  status="" oncomplete="resetDialogAction('close');"/>
+        
+        <input type="file" name="file" multiple="true" id="filesInput" onchange= "prepareFileUploads(this);" style="display:none" />
+        <p id="responseErrors"></p>
+        <div class="slds">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-grid">
+                    <div class="slds-media__body">
+                        <h1 class="slds-text-heading--medium">Expense Application - {!rtName}</h1> 
+                    </div>
+
+                    <div class="slds-col slds-no-flex slds-align-middle btngp">
+                        <div class="slds-button-group" role="group" style="display: inline-block;" >
+                            <apex:commandButton reRender="msg" rendered="{!showSave && !isblank(ea.id)}" value="Save" styleClass="actionbtn slds-button slds-button--neutral" action="{!saveAndGo}" onclick="disablebtns();"   oncomplete="enablebtn();"/>
+                            <apex:commandButton reRender="msg" rendered="{!showSubmit && !isblank(ea.id)}" value="Submit" styleClass="actionbtn slds-button slds-button--neutral" action="{!SubmitAndGo}" onclick="disablebtns();"  oncomplete="enablebtn();"/>
+                            <apex:commandButton reRender="msg , goPanel" rendered="{!showSave && isblank(ea.id)}" value="Save" styleClass="actionbtn slds-button slds-button--neutral"  action="{!saveAndRedirect}" onclick="disablebtns();" oncomplete="uploadfiles('{!ea.id}');"   />
+                            <apex:commandButton reRender="msg , goPanel" rendered="{!showSubmit && isblank(ea.id)}" value="Submit" styleClass="actionbtn slds-button slds-button--neutral" action="{!saveAndSubmit}" onclick="disablebtns();" oncomplete="uploadfiles('{!ea.id}');"/>
+                            <apex:commandButton rendered="{!showApprove}" value="{!approveText}" styleClass="slds-button slds-button--neutral" action="{!approve}"  onclick="disablebtns();"  oncomplete="enablebtn();"/>
+                            <apex:commandButton rendered="{!showReject}" value="Reject" styleClass="slds-button slds-button--neutral" action="{!reject}" onclick="disablebtns();"  oncomplete="enablebtn();"/>
+                            
+                             <apex:outputText rendered="{!isApplicant && showSubmit}"   >   
+                                <a href="javascript:;" onclick="$('#filesInput').click();" class="actionbtn" >
+                                    <apex:outputPanel styleClass="slds-button slds-button--neutral"  style="margin-left:-4px;margin-right:-1px;"> 
+                                        <span >
+                                            <apex:image value="{!URLFOR($Resource.upload_icon, '')}" width="15px" height="15px" style="position: relative;top: -2px;" />
+                                        </span>
+                                        Attachment(s)
+                                    </apex:outputPanel>
+                                </a>
+                            </apex:outputText>
+                            
+                        </div>
+                         <apex:commandButton value="Cancel" styleClass="actionbtn slds-button slds-button--neutral" action="{!cancel}" />
+                    </div>
+                </div>
+            </div>
+            <apex:outputPanel id="msg">
+                <apex:pageMessages id="showmsg" escape="false"></apex:pageMessages>
+            </apex:outputPanel>
+            <BR/>
+            <!--<apex:outputPanel rendered="{!TextId != ''}">-->
+            <div style = "margin-bottom:-10px; ">
+            <apex:pageBlock mode="maindetail" id="headerBlock">
+            <div id="accordion" style = "width:99.5%; margin-top:-18px;">
+               <label class="slds-form-element__label details-toggle" style="font-size:14px;">Expense Application: {!ea.Name}
+               <span class="edit-toggle">
+                   
+               
+               </span>
+               </label>
+               <div style="{!IF(rtGeneral, 'margin-bottom:25px;', '')}">
+                    <table style="width: 100%;margin-top:5px;" border = "0px;" id = "headerTable">
+                        <tr>
+                            <!--
+                            <td style="text-align:right; width: 17%" ><label class="slds-form-element__label" >Expense Application: </label></td>
+                            <td style="width: 23%">  <apex:outputtext value="{!refNo}" styleClass="fieldRef" style="width:100%;" /></td>
+                            -->
+                            <td style="text-align:right; width: 16%"><label class="slds-form-element__label" >Applicant:</label></td>
+                            <td style="width: 23%">
+                                <!-- <apex:pageBlock mode="maindetail" id="applicant"> -->
+                                <div class="requiredInput">
+                                    <apex:outputText rendered="{!isEditable}">
+                                        <div class="requiredBlock"></div>
+                                        <apex:selectList id="applicant" value="{!ea.On_Behalf_Of__c}" size="1" style="width:100%;">
+                                            <!--styleclass="js-basic-single , OnBehalfOf"-->
+                                            <apex:selectOptions value="{!applicants}"></apex:selectOptions>
+                                            <apex:actionSupport event="onchange" action="{!onApplicantChange}" rerender="linkedApplications,tdResult,openDetail" oncomplete="refreshAmount();completeLoadTable()" onsubmit="startLoadTable()" />
+                                        </apex:selectList>
+                                    </apex:outputText>
+                                        
+                                    <apex:inputText value="{!applicantDisp }" style="width:100%;" styleClass="{!IF(isEditable, " ", "disabledField ")}" rendered="{!!isEditable}" />
+        
+                                </div>
+                                <!-- </apex:pageBlock> -->
+                            </td>
+                            <td style="text-align:right; width: 22%">
+                                <label class="slds-form-element__label" style="{!IF(!rtEducation,'','display:none')}">
+                                    <apex:outputText value="Applied Amount:" />
+                                </label>
+                                <label class="slds-form-element__label" style="{!IF(rtEducation,'','display:none')}">
+                                    <apex:outputText value="HCM Pre-approved Amount:" />
+                                </label>
+                            </td>
+                            <td style="width: 15%" >
+                                <apex:outputText value="{!ea.Currency__c}" style="width:100%; {!IF(!rtEducation,'','display:none')}" />
+                                <apex:outputText value="{0, number, #,##0.00}" style="width:100%; {!IF(!rtEducation,'','display:none')}">
+                                   <apex:param value="{!ea.Amount_Applied_display__c}" />
+                                </apex:outputText>
+                                <apex:outputPanel id="HCMAmount">
+                                    <apex:outputText value="{!HCMAmount}" style="width:100%; {!IF(rtEducation,'','display:none')}" />
+                                </apex:outputPanel>
+                            </td>
+                            <td style="text-align:right; width: 9%"><label class="slds-form-element__label" >Apply Date: </label></td>
+                            <td style="width: 16%">
+                                <apex:outputfield value="{!ea.Apply_Date__c}" styleClass="fieldRef" style="width:100%;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:right;" valign="top" height="10px;">
+                                <apex:outputtext rendered="{!rtEducation||rtTravel}">
+                                    <label class="slds-form-element__label">{!linkedApplicationName}</label>
+                                </apex:outputtext>
+                                <apex:outputtext rendered="{!rtGeneral}">
+                                    <label class="slds-form-element__label">Remarks:</label>
+                                </apex:outputtext>
+                            </td>
+                            <td rowspan="{!IF(rtGeneral, "3", "1")}">  
+                                <div class="requiredInput" >
+                                    <apex:outputPanel id="linkedApplications">
+                                        <apex:outputText rendered="{!isEditable}">
+                                            <div class="requiredBlock"></div>
+                                        </apex:outputText>
+                                        <apex:selectList styleClass="js-basic-single {!IF(applicationError,'showError','')}" id="educationApplications2" disabled="{!!isEditable}" value="{!ea.Education_Application__c}" size="1" style="width:100%;" rendered="{!rtEducation && isEditable}">
+                                            <apex:selectOptions value="{!EducationApplications}"></apex:selectOptions>
+                                            <apex:actionSupport event="onchange" action="{!populateEducationExpense}" rerender="openDetail,HCMAmount,tdResult" oncomplete="completeLoadTable()" onsubmit="startLoadTable()" />
+                                        </apex:selectList>
+                                        <apex:inputText value="{!applicationLabel}" style="width:100%;" styleClass="{!IF(isEditable, " ", "disabledField ")}" rendered="{!rtEducation && !isEditable}" />
+                                        <apex:selectList id="travelApplications2" value="{!ea.Travel_Application__c}" size="1" style="width:100%;" styleClass="travelApplicationsId js-basic-single {!IF(applicationError,'showError','')}" rendered="{!rtTravel && isEditable}">
+                                            <apex:selectOptions value="{!TravelApplications}"></apex:selectOptions>
+                                            <apex:actionSupport event="onchange" action="{!populateLocation}" rerender="openDetail,cashAdvanceAmount,tdResult" oncomplete="refreshAmount();completeLoadTable()" onsubmit="startLoadTable()" />   
+                                        </apex:selectList>
+                                        <apex:inputText value="{!applicationLabel}" style="width:100%;" styleClass="{!IF(isEditable, " ", "disabledField ")}" rendered="{!rtTravel && !isEditable}" />
+                                    </apex:outputPanel>
+                                </div>
+                                <apex:inputfield value="{!ea.Remarks__c}" style="width:100%;margin-top:2px;height:65px;" rendered="{!rtGeneral}" styleClass="{!IF(isEditable, " ", "disabledField ")}" />
+                            </td>
+                            <td style="text-align:right;" valign="top">
+                                <apex:outputPanel id="openDetail">
+                                    <a style="{!IF(targetApplicationId !=null,'','display:none')}" href="/{!targetApplicationId}" target="_blank" title="{!IF(rtTravel, "View Travel Application", "View Education Application")}">
+                                        <apex:outputPanel styleClass="ui-icon ui-icon-search actionIcon" style="margin-top: 5px;" />
+                                    </a>
+                                    <label style="{!IF(!rtEducation,'','display:none')}" class="slds-form-element__label">Handwritten Amount:</label>
+                                    <label class="slds-form-element__label" style="{!IF(rtEducation,'','display:none')}">
+                                        <apex:outputText value="Applied Amount:" />
+                                    </label>
+                                </apex:outputPanel>
+                            </td>
+                            <td valign="top">
+                                <apex:outputText value="{!ea.Currency__c}" style="width:100%;" />
+                                <apex:outputText value="{0, number, #,##0.00}" style="width:100%; {!IF(!rtEducation,'','display:none')}">
+                                   <apex:param value="{!ea.Amount_Applied_Hand_Written_Receipt_Disp__c}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0, number, #,##0.00}" style="width:100%; {!IF(rtEducation,'','display:none')}">
+                                   <apex:param value="{!ea.Amount_Applied_display__c}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="text-align:right;"><label class="slds-form-element__label">Created By:</label></td>
+                            <td>
+                                <apex:outputtext value="{!createdBy}" styleClass="fieldRef" style="width:100%;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:right;" valign="top"><label class="slds-form-element__label" >{!IF(!rtGeneral, "Remarks:", "")}</label></td>
+                            <apex:outputtext rendered="{!!rtGeneral}">
+                                <td rowspan="{!IF(rtTravel, "3", "2")}">
+                                   <apex:inputfield value="{!ea.Remarks__c}" style="width:100%;margin-top:2px;{!IF(rtTravel, 'height:65px;', '')}" rendered="{!!rtGeneral}" styleClass="{!IF(isEditable, " ", "disabledField ")}" />
+                                </td>
+                            </apex:outputText>
+                            <td  style="text-align:right; width: 15%" valign="top">
+                                <label class="slds-form-element__label">{!IF(!rtTravel, "Approved Amount:", "Paid Out Cash Advance:")}</label>
+                            </td>
+                            <td valign="top">
+                                <!--<apex:outputText value="{!ea.Currency__c}" style="width:100%;" /> -->
+                                <apex:outputText value="{0, number, {!ea.Currency__c} #,##0.00}" style="width:100%;{!IF(!rtTravel,'','display:none')}">
+                                   <apex:param value="{!ea.Amount_Approved_Display__c}" />
+                                </apex:outputText>
+                                
+                                <apex:outputPanel id="cashAdvanceAmount"> 
+                                    <apex:outputText value="{0, number, ({!cashAdvanceCurrency} #,##0.00)}" style="width:100%;{!IF(rtTravel,'','display:none')}" rendered="{!rtTravel && if(isblank(cashAdvanceAmount) , 0 ,cashAdvanceAmount) < 0}">
+                                       <apex:param value="{!cashAdvanceAmount * -1}" />
+                                    </apex:outputText>
+                                    <apex:outputText value="{0, number, {!cashAdvanceCurrency} #,##0.00}" style="width:100%;{!IF(rtTravel,'','display:none')}" rendered="{!rtTravel && if(isblank(cashAdvanceAmount) , 0 ,cashAdvanceAmount) > 0}">
+                                       <apex:param value="{!cashAdvanceAmount }" />
+                                    </apex:outputText>
+                                    <apex:outputText value="-" style="width:100%;{!IF(rtTravel,'','display:none')}" rendered="{!rtTravel && if(isblank(cashAdvanceAmount) , 1 ,cashAdvanceAmount) == 0}" />
+                                </apex:outputPanel>
+                                
+                            </td>
+                            <!--
+                            <apex:outputtext rendered="{!!rtGeneral}">
+                                <td style="text-align:right;" valign="top"><label class="slds-form-element__label">Status:</label></td>
+                                <td valign="top">
+                                    <apex:outputtext value="{!status}" style="width:100%;" />
+                                </td>
+                            </apex:outputText>
+                            -->
+                            <apex:outputtext id="att"> <!--  rendered="{!rtGeneral}" -->
+                                <td style="text-align:right;" valign="top">
+                                    <label class="slds-form-element__label">Attachment(s):</label>
+                                </td>
+                                <td valign="top">
+                                    <div style="  width : 100%; height: 23px;">
+                                       <apex:outputtext rendered="{!isblank(textId)}">
+                                           <div id = "AllFilename">0</div>
+                                       </apex:outputtext>
+                                       
+                                       <apex:outputPanel rendered="{!!isblank(textId)}" id="attachmentResult" > 
+                                           <apex:outputtext rendered="{!countOfFiles > 0}">x</apex:outputtext>
+                                           <apex:outputtext value="{!countOfFiles}" style="width:100%;"  />
+                                            
+                                            <a href="javascript:;" onclick="$('#dialog').dialog('open')" id="fileDetail">
+                                                <apex:outputtext rendered="{!countOfFiles > 0}" value="(Details)" style="width:100%;" />
+                                            </a>
+                                        </apex:outputPanel>
+                                    </div>
+                                </td>
+                            </apex:outputtext>
+                        </tr>
+                        <tr>
+                            <td style="text-align:right;" valign="top"></td>
+                            <td style="text-align:right;" valign="top"><label class="slds-form-element__label" >{!IF(!rtTravel, "Reimbursed Amount: ", "Approved Amount:")}</label></td>
+                            <td valign="top">
+                                <apex:outputtext value="{!ea.Currency__c}" style="width:100%;" />
+                                <apex:outputText value="{0, number, #,##0.00}" style="width:100%; {!IF(!rtTravel,'','display:none')}">
+                                   <apex:param value="{!ea.Reimbursement_Amount_Display__c}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0, number, #,##0.00}" style="width:100%; {!IF(rtTravel,'','display:none')}">
+                                   <apex:param value="{!ea.Amount_Approved_Display__c}" />
+                                </apex:outputText>
+                            </td>
+                            <apex:outputtext rendered="{!!rtGeneral}">
+                                <td style="text-align:right;" valign="top"><label class="slds-form-element__label">Status:</label></td>
+                                <td valign="top" rowspan="2">
+                                    <apex:outputtext value="{!status}" style="width:100%;" />
+                                </td>
+                            </apex:outputText>
+                            <apex:outputtext rendered="{!rtGeneral}">
+                                <td></td>
+                                <td></td>
+                            </apex:outputText>
+                        </tr>
+                        <apex:outputtext rendered="{!rtTravel}">
+                        <tr>
+                            <td style="text-align:right;" valign="top"></td>
+                            <apex:outputText rendered="{!!rtTravel}">
+                                <td style="text-align:right;" valign="top"></td>
+                            </apex:outputText>
+                            <td style="text-align:right;" valign="top"><label class="slds-form-element__label" >{!IF(rtTravel, "Reimbursed Amount: ", "")}</label></td>
+                            <td valign="top">
+                                <apex:outputText value="{0, number, ({!ea.Currency__c} #,##0.00)}" style="width:100%;{!IF(rtTravel,'','display:none')}" rendered="{!rtTravel && if(isblank(ea.Reimbursement_Amount_Display__c ) , 0 ,ea.Reimbursement_Amount_Display__c) < 0}">
+                                   <apex:param value="{!ea.Reimbursement_Amount_Display__c * -1}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0, number, {!ea.Currency__c} #,##0.00}" style="width:100%;{!IF(rtTravel,'','display:none')}" rendered="{!rtTravel && if(isblank(ea.Reimbursement_Amount_Display__c ) , 0 ,ea.Reimbursement_Amount_Display__c) >= 0}">
+                                   <apex:param value="{!ea.Reimbursement_Amount_Display__c}" />
+                                </apex:outputText>
+                            </td>
+                            <apex:outputtext rendered="{!rtTravel}">
+                                <td></td>
+                                <td></td>
+                            </apex:outputText>
+                        </tr>
+                        </apex:outputtext>
+                    </table>
+                    
+                </div>
+                
+            </div>
+            </apex:pageBlock>
+            </div>
+            <apex:outputPanel id="subt"  style="display:none" >
+                <div id="dialog" class="sfdc-font" title="Attachment Details">
+                    
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom:1pt solid black;" >
+                                <th style="{!IF(isEditable, '', 'display:none')}" width="50px">Action</th>
+                                <th>No</th>
+                                <th>File Name</th>
+                                <th>Size (KB)</th>
+                                <th>Last Modified</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:variable value="{!0}" var="counter" />
+                            <apex:repeat value="{!attachments}" var="att">
+                                <apex:variable value="{!(counter + 1)}" var="counter" />
+                                <tr>
+                                    <td style="{!IF(isEditable, '', 'display:none')}">
+                                        <a href="javascript:;">
+                                            <apex:outputPanel styleClass="ui-icon ui-icon-closethick actionIcon">
+                                                <apex:actionSupport event="onclick" rerender="subt, attachmentResult , viewAllAttachments" action="{!att.deleteFile}" onsubmit="$('#dialog').dialog('destroy');$('#dialog').css('display','none');" oncomplete="{!if(countOfFiles >0 ,'resetDialog();' ,'resetDialogAction(\'close\')' )}" />
+                                            </apex:outputPanel>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{!counter}" />
+                                    </td>
+                                    <td>
+                                        <apex:outputText rendered="{!att.type == 'a'}">
+                                            <a href="/servlet/servlet.FileDownload?file={!att.id}" target="_blank"  >                                            
+                                                {!att.fileName}
+                                            </a>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!att.type == 'c'}">
+                                            <a href="/{!att.id}" target="_blank"  >                                            
+                                                {!att.fileName}
+                                            </a>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{0, number, #,##0.00}" >
+                                            <apex:param value="{!att.size}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="{!att.lastModifiedDate}" /> 
+                                        
+                                    </td>
+                                    
+                                </tr>
+
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                </div>
+            </apex:outputPanel>
+                
+            <!-- 
+            <div id="accordion" style = "width:99.5%; margin-top:5px;margin-bottom:50px;">
+               <label class="slds-form-element__label" style="font-size:14px;">Travel Application: {!ea.Name}</label>
+               <div style="margin-bottom:5px;">
+                </div>
+            </div>
+            -->
+        </div>
+
+        <br/>
+
+
+        <div id="tabs" style="width:99%; margin-top:-25px;">
+            <ul>
+                <li onclick="tdtable.columns.adjust().draw();"><a href="#tabs-1" style="width:140px">Expense Details</a>
+                </li>
+            </ul>
+
+            <div id="tabs-1" style="padding-top: 0px;">
+                <div class="progressbar">
+                    <apex:image value="{!URLFOR($Resource.loader, '')}" width="50px" height="50px" />
+                </div>
+                <div id="tableDiv" class="hideTable">
+                    <apex:outputPanel id="tdResult">
+
+                        <table id="tdtable" border='0' class="display nowrap" cellspacing="0" width="300px">
+                            <thead>
+                                <tr>
+                                    <apex:outputText rendered="{!isEditable}">
+                                        <th class="sfdc-font">Action</th>
+                                    </apex:outputText>
+
+                                    <th class="sfdc-font">No.</th>
+
+                                    <apex:outputText rendered="{!rtGeneral && rtGeneralSubmitted }">
+                                        <th class="sfdc-font">Ref No.</th>
+                                    </apex:outputText>
+
+                                    <th class="sfdc-font">Expense Type</th>
+
+                                    <th class="sfdc-font">Receipt Date</th>
+
+                                    <apex:outputText rendered="{!rtTravel}">
+                                        <th class="sfdc-font">Location</th>
+                                    </apex:outputText>
+
+
+                                    <th class="sfdc-font">Currency</th>
+                                    <th class="sfdc-font">Amount</th>
+
+                                    <apex:outputText rendered="{!rtTravel}">
+                                        <th class="sfdc-font" style="padding-left: 0px;"></th>
+                                    </apex:outputText>
+
+                                    <apex:outputText rendered="{!showFinalAmount}">
+                                        <th class="sfdc-font">Adjusted
+                                            <BR/>Amount</th>
+                                    </apex:outputText>
+
+                                    <apex:outputText rendered="{!showMaxCupOption}">
+                                        <th class="sfdc-font">Allow to <br/> Exceed Limit</th>
+                                    </apex:outputText>
+
+                                    <apex:outputText rendered="{!!rtTravel && !rtGeneral}"> <!--  && !rtGeneral -->
+                                        <th class="sfdc-font">Reimbursed
+                                            <BR/>By Cheque</th>
+                                    </apex:outputText>
+
+                                    <apex:outputText rendered="{!!rtEducation}">
+                                        <th class="sfdc-font">Handwritten
+                                            <BR/>Receipt</th>
+                                    </apex:outputText>
+
+                                    <apex:outputText rendered="{!rtTravel}">
+                                        <th class="sfdc-font">
+                                            # of ppl
+                                            <BR/>or Nights
+                                        </th>
+                                    </apex:outputText>
+
+                                    <th class="sfdc-font">Remarks</th>
+                                    
+                                    <apex:outputText rendered="{!rtGeneral || rtEducation}">
+                                        <th class="sfdc-font">
+                                                Status
+                                        </th>
+                                    </apex:outputText>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <apex:variable value="{!0}" var="counter" />
+
+                                <apex:repeat value="{!edl}" var="ed">
+                                    <apex:variable value="{!(counter + 1)}" var="counter" />
+                                    <tr>
+                                        <apex:outputText rendered="{!isEditable}">
+                                            <td align="center" style="padding-top: 10px;">
+                                            <!-- <apex:outputText rendered="{!isEditable || ed.isGeneralEditable}"> -->
+                                                <!--
+                                                <a href="javascript:;" title="Add 5 rows">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-circle-close actionIcon" style="margin-left:-9px;">
+                                                        <apex:actionSupport event="onclick" immediate="false" rerender="tdResult" action="{!ed.insertFiveRows}" oncomplete="completeLoadTable();" onsubmit="startLoadTable()" />
+                                                    </apex:outputPanel>
+                                                
+                                                </a>
+                                                -->
+                                                <a href="javascript:;" title="{!if( counter == edl.size, 'Add 5 new rows','Add a new row' )}">
+                                                    <apex:outputPanel styleClass="ui-icon  ui-icon-circle-plus actionIcon" style="margin-left:-1px; padding-right:1px"  rendered="{!counter == edl.size}">
+                                                        <apex:actionSupport event="onclick" immediate="false" rerender="tdResult" action="{!insertRows}" oncomplete="$('.capIcon').tooltip();completeLoadTable();" onsubmit="startLoadTable()"/>
+                                                    </apex:outputPanel>                                                    
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-circle-plus actionIcon" style="margin-left:0px;"  rendered="{!counter != edl.size}">
+                                                        <apex:actionSupport event="onclick" immediate="false" rerender="tdResult" action="{!ed.insertRow}" oncomplete="$('.capIcon').tooltip();completeLoadTable();" onsubmit="startLoadTable()"/>
+                                                    </apex:outputPanel>
+                                                </a>
+
+                                                <a href="javascript:;" title="Delete this row">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-circle-minus actionIcon" style="margin-left:0px;">
+                                                        <apex:actionSupport event="onclick" immediate="false" rerender="jqPanel1,tdResult" action="{!ed.removeRow}" oncomplete="$('.capIcon').tooltip();refreshAmount();completeLoadTable()" onsubmit="startLoadTable()" />
+                                                    </apex:outputPanel>
+                                                </a>
+                                                
+                                                <a href="javascript:;" title="Copy to below">
+                                                    <apex:outputPanel styleClass="ui-icon ui-icon-arrowreturnthick-1-e actionIcon" style="margin-right:-12px;margin-left:0px;">
+                                                        <apex:actionSupport event="onclick" immediate="false" rerender="jqPanel1,tdResult" action="{!ed.duplicateRow}" oncomplete="$('.capIcon').tooltip();refreshAmount();completeLoadTable();" onsubmit="startLoadTable()" />
+                                                    </apex:outputPanel>
+                                                </a>
+
+                                                <!-- upload by line
+                                                <a  href="/p/attach/NoteAttach?pid={!ed.expenseDetail.id}&parentname={!ed.expenseDetail.name}&retURL=%2Fapex/TEExpenseApplicationVFP?id={!textId}">
+                                                    <apex:outputPanel rendered="{!ed.isSaved}" styleClass="ui-icon ui-icon-copy actionIcon" /> 
+                                                </a>
+                                                -->
+                                            <!--
+                                            <apex:outputText rendered="{!!isEditable && !ed.isGeneralEditable}">
+                                                <div Class="ui-icon ui-icon ui-icon-locked"/>
+                                            </apex:outputText>
+                                            -->
+                                            </td>
+                                        </apex:outputText>
+                                        <td align="center" style="padding-top: 10px;"> <!-- align="center" style="padding-top: 10px;" -->
+                                            <apex:outputText value="{!ed.lineNo}"  style="width:100%;"/>
+                                        </td>
+
+                                        <apex:outputText rendered="{!rtGeneral && rtGeneralSubmitted }">
+                                            <td class="largeTopPadding">
+                                                <!-- <apex:outputField value="{!ed.expenseDetail.Name}" style="width:100%;" /> -->
+                                                 <a href="/{!ed.expenseDetail.id}" target="_blank"><apex:outputField value="{!ed.expenseDetail.Name}" /></a>
+                                            </td>
+                                        </apex:outputText>
+
+                                        <td  >
+                                            <apex:selectList disabled="{!!isEditable && !ed.isGeneralEditable}" value="{!ed.expenseDetail.Expense_Type__c}" styleclass="js-basic-single {!IF(ed.expenseTypeFlag,'showError','')}" style="{!IF(rtEducation, 'width:135px', 'width:200px')}">
+                                                <apex:selectOptions value="{!expenseTypes}"></apex:selectOptions>
+                                                <apex:actionSupport event="onchange" rerender="peopleColumn,cap,amount,jqPanel1,etPanel" oncomplete="$('.disabledField').attr('disabled', 'disabled');refreshAmount();$('.capIcon').tooltip();" action="{!ed.triggerEnablePeople}" />
+                                            </apex:selectList>
+                                            
+                                        </td>
+
+                                        <td class="largeTopPadding">
+                                            <apex:inputfield id="theDate" styleClass="theDate{!counter}" rendered="{!isEditable || ed.isGeneralEditable}" value="{!ed.expenseDetail.Receipt_Date__c}" style="width:90%; {!IF(ed.receiptDateFlag,'border:2px solid red','')}">
+                                                    <apex:actionSupport event="onchange" action="{!ed.refreshExceedCapFlag}" oncomplete="refreshAmount();" onsubmit="findLocation('{!counter}');" rerender="amount,jqPanel1" />
+                                            </apex:inputfield>
+                                            <apex:inputfield value="{!ed.expenseDetail.Receipt_Date__c}" style="width:100px" styleClass="{!IF(isEditable || ed.isGeneralEditable, " ", "disabledField ")} " rendered="{!!isEditable && !ed.isGeneralEditable}"  />
+                                        </td>
+
+                                        <apex:outputText rendered="{!rtTravel}">
+                                            <td>
+                                                <apex:selectList disabled="{!!isEditable && !ed.isGeneralEditable}" value="{!ed.expenseDetail.Destination__c}" size="1" styleclass="Destination{!counter} js-basic-single {!IF(ed.destinationFlag,'showError','')}" style="width:200px;">
+                                                    <apex:selectOptions value="{!locations}"></apex:selectOptions>
+                                                    <apex:actionSupport event="onchange" action="{!ed.onCurrencyChange}" oncomplete="changeCurrency('{!ed.expenseDetail.Receipt_Currency__c}', '{!ed.lineNo}');refreshAmount();$('.capIcon').tooltip();" rerender="cap , amount , jqPanel1" />
+                                                    <!--
+                                                    <apex:actionSupport event="onchange" action="{!ed.onCurrencyChange}" oncomplete=" resetSelect2();refreshAmount();$('.capIcon').tooltip();" rerender="cap,currency,amount,jqPanel1" />
+                                                    -->
+                                                </apex:selectList>
+                                            </td>
+                                        </apex:outputText>
+
+                                        <td>
+                                            <apex:outputPanel id="currency" styleClass="currencyPanel">
+                                                <apex:selectList disabled="{!!isEditable && !ed.isGeneralEditable}" value="{!ed.expenseDetail.Receipt_Currency__c}" size="1" styleclass="ReceiptCurrency{!counter} js-basic-single {!IF(ed.currencyFlag,'showError','')}" style="width:90px;">
+                                                    <apex:selectOptions value="{!currencies}"></apex:selectOptions>
+                                                    <apex:actionSupport event="onchange" action="{!ed.refreshExceedCapFlag}" oncomplete="refreshAmount();$('.capIcon').tooltip();" rerender="amount,jqPanel1,cap" />
+                                                </apex:selectList>
+                                            </apex:outputPanel>
+                                        </td>
+
+                                        <td class="largeTopPadding"> 
+                                            <apex:outputPanel id="amount" styleClass="amountPanel">
+                                                <apex:inputfield onkeypress="return isDecimalNumberKey(event,this)" value="{!ed.expenseDetail.Amount__c}" style="width:90px;{!IF(isEditable || ed.isGeneralEditable, '', 'display:none;')}{!IF(ed.isExceedCap=='Y', 'background-color: red;', '')} {!IF(ed.amountFlag,'border:2px solid red','')}">
+                                                    <apex:actionSupport event="onchange" action="{!ed.refreshExceedCapFlag}" oncomplete="refreshAmount();$('.capIcon').tooltip();" rerender="amount,jqPanel1,cap" />
+                                                </apex:inputfield>
+                                                <apex:inputfield value="{!ed.expenseDetail.Amount__c}" style="width:90px;{!IF(ed.isExceedCap=='Y', 'background-color: red;', '')}" styleClass="{!IF(isEditable || ed.isGeneralEditable, " ", "disabledField ")} " rendered="{!!isEditable && !ed.isGeneralEditable}" />
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel id="etPanel">
+                                                <div style="color:red;width: 100%;">
+                                                    <apex:outputText StyleClass="sfdc-font" style="white-space: pre-wrap; font-size:10px" value="{!ed.expenseType.Reminder__c}" rendered="{!ed.showReminder}"></apex:outputText>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </td>
+                                        <apex:outputText rendered="{!rtTravel}">
+                                            <td style="padding-left: 0px;" class="largeTopPadding">
+                                                <apex:outputPanel id="cap" style="width:20px;" >
+                                                    <div style="{!IF(ed.showIconFlag, '', 'display:none')}">
+                                                        <span style="{!IF(ed.showMessage, '', 'display:none;')}" class="ui-icon ui-icon-info actionIcon capIcon" title="{!ed.maxCapInfo}" />
+                                                        <span style="{!IF(!ed.showMessage, '', 'display:none;')}" class="ui-icon ui-icon-alert actionIcon capIcon" title="{!ed.maxCapInfo}" />
+                                                    </div>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </apex:outputText>
+
+                                        <apex:outputText rendered="{!showFinalAmount}">
+                                            <td class="largeTopPadding">
+                                                <!-- <apex:inputfield onkeypress="return isDecimalNumberKey(event,this)" value="{!ed.expenseDetail.Amount_Adjustment__c}" styleClass="{!IF(ed.isFinAction && (rtGeneral || isFinalAmountEditable), " ", "disabledField ")}" style="width:100%;" /> -->
+                                                <apex:inputfield onkeypress="return isDecimalNumberKey(event,this)" value="{!ed.expenseDetail.Amount_Adjustment__c}" styleClass="{!IF(((ed.isFinAction && isFinalAmountEditable)||(isAdmin && ed.expenseDetail.Status__c == 'PS')), " ", "disabledField ")}" style="width:90px;" />
+                                            </td>
+                                        </apex:outputText>
+
+                                        <apex:outputText rendered="{!showMaxCupOption}">
+                                            <td class="largeTopPadding">
+                                                <apex:inputCheckbox disabled="{!! (isMaxCupEditable && showButton && ed.isExceedCap=='Y')}" value="{!ed.expenseDetail.Allow_to_Exceed_Max_Cap__c}" style="width:100%;" />
+                                            </td>
+                                        </apex:outputText>
+
+                                        <apex:outputText rendered="{!!rtTravel && !rtGeneral}"> <!--  && !rtGeneral -->
+                                            <td align="center" class="largeTopPadding">
+                                                <apex:inputCheckbox disabled="{!!isEditable && !ed.isGeneralEditable}" value="{!ed.expenseDetail.Pay_Cheque__c}" style="width:100%;" />
+                                            </td>
+                                        </apex:outputText>
+
+                                        <apex:outputText rendered="{!!rtEducation}">
+                                            <td align="center" class="largeTopPadding">
+                                                <apex:inputCheckbox disabled="{!!isEditable && !ed.isGeneralEditable}" value="{!ed.expenseDetail.Hand_written_Receipt__c}" />
+                                            </td>
+                                        </apex:outputText>
+
+                                        <apex:outputText rendered="{!rtTravel}">
+                                            <td class="largeTopPadding">
+                                                <apex:outputPanel id="peopleColumn">
+                                                    <apex:inputText styleClass="disabledField " rendered="{!!ed.enablePeople}" value="{!BLANKVALUE}" style="width:100%;text-align:center;"/>
+                                                    
+                                                    <apex:inputfield onkeypress="return isNumberKey(event)" styleClass="{!IF(ed.enablePeople && (isEditable || ed.isGeneralEditable)," ","disabledField ")}" rendered="{!ed.enablePeople}" value="{!ed.expenseDetail.Number_Of_People__c}" style="width:100%;text-align:center;">
+                                                        <apex:actionSupport event="onchange" action="{!ed.refreshExceedCapFlag}" oncomplete="refreshAmount();" rerender="amount,jqPanel1" />
+                                                    </apex:inputfield>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </apex:outputText>
+
+
+
+                                        <td class="largeTopPadding">
+                                            <apex:inputfield value="{!ed.expenseDetail.Description__c}" style="{!IF((isEditable || ed.isGeneralEditable) && (rtGeneral || rtEducation), 'width:400px;', 'width:270px;')}"  rendered="{!isEditable}"/> <!-- {!IF(!!isEditable && !ed.isGeneralEditable, 'display:none', '')} -->
+                                            <apex:inputfield value="{!ed.expenseDetail.Description__c}" style="{!IF(!isEditable && ed.isGeneralEditable, 'width:150px;', 'width:150px;')}"  rendered="{!!isEditable && ed.isGeneralEditable}"/>
+                                            <apex:inputfield value="{!ed.expenseDetail.Description__c}" style="{!IF(rtEducation, 'width:400px;', 'width:300px;')}height:17px" styleClass="{!IF(isEditable || ed.isGeneralEditable, " ", "disabledField ")}" rendered="{!!isEditable && !ed.isGeneralEditable}" />
+                                            <!--
+                                            <apex:inputText value="{!ed.expenseDetail.Description__c}" style="width:96%;" styleClass="{!IF(isEditable || ed.isGeneralEditable, " ", "disabledField ")}" rendered="{!!isEditable && !ed.isGeneralEditable}" />
+                                            -->
+                                        </td>
+
+                                        <apex:outputText rendered="{!rtGeneral || rtEducation}">
+                                        <td class="largeTopPadding" >
+                                            <label><apex:outputField value="{!ed.expenseDetail.Status__c}"  /></label>
+                                            <div style="width:240px"></div>
+                                        </td>
+                                        </apex:outputText>
+                                       
+                                    </tr>
+                                </apex:repeat>
+                            </tbody>
+                        </table>
+                    </apex:outputPanel>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+
+</apex:page>

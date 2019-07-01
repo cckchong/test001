@@ -1,0 +1,39 @@
+<apex:page controller="FileUpload" showHeader="false" standardStylesheets="false">
+<head>
+	<script type="text/javascript">	
+		function SelectFile( fileUrl )
+		{		
+		    var dialog = parent.CKEDITOR.dialog.getCurrent();
+		    if (dialog.getName() == 'image') {
+		        var element = dialog.getContentElement('info', 'txtUrl');
+		        if (element) {
+		            //element.setValue(document.getElementById('uploadFileName').innerHTML);
+		            element.setValue(fileUrl);
+		            dialog.selectPage('info');
+		        }
+		    }
+		    window.close() ;
+		}
+	</script>
+</head>
+	<apex:messages >
+		<apex:form >
+			<input onclick="window.location.href=window.location.href"
+				type="button" value="Reset" />
+			<br />
+			<br />
+			<apex:inputfile filename="{!document.name}" value="{!document.body}" />
+			<br />
+			<br />
+			<apex:commandbutton action="{!doUpload}" value="Upload" />
+		</apex:form>
+		<apex:pageBlock rendered="{!hasImage}">
+			<img src="{!url}" height="200" />
+			<script>
+            this.onload = function() {
+                SelectFile('{!url}');
+            }
+        </script>
+		</apex:pageBlock>
+	</apex:messages>
+</apex:page>
