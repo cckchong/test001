@@ -1,6 +1,6 @@
 public without sharing class AccountTriggerHandler {
 
-    //Set Salesperson to EMPTY if no matching user found for Account integrated from M3
+    //Set Salesperson to EMPTY if no matching user found for Account integrated from M3s
     public static void bypassSalesperson (List<Account> accountList) {
         Set<String> setSalespersonExternalId = new Set<String>();
         Map<String, User> mapSalesperson = new Map<String, User>();
